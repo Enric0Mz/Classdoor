@@ -78,7 +78,7 @@ describe("universityService.createUniversity", () => {
 describe("POST /api/v1/universities", () => {
   it("returns 201 with the created university", async () => {
     const input = { name: "MIT", location: "Cambridge", website: "https://mit.edu" };
-    const created = { id: "1", ...input, createdAt: "2024-01-01T00:00:00.000Z" };
+    const created = { id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890", ...input, createdAt: "2024-01-01T00:00:00.000Z" };
     universityRepository.findByName.mockResolvedValue(null);
     universityRepository.create.mockResolvedValue(created);
 
@@ -107,7 +107,7 @@ describe("POST /api/v1/universities", () => {
   });
 
   it("returns 409 when the university already exists", async () => {
-    universityRepository.findByName.mockResolvedValue({ id: "1", name: "MIT" });
+    universityRepository.findByName.mockResolvedValue({ id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890", name: "MIT" });
 
     const response = await POST(makeRequest({ name: "MIT", location: "Cambridge" }));
 
