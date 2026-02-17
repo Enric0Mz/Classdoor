@@ -20,7 +20,7 @@ beforeEach(() => jest.clearAllMocks());
 describe("universityService.createUniversity", () => {
   it("creates a university with valid input", async () => {
     const input = { name: "MIT", location: "Cambridge", website: "https://mit.edu" };
-    const created = { id: "1", ...input, createdAt: new Date() };
+    const created = { id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890", ...input, createdAt: new Date() };
     universityRepository.findByName.mockResolvedValue(null);
     universityRepository.create.mockResolvedValue(created);
 
@@ -34,7 +34,7 @@ describe("universityService.createUniversity", () => {
   it("creates a university without the optional website field", async () => {
     const input = { name: "MIT", location: "Cambridge" };
     universityRepository.findByName.mockResolvedValue(null);
-    universityRepository.create.mockResolvedValue({ id: "1", ...input });
+    universityRepository.create.mockResolvedValue({ id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890", ...input });
 
     await createUniversity(input);
 
@@ -63,7 +63,7 @@ describe("universityService.createUniversity", () => {
   });
 
   it("throws 409 when university name already exists", async () => {
-    universityRepository.findByName.mockResolvedValue({ id: "1", name: "MIT" });
+    universityRepository.findByName.mockResolvedValue({ id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890", name: "MIT" });
 
     await expect(
       createUniversity({ name: "MIT", location: "Cambridge" })
