@@ -1,10 +1,12 @@
 import { NextResponse } from "next/server";
 import * as userService from "@/domain/userService";
 import { verifyToken } from "@/lib/auth";
+import { requireRole } from "@/lib/authorization";
 
 export async function GET(request) {
   try {
-    verifyToken(request);
+    const decoded = verifyToken(request);
+    requireRole(decoded, ["ADMIN", "MODERATOR"]);
     const users = await userService.listUsers();
     return NextResponse.json(users);
   } catch (error) {

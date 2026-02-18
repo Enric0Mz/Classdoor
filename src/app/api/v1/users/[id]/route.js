@@ -26,7 +26,8 @@ export async function DELETE(request, { params }) {
   try {
     const decoded = verifyToken(request);
     const { id } = await params;
-    if (decoded.id !== id) {
+    const isAdmin = decoded.role === "ADMIN";
+    if (!isAdmin && decoded.id !== id) {
       throw new AppError("Forbidden", 403);
     }
     await userService.deleteUser(id);

@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import * as universityService from "@/domain/universityService";
+import { verifyToken } from "@/lib/auth";
+import { requireRole } from "@/lib/authorization";
 
 export async function GET() {
   try {
@@ -21,6 +23,8 @@ export async function GET() {
 
 export async function POST(request) {
   try {
+    const decoded = verifyToken(request);
+    requireRole(decoded, ["ADMIN"]);
     const body = await request.json();
     const university = await universityService.createUniversity(body);
     return NextResponse.json(university, { status: 201 });
