@@ -41,7 +41,7 @@ export async function registerUser({ email, password }) {
 
   const hash = await bcrypt.hash(password, 10);
   const user = await userRepository.create({ email, password: hash });
-  const token = signToken({ id: user.id, email: user.email });
+  const token = signToken({ id: user.id, email: user.email, role: user.role });
 
   return { user: stripPassword(user), token };
 }
@@ -61,7 +61,7 @@ export async function loginUser({ email, password }) {
     throw new AppError("Invalid email or password", 401);
   }
 
-  const token = signToken({ id: user.id, email: user.email });
+  const token = signToken({ id: user.id, email: user.email, role: user.role });
   return { user: stripPassword(user), token };
 }
 

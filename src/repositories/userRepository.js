@@ -2,7 +2,7 @@ import prisma from "@/lib/prisma";
 
 export async function findAll() {
   return prisma.user.findMany({
-    select: { id: true, email: true, createdAt: true },
+    select: { id: true, email: true, role: true, createdAt: true },
   });
 }
 

@@ -3,8 +3,8 @@ import { AppError } from "@/errors/AppError";
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
-export function signToken({ id, email }) {
-  return jwt.sign({ id, email }, JWT_SECRET, { expiresIn: "7d" });
+export function signToken({ id, email, role }) {
+  return jwt.sign({ id, email, role }, JWT_SECRET, { expiresIn: "7d" });
 }
 
 export function verifyToken(request) {
