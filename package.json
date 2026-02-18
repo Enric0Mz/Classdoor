@@ -21,6 +21,9 @@
     "swagger-ui-react": "^4.19.1",
     "tailwindcss": "^4.1.18"
   },
+  "prisma": {
+    "seed": "node prisma/seed.js"
+  },
   "devDependencies": {
     "eslint": "^8.57.1",
     "eslint-config-next": "^14.2.35",
