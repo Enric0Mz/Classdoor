@@ -1,4 +1,20 @@
+import { updateUser } from "@/domain/userService";
+import * as userRepository from "@/repositories/userRepository";
+import bcrypt from "bcrypt";
+import { verifyToken } from "@/lib/auth";
 import { PUT } from "@/app/api/v1/users/[id]/route";
+
+jest.mock("@/repositories/userRepository", () => ({
+  update: jest.fn(),
+}));
+
+jest.mock("bcrypt", () => ({
+  hash: jest.fn(),
+}));
+
+jest.mock("@/lib/auth", () => ({
+  verifyToken: jest.fn(),
+}));
 
 jest.mock("next/server", () => ({
   NextResponse: {
@@ -6,11 +22,79 @@ jest.mock("next/server", () => ({
   },
 }));
 
-describe("PUT /api/v1/users/:id", () => {
-  it("returns 501 Not Implemented", async () => {
-    const response = await PUT({}, { params: { id: "some-id" } });
+const makeRequest = (body) => ({
+  json: jest.fn().mockResolvedValue(body),
+  headers: { get: jest.fn() },
+});
 
-    expect(response.status).toBe(501);
-    expect(response.body).toEqual({ message: "Not implemented" });
+beforeEach(() => jest.clearAllMocks());
+
+describe("userService.updateUser", () => {
+  it("updates user and strips password", async () => {
+    userRepository.update.mockResolvedValue({
+      id: "user-1", email: "new@test.com", password: "hashed", createdAt: new Date(),
+    });
+
+    const result = await updateUser("user-1", { email: "new@test.com" });
+
+    expect(result).not.toHaveProperty("password");
+    expect(result.email).toBe("new@test.com");
+  });
+
+  it("hashes new password when provided", async () => {
+    bcrypt.hash.mockResolvedValue("new-hash");
+    userRepository.update.mockResolvedValue({
+      id: "user-1", email: "test@test.com", password: "new-hash", createdAt: new Date(),
+    });
+
+    await updateUser("user-1", { password: "newpass" });
+
+    expect(bcrypt.hash).toHaveBeenCalledWith("newpass", 10);
+    expect(userRepository.update).toHaveBeenCalledWith("user-1", { password: "new-hash" });
+  });
+});
+
+describe("PUT /api/v1/users/:id", () => {
+  it("returns 200 with updated user", async () => {
+    verifyToken.mockReturnValue({ id: "user-1", email: "test@test.com" });
+    userRepository.update.mockResolvedValue({
+      id: "user-1", email: "new@test.com", password: "hashed", createdAt: "2024-01-01T00:00:00.000Z",
+    });
+
+    const response = await PUT(
+      makeRequest({ email: "new@test.com" }),
+      { params: Promise.resolve({ id: "user-1" }) }
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.body).not.toHaveProperty("password");
+  });
+
+  it("returns 401 when no token provided", async () => {
+    const { AppError } = require("@/errors/AppError");
+    verifyToken.mockImplementation(() => {
+      throw new AppError("Authentication required", 401);
+    });
+
+    const response = await PUT(
+      makeRequest({ email: "new@test.com" }),
+      { params: Promise.resolve({ id: "user-1" }) }
+    );
+
+    expect(response.status).toBe(401);
+  });
+
+  it("returns 403 when token user does not match", async () => {
+    verifyToken.mockReturnValue({ id: "other-user", email: "other@test.com" });
+
+    const response = await PUT(
+      makeRequest({ email: "new@test.com" }),
+      { params: Promise.resolve({ id: "user-1" }) }
+    );
+
+    expect(response.status).toBe(403);
+    expect(response.body).toEqual({
+      error: { message: "Forbidden", statusCode: 403 },
+    });
   });
 });
