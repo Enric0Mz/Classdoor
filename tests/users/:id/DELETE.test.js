@@ -61,8 +61,8 @@ describe("DELETE /api/v1/users/:id", () => {
     expect(response.status).toBe(401);
   });
 
-  it("returns 403 when token user does not match", async () => {
-    verifyToken.mockReturnValue({ id: "other-user", email: "other@test.com" });
+  it("returns 403 when token user does not match and is not ADMIN", async () => {
+    verifyToken.mockReturnValue({ id: "other-user", email: "other@test.com", role: "USER" });
 
     const response = await DELETE(
       makeRequest(),
@@ -73,5 +73,18 @@ describe("DELETE /api/v1/users/:id", () => {
     expect(response.body).toEqual({
       error: { message: "Forbidden", statusCode: 403 },
     });
+  });
+
+  it("returns 200 when ADMIN deletes another user", async () => {
+    verifyToken.mockReturnValue({ id: "admin-user", email: "admin@test.com", role: "ADMIN" });
+    userRepository.remove.mockResolvedValue({ id: "user-1" });
+
+    const response = await DELETE(
+      makeRequest(),
+      { params: Promise.resolve({ id: "user-1" }) }
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({ message: "User deleted" });
   });
 });

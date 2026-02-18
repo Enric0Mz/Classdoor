@@ -30,7 +30,7 @@ beforeEach(() => jest.clearAllMocks());
 describe("userService.registerUser", () => {
   it("registers a user with valid input", async () => {
     const input = { email: "test@test.com", password: "secret123" };
-    const created = { id: "user-1", email: "test@test.com", password: "hashed", createdAt: new Date() };
+    const created = { id: "user-1", email: "test@test.com", password: "hashed", role: "USER", createdAt: new Date() };
     userRepository.findByEmail.mockResolvedValue(null);
     bcrypt.hash.mockResolvedValue("hashed");
     userRepository.create.mockResolvedValue(created);
@@ -41,6 +41,7 @@ describe("userService.registerUser", () => {
     expect(userRepository.findByEmail).toHaveBeenCalledWith("test@test.com");
     expect(bcrypt.hash).toHaveBeenCalledWith("secret123", 10);
     expect(userRepository.create).toHaveBeenCalledWith({ email: "test@test.com", password: "hashed" });
+    expect(signToken).toHaveBeenCalledWith({ id: "user-1", email: "test@test.com", role: "USER" });
     expect(result.user).not.toHaveProperty("password");
     expect(result.token).toBe("jwt-token");
   });

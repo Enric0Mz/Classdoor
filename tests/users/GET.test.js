@@ -1,6 +1,7 @@
 import { listUsers } from "@/domain/userService";
 import * as userRepository from "@/repositories/userRepository";
 import { verifyToken } from "@/lib/auth";
+import { requireRole } from "@/lib/authorization";
 import { GET } from "@/app/api/v1/users/route";
 
 jest.mock("@/repositories/userRepository", () => ({
@@ -9,6 +10,10 @@ jest.mock("@/repositories/userRepository", () => ({
 
 jest.mock("@/lib/auth", () => ({
   verifyToken: jest.fn(),
+}));
+
+jest.mock("@/lib/authorization", () => ({
+  requireRole: jest.fn(),
 }));
 
 jest.mock("next/server", () => ({
@@ -48,13 +53,15 @@ describe("userService.listUsers", () => {
 });
 
 describe("GET /api/v1/users", () => {
-  it("returns 200 with the list of users when authenticated", async () => {
-    verifyToken.mockReturnValue({ id: "user-1", email: "a@test.com" });
+  it("returns 200 with the list of users when authenticated as ADMIN", async () => {
+    verifyToken.mockReturnValue({ id: "user-1", email: "a@test.com", role: "ADMIN" });
+    requireRole.mockReturnValue(undefined);
     userRepository.findAll.mockResolvedValue(USERS);
 
     const response = await GET(makeRequest());
 
     expect(verifyToken).toHaveBeenCalled();
+    expect(requireRole).toHaveBeenCalledWith({ id: "user-1", email: "a@test.com", role: "ADMIN" }, ["ADMIN", "MODERATOR"]);
     expect(response.status).toBe(200);
     expect(response.body).toEqual(USERS);
   });
@@ -73,8 +80,24 @@ describe("GET /api/v1/users", () => {
     });
   });
 
+  it("returns 403 when authenticated user has USER role", async () => {
+    const { AppError } = require("@/errors/AppError");
+    verifyToken.mockReturnValue({ id: "user-1", email: "a@test.com", role: "USER" });
+    requireRole.mockImplementation(() => {
+      throw new AppError("Forbidden: insufficient permissions", 403);
+    });
+
+    const response = await GET(makeRequest());
+
+    expect(response.status).toBe(403);
+    expect(response.body).toEqual({
+      error: { message: "Forbidden: insufficient permissions", statusCode: 403 },
+    });
+  });
+
   it("returns 500 on unexpected repository error", async () => {
-    verifyToken.mockReturnValue({ id: "user-1", email: "a@test.com" });
+    verifyToken.mockReturnValue({ id: "user-1", email: "a@test.com", role: "ADMIN" });
+    requireRole.mockReturnValue(undefined);
     userRepository.findAll.mockRejectedValue(new Error("DB down"));
 
     const response = await GET(makeRequest());
