@@ -10,6 +10,4 @@ Write code that a Jr Software Engineer can understeand, following clean code pri
 - Use only javascript (node)
 - Prefer variables with verbose names rather one letter variables
 - Maintain the same UI/UX across all pages of the project
-- After a feature is down, make sure to make a commit, following the commitzen convetion
-- Prefer separate commits for readability
 - Document new routes on swagger docs
