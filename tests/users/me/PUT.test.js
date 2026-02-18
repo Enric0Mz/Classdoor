@@ -47,10 +47,26 @@ describe("userService.updateUser", () => {
       id: "user-1", email: "test@test.com", password: "new-hash", createdAt: new Date(),
     });
 
-    await updateUser("user-1", { password: "newpass" });
+    await updateUser("user-1", { password: "newpass123" });
 
-    expect(bcrypt.hash).toHaveBeenCalledWith("newpass", 10);
+    expect(bcrypt.hash).toHaveBeenCalledWith("newpass123", 10);
     expect(userRepository.update).toHaveBeenCalledWith("user-1", { password: "new-hash" });
+  });
+
+  it("throws 400 when email format is invalid", async () => {
+    await expect(updateUser("user-1", { email: "not-an-email" })).rejects.toMatchObject({
+      message: "Invalid email format",
+      statusCode: 400,
+    });
+    expect(userRepository.update).not.toHaveBeenCalled();
+  });
+
+  it("throws 400 when new password is too short", async () => {
+    await expect(updateUser("user-1", { password: "short" })).rejects.toMatchObject({
+      message: "Password must be at least 8 characters long",
+      statusCode: 400,
+    });
+    expect(userRepository.update).not.toHaveBeenCalled();
   });
 });
 
