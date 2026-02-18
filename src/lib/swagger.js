@@ -5,9 +5,9 @@ const swaggerSpec = {
     version: "0.1.0",
     description: "API for university reviews and ratings",
   },
-  servers: [{ url: "/api/v1", description: "V1 API" }],
+  servers: [{ url: "/", description: "V1 API" }],
   paths: {
-    "/universities": {
+    "/api/v1/universities": {
       get: {
         tags: ["Universities"],
         summary: "List all universities",
@@ -108,7 +108,7 @@ const swaggerSpec = {
         },
       },
     },
-    "/universities/{id}": {
+    "/api/v1/universities/{id}": {
       parameters: [
         {
           name: "id",
@@ -158,7 +158,7 @@ const swaggerSpec = {
         },
       },
     },
-    "/reviews": {
+    "/api/v1/reviews": {
       get: {
         tags: ["Reviews"],
         summary: "List all reviews",
@@ -195,7 +195,7 @@ const swaggerSpec = {
         },
       },
     },
-    "/reviews/{id}": {
+    "/api/v1/reviews/{id}": {
       parameters: [
         {
           name: "id",
@@ -245,10 +245,11 @@ const swaggerSpec = {
         },
       },
     },
-    "/users": {
+    "/api/v1/users": {
       get: {
         tags: ["Users"],
         summary: "List all users",
+        security: [{ BearerAuth: [] }],
         responses: {
           200: {
             description: "A list of users",
@@ -258,6 +259,14 @@ const swaggerSpec = {
                   type: "array",
                   items: { $ref: "#/components/schemas/User" },
                 },
+              },
+            },
+          },
+          401: {
+            description: "Authentication required",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
               },
             },
           },
@@ -287,7 +296,7 @@ const swaggerSpec = {
                     format: "email",
                     example: "user@example.com",
                   },
-                  password: { type: "string", example: "secret123" },
+                  password: { type: "string", minLength: 8, example: "secret123" },
                 },
               },
             },
@@ -321,7 +330,7 @@ const swaggerSpec = {
         },
       },
     },
-    "/users/login": {
+    "/api/v1/users/login": {
       post: {
         tags: ["Users"],
         summary: "Log in a user",
@@ -338,7 +347,7 @@ const swaggerSpec = {
                     format: "email",
                     example: "user@example.com",
                   },
-                  password: { type: "string", example: "secret123" },
+                  password: { type: "string", minLength: 8, example: "secret123" },
                 },
               },
             },
@@ -372,7 +381,7 @@ const swaggerSpec = {
         },
       },
     },
-    "/users/me": {
+    "/api/v1/users/me": {
       put: {
         tags: ["Users"],
         summary: "Update the authenticated user",
@@ -385,7 +394,7 @@ const swaggerSpec = {
                 type: "object",
                 properties: {
                   email: { type: "string", format: "email" },
-                  password: { type: "string" },
+                  password: { type: "string", minLength: 8 },
                 },
               },
             },
@@ -411,7 +420,7 @@ const swaggerSpec = {
         },
       },
     },
-    "/users/{id}": {
+    "/api/v1/users/{id}": {
       parameters: [
         {
           name: "id",
