@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 function getEmailFromToken(token) {
   try {
@@ -22,7 +23,10 @@ function getInitials(email) {
 }
 
 export default function Navbar() {
+  const router = useRouter();
   const [userEmail, setUserEmail] = useState(null);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
 
   useEffect(() => {
     function updateUser() {
@@ -38,6 +42,24 @@ export default function Navbar() {
     window.addEventListener("auth-change", updateUser);
     return () => window.removeEventListener("auth-change", updateUser);
   }, []);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  function handleLogout() {
+    localStorage.removeItem("token");
+    window.dispatchEvent(new Event("auth-change"));
+    setIsDropdownOpen(false);
+    router.push("/");
+  }
 
   return (
     <nav className="sticky top-0 z-50 flex items-center justify-between border-b border-border bg-background px-6 py-3">
@@ -102,11 +124,33 @@ export default function Navbar() {
           Avaliar
         </Link>
         {userEmail ? (
-          <div
-            className="flex h-8 w-8 items-center justify-center rounded-full bg-accent text-sm font-medium text-accent-foreground"
-            title={userEmail}
-          >
-            {getInitials(userEmail)}
+          <div className="relative" ref={dropdownRef}>
+            <button
+              onClick={() => setIsDropdownOpen((prev) => !prev)}
+              className="flex h-8 w-8 items-center justify-center rounded-full bg-accent text-sm font-medium text-accent-foreground transition-opacity hover:opacity-80"
+              title={userEmail}
+            >
+              {getInitials(userEmail)}
+            </button>
+
+            {isDropdownOpen && (
+              <div className="absolute right-0 top-10 w-52 rounded-xl border border-border bg-background shadow-md">
+                <div className="border-b border-border px-4 py-3">
+                  <p className="truncate text-sm text-muted-foreground">{userEmail}</p>
+                </div>
+                <div className="p-1">
+                  <button
+                    onClick={handleLogout}
+                    className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-destructive transition-colors hover:bg-destructive/10"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="h-4 w-4">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 9V5.25A2.25 2.25 0 0 1 10.5 3h6a2.25 2.25 0 0 1 2.25 2.25v13.5A2.25 2.25 0 0 1 16.5 21h-6a2.25 2.25 0 0 1-2.25-2.25V15m-3 0-3-3m0 0 3-3m-3 3H15" />
+                    </svg>
+                    Sair
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         ) : (
           <Link
