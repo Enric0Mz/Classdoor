@@ -225,12 +225,30 @@ const swaggerSpec = {
         tags: ["Users"],
         summary: "List all users",
         responses: {
-          501: { description: "Not implemented" },
+          200: {
+            description: "A list of users",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "array",
+                  items: { $ref: "#/components/schemas/User" },
+                },
+              },
+            },
+          },
+          500: {
+            description: "Internal server error",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
         },
       },
       post: {
         tags: ["Users"],
-        summary: "Create a user",
+        summary: "Register a new user",
         requestBody: {
           required: true,
           content: {
@@ -239,15 +257,93 @@ const swaggerSpec = {
                 type: "object",
                 required: ["email", "password"],
                 properties: {
-                  email: { type: "string", format: "email" },
-                  password: { type: "string" },
+                  email: {
+                    type: "string",
+                    format: "email",
+                    example: "user@example.com",
+                  },
+                  password: { type: "string", example: "secret123" },
                 },
               },
             },
           },
         },
         responses: {
-          501: { description: "Not implemented" },
+          201: {
+            description: "User registered",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/AuthResponse" },
+              },
+            },
+          },
+          400: {
+            description: "Validation error",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
+          409: {
+            description: "Email already exists",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
+        },
+      },
+    },
+    "/users/login": {
+      post: {
+        tags: ["Users"],
+        summary: "Log in a user",
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                required: ["email", "password"],
+                properties: {
+                  email: {
+                    type: "string",
+                    format: "email",
+                    example: "user@example.com",
+                  },
+                  password: { type: "string", example: "secret123" },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: "Login successful",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/AuthResponse" },
+              },
+            },
+          },
+          400: {
+            description: "Validation error",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
+          401: {
+            description: "Invalid credentials",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
         },
       },
     },
@@ -264,12 +360,28 @@ const swaggerSpec = {
         tags: ["Users"],
         summary: "Get a user by ID",
         responses: {
-          501: { description: "Not implemented" },
+          200: {
+            description: "User found",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/User" },
+              },
+            },
+          },
+          404: {
+            description: "User not found",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
         },
       },
       put: {
         tags: ["Users"],
         summary: "Update a user",
+        security: [{ BearerAuth: [] }],
         requestBody: {
           required: true,
           content: {
@@ -285,19 +397,86 @@ const swaggerSpec = {
           },
         },
         responses: {
-          501: { description: "Not implemented" },
+          200: {
+            description: "User updated",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/User" },
+              },
+            },
+          },
+          401: {
+            description: "Authentication required",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
+          403: {
+            description: "Forbidden",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
+          404: {
+            description: "User not found",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
         },
       },
       delete: {
         tags: ["Users"],
         summary: "Delete a user",
+        security: [{ BearerAuth: [] }],
         responses: {
-          501: { description: "Not implemented" },
+          200: {
+            description: "User deleted",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    message: { type: "string" },
+                  },
+                },
+              },
+            },
+          },
+          401: {
+            description: "Authentication required",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
+          403: {
+            description: "Forbidden",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
         },
       },
     },
   },
   components: {
+    securitySchemes: {
+      BearerAuth: {
+        type: "http",
+        scheme: "bearer",
+        bearerFormat: "JWT",
+      },
+    },
     schemas: {
       University: {
         type: "object",
@@ -326,6 +505,13 @@ const swaggerSpec = {
           id: { type: "string", format: "uuid" },
           email: { type: "string", format: "email" },
           createdAt: { type: "string", format: "date-time" },
+        },
+      },
+      AuthResponse: {
+        type: "object",
+        properties: {
+          user: { $ref: "#/components/schemas/User" },
+          token: { type: "string" },
         },
       },
       Error: {
