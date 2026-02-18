@@ -13,8 +13,8 @@ jest.mock("next/server", () => ({
 }));
 
 const UNIVERSITIES = [
-  { id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890", name: "MIT", location: "Cambridge" },
-  { id: "b2c3d4e5-f6a7-8901-bcde-f12345678901", name: "Stanford", location: "Palo Alto" },
+  { id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890", name: "MIT", location: "Cambridge", type: "PRIVATE", courses: ["Business"], rating: 4.5 },
+  { id: "b2c3d4e5-f6a7-8901-bcde-f12345678901", name: "USP", location: "São Paulo", type: "PUBLIC", courses: ["Research"], rating: 4.3 },
 ];
 
 beforeEach(() => jest.clearAllMocks());

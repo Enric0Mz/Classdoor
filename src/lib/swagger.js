@@ -42,7 +42,7 @@ const swaggerSpec = {
             "application/json": {
               schema: {
                 type: "object",
-                required: ["name", "location"],
+                required: ["name", "location", "type"],
                 properties: {
                   name: { type: "string", example: "MIT" },
                   location: {
@@ -53,6 +53,27 @@ const swaggerSpec = {
                     type: "string",
                     nullable: true,
                     example: "https://mit.edu",
+                  },
+                  image: {
+                    type: "string",
+                    nullable: true,
+                    example: "https://example.com/mit.jpg",
+                  },
+                  type: {
+                    type: "string",
+                    enum: ["PUBLIC", "PRIVATE"],
+                    example: "PRIVATE",
+                  },
+                  courses: {
+                    type: "array",
+                    items: { type: "string" },
+                    example: ["Business", "Economics"],
+                  },
+                  rating: {
+                    type: "number",
+                    format: "float",
+                    nullable: true,
+                    example: 4.5,
                   },
                 },
               },
@@ -116,6 +137,10 @@ const swaggerSpec = {
                   name: { type: "string" },
                   location: { type: "string" },
                   website: { type: "string", nullable: true },
+                  image: { type: "string", nullable: true },
+                  type: { type: "string", enum: ["PUBLIC", "PRIVATE"] },
+                  courses: { type: "array", items: { type: "string" } },
+                  rating: { type: "number", format: "float", nullable: true },
                 },
               },
             },
@@ -347,40 +372,10 @@ const swaggerSpec = {
         },
       },
     },
-    "/users/{id}": {
-      parameters: [
-        {
-          name: "id",
-          in: "path",
-          required: true,
-          schema: { type: "string", format: "uuid" },
-        },
-      ],
-      get: {
-        tags: ["Users"],
-        summary: "Get a user by ID",
-        responses: {
-          200: {
-            description: "User found",
-            content: {
-              "application/json": {
-                schema: { $ref: "#/components/schemas/User" },
-              },
-            },
-          },
-          404: {
-            description: "User not found",
-            content: {
-              "application/json": {
-                schema: { $ref: "#/components/schemas/Error" },
-              },
-            },
-          },
-        },
-      },
+    "/users/me": {
       put: {
         tags: ["Users"],
-        summary: "Update a user",
+        summary: "Update the authenticated user",
         security: [{ BearerAuth: [] }],
         requestBody: {
           required: true,
@@ -413,11 +408,27 @@ const swaggerSpec = {
               },
             },
           },
-          403: {
-            description: "Forbidden",
+        },
+      },
+    },
+    "/users/{id}": {
+      parameters: [
+        {
+          name: "id",
+          in: "path",
+          required: true,
+          schema: { type: "string", format: "uuid" },
+        },
+      ],
+      get: {
+        tags: ["Users"],
+        summary: "Get a user by ID",
+        responses: {
+          200: {
+            description: "User found",
             content: {
               "application/json": {
-                schema: { $ref: "#/components/schemas/Error" },
+                schema: { $ref: "#/components/schemas/User" },
               },
             },
           },
@@ -485,6 +496,10 @@ const swaggerSpec = {
           name: { type: "string" },
           location: { type: "string" },
           website: { type: "string", nullable: true },
+          image: { type: "string", nullable: true },
+          type: { type: "string", enum: ["PUBLIC", "PRIVATE"] },
+          courses: { type: "array", items: { type: "string" } },
+          rating: { type: "number", format: "float", nullable: true },
           createdAt: { type: "string", format: "date-time" },
         },
       },

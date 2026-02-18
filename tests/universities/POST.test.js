@@ -19,7 +19,7 @@ beforeEach(() => jest.clearAllMocks());
 
 describe("universityService.createUniversity", () => {
   it("creates a university with valid input", async () => {
-    const input = { name: "MIT", location: "Cambridge", website: "https://mit.edu" };
+    const input = { name: "MIT", location: "Cambridge", website: "https://mit.edu", type: "PRIVATE", courses: ["Business"], rating: 4.5 };
     const created = { id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890", ...input, createdAt: new Date() };
     universityRepository.findByName.mockResolvedValue(null);
     universityRepository.create.mockResolvedValue(created);
@@ -31,8 +31,8 @@ describe("universityService.createUniversity", () => {
     expect(result).toEqual(created);
   });
 
-  it("creates a university without the optional website field", async () => {
-    const input = { name: "MIT", location: "Cambridge" };
+  it("creates a university without optional fields", async () => {
+    const input = { name: "MIT", location: "Cambridge", type: "PUBLIC" };
     universityRepository.findByName.mockResolvedValue(null);
     universityRepository.create.mockResolvedValue({ id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890", ...input });
 
@@ -42,11 +42,15 @@ describe("universityService.createUniversity", () => {
       name: "MIT",
       location: "Cambridge",
       website: undefined,
+      image: undefined,
+      type: "PUBLIC",
+      courses: undefined,
+      rating: undefined,
     });
   });
 
   it("throws 400 when name is missing", async () => {
-    await expect(createUniversity({ location: "Cambridge" })).rejects.toMatchObject({
+    await expect(createUniversity({ location: "Cambridge", type: "PUBLIC" })).rejects.toMatchObject({
       message: "Name is required",
       statusCode: 400,
     });
@@ -55,8 +59,24 @@ describe("universityService.createUniversity", () => {
   });
 
   it("throws 400 when location is missing", async () => {
-    await expect(createUniversity({ name: "MIT" })).rejects.toMatchObject({
+    await expect(createUniversity({ name: "MIT", type: "PUBLIC" })).rejects.toMatchObject({
       message: "Location is required",
+      statusCode: 400,
+    });
+    expect(universityRepository.create).not.toHaveBeenCalled();
+  });
+
+  it("throws 400 when type is missing", async () => {
+    await expect(createUniversity({ name: "MIT", location: "Cambridge" })).rejects.toMatchObject({
+      message: "Type is required",
+      statusCode: 400,
+    });
+    expect(universityRepository.create).not.toHaveBeenCalled();
+  });
+
+  it("throws 400 when type is invalid", async () => {
+    await expect(createUniversity({ name: "MIT", location: "Cambridge", type: "HYBRID" })).rejects.toMatchObject({
+      message: "Type must be PUBLIC or PRIVATE",
       statusCode: 400,
     });
     expect(universityRepository.create).not.toHaveBeenCalled();
@@ -66,7 +86,7 @@ describe("universityService.createUniversity", () => {
     universityRepository.findByName.mockResolvedValue({ id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890", name: "MIT" });
 
     await expect(
-      createUniversity({ name: "MIT", location: "Cambridge" })
+      createUniversity({ name: "MIT", location: "Cambridge", type: "PRIVATE" })
     ).rejects.toMatchObject({
       message: "A university with this name already exists",
       statusCode: 409,
@@ -77,7 +97,7 @@ describe("universityService.createUniversity", () => {
 
 describe("POST /api/v1/universities", () => {
   it("returns 201 with the created university", async () => {
-    const input = { name: "MIT", location: "Cambridge", website: "https://mit.edu" };
+    const input = { name: "MIT", location: "Cambridge", website: "https://mit.edu", type: "PRIVATE", courses: ["Business"], rating: 4.5 };
     const created = { id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890", ...input, createdAt: "2024-01-01T00:00:00.000Z" };
     universityRepository.findByName.mockResolvedValue(null);
     universityRepository.create.mockResolvedValue(created);
@@ -89,7 +109,7 @@ describe("POST /api/v1/universities", () => {
   });
 
   it("returns 400 when name is missing", async () => {
-    const response = await POST(makeRequest({ location: "Cambridge" }));
+    const response = await POST(makeRequest({ location: "Cambridge", type: "PUBLIC" }));
 
     expect(response.status).toBe(400);
     expect(response.body).toEqual({
@@ -98,7 +118,7 @@ describe("POST /api/v1/universities", () => {
   });
 
   it("returns 400 when location is missing", async () => {
-    const response = await POST(makeRequest({ name: "MIT" }));
+    const response = await POST(makeRequest({ name: "MIT", type: "PUBLIC" }));
 
     expect(response.status).toBe(400);
     expect(response.body).toEqual({
@@ -106,10 +126,28 @@ describe("POST /api/v1/universities", () => {
     });
   });
 
+  it("returns 400 when type is missing", async () => {
+    const response = await POST(makeRequest({ name: "MIT", location: "Cambridge" }));
+
+    expect(response.status).toBe(400);
+    expect(response.body).toEqual({
+      error: { message: "Type is required", statusCode: 400 },
+    });
+  });
+
+  it("returns 400 when type is invalid", async () => {
+    const response = await POST(makeRequest({ name: "MIT", location: "Cambridge", type: "HYBRID" }));
+
+    expect(response.status).toBe(400);
+    expect(response.body).toEqual({
+      error: { message: "Type must be PUBLIC or PRIVATE", statusCode: 400 },
+    });
+  });
+
   it("returns 409 when the university already exists", async () => {
     universityRepository.findByName.mockResolvedValue({ id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890", name: "MIT" });
 
-    const response = await POST(makeRequest({ name: "MIT", location: "Cambridge" }));
+    const response = await POST(makeRequest({ name: "MIT", location: "Cambridge", type: "PRIVATE" }));
 
     expect(response.status).toBe(409);
     expect(response.body).toEqual({
@@ -121,7 +159,7 @@ describe("POST /api/v1/universities", () => {
     universityRepository.findByName.mockResolvedValue(null);
     universityRepository.create.mockRejectedValue(new Error("DB down"));
 
-    const response = await POST(makeRequest({ name: "MIT", location: "Cambridge" }));
+    const response = await POST(makeRequest({ name: "MIT", location: "Cambridge", type: "PUBLIC" }));
 
     expect(response.status).toBe(500);
     expect(response.body).toEqual({

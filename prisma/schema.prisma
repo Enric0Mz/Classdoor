@@ -7,12 +7,21 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum UniversityType {
+  PUBLIC
+  PRIVATE
+}
+
 model University {
-  id        String   @id @default(uuid())
-  name      String   @unique
+  id        String         @id @default(uuid())
+  name      String         @unique
   location  String
   website   String?
-  createdAt DateTime @default(now())
+  image     String?
+  type      UniversityType
+  courses   String[]
+  rating    Float?
+  createdAt DateTime       @default(now())
   reviews   Review[]
 }
 
