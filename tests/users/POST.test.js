@@ -29,7 +29,7 @@ beforeEach(() => jest.clearAllMocks());
 
 describe("userService.registerUser", () => {
   it("registers a user with valid input", async () => {
-    const input = { email: "test@test.com", password: "secret" };
+    const input = { email: "test@test.com", password: "secret123" };
     const created = { id: "user-1", email: "test@test.com", password: "hashed", createdAt: new Date() };
     userRepository.findByEmail.mockResolvedValue(null);
     bcrypt.hash.mockResolvedValue("hashed");
@@ -39,7 +39,7 @@ describe("userService.registerUser", () => {
     const result = await registerUser(input);
 
     expect(userRepository.findByEmail).toHaveBeenCalledWith("test@test.com");
-    expect(bcrypt.hash).toHaveBeenCalledWith("secret", 10);
+    expect(bcrypt.hash).toHaveBeenCalledWith("secret123", 10);
     expect(userRepository.create).toHaveBeenCalledWith({ email: "test@test.com", password: "hashed" });
     expect(result.user).not.toHaveProperty("password");
     expect(result.token).toBe("jwt-token");
@@ -59,10 +59,26 @@ describe("userService.registerUser", () => {
     });
   });
 
+  it("throws 400 when email format is invalid", async () => {
+    await expect(registerUser({ email: "not-an-email", password: "secret123" })).rejects.toMatchObject({
+      message: "Invalid email format",
+      statusCode: 400,
+    });
+    expect(userRepository.create).not.toHaveBeenCalled();
+  });
+
+  it("throws 400 when password is too short", async () => {
+    await expect(registerUser({ email: "test@test.com", password: "short" })).rejects.toMatchObject({
+      message: "Password must be at least 8 characters long",
+      statusCode: 400,
+    });
+    expect(userRepository.create).not.toHaveBeenCalled();
+  });
+
   it("throws 409 when email already exists", async () => {
     userRepository.findByEmail.mockResolvedValue({ id: "user-1", email: "test@test.com" });
 
-    await expect(registerUser({ email: "test@test.com", password: "secret" })).rejects.toMatchObject({
+    await expect(registerUser({ email: "test@test.com", password: "secret123" })).rejects.toMatchObject({
       message: "A user with this email already exists",
       statusCode: 409,
     });
@@ -78,7 +94,7 @@ describe("POST /api/v1/users", () => {
     userRepository.create.mockResolvedValue(created);
     signToken.mockReturnValue("jwt-token");
 
-    const response = await POST(makeRequest({ email: "test@test.com", password: "secret" }));
+    const response = await POST(makeRequest({ email: "test@test.com", password: "secret123" }));
 
     expect(response.status).toBe(201);
     expect(response.body.token).toBe("jwt-token");
@@ -97,7 +113,7 @@ describe("POST /api/v1/users", () => {
   it("returns 409 when email already exists", async () => {
     userRepository.findByEmail.mockResolvedValue({ id: "user-1", email: "test@test.com" });
 
-    const response = await POST(makeRequest({ email: "test@test.com", password: "secret" }));
+    const response = await POST(makeRequest({ email: "test@test.com", password: "secret123" }));
 
     expect(response.status).toBe(409);
     expect(response.body).toEqual({
