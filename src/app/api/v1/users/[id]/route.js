@@ -9,7 +9,7 @@ export async function GET(request, { params }) {
     const user = await userService.getUserById(id);
     return NextResponse.json(user);
   } catch (error) {
-    if (error instanceof AppError) {
+    if (error.statusCode) {
       return NextResponse.json(
         { error: { message: error.message, statusCode: error.statusCode } },
         { status: error.statusCode }
@@ -32,7 +32,7 @@ export async function DELETE(request, { params }) {
     await userService.deleteUser(id);
     return NextResponse.json({ message: "User deleted" });
   } catch (error) {
-    if (error instanceof AppError) {
+    if (error.statusCode) {
       return NextResponse.json(
         { error: { message: error.message, statusCode: error.statusCode } },
         { status: error.statusCode }

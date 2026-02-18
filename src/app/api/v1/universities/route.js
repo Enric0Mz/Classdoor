@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { AppError } from "@/errors/AppError";
 import * as universityService from "@/domain/universityService";
 
 export async function GET() {
@@ -7,7 +6,7 @@ export async function GET() {
     const universities = await universityService.listUniversities();
     return NextResponse.json(universities);
   } catch (error) {
-    if (error instanceof AppError) {
+    if (error.statusCode) {
       return NextResponse.json(
         { error: { message: error.message, statusCode: error.statusCode } },
         { status: error.statusCode }
@@ -26,7 +25,7 @@ export async function POST(request) {
     const university = await universityService.createUniversity(body);
     return NextResponse.json(university, { status: 201 });
   } catch (error) {
-    if (error instanceof AppError) {
+    if (error.statusCode) {
       return NextResponse.json(
         { error: { message: error.message, statusCode: error.statusCode } },
         { status: error.statusCode }

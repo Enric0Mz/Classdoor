@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { AppError } from "@/errors/AppError";
 import * as userService from "@/domain/userService";
 import { verifyToken } from "@/lib/auth";
 
@@ -10,7 +9,7 @@ export async function PUT(request) {
     const user = await userService.updateUser(decoded.id, body);
     return NextResponse.json(user);
   } catch (error) {
-    if (error instanceof AppError) {
+    if (error.statusCode) {
       return NextResponse.json(
         { error: { message: error.message, statusCode: error.statusCode } },
         { status: error.statusCode }

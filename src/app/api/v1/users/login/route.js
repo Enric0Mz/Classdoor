@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { AppError } from "@/errors/AppError";
 import * as userService from "@/domain/userService";
 
 export async function POST(request) {
@@ -8,7 +7,7 @@ export async function POST(request) {
     const result = await userService.loginUser(body);
     return NextResponse.json(result);
   } catch (error) {
-    if (error instanceof AppError) {
+    if (error.statusCode) {
       return NextResponse.json(
         { error: { message: error.message, statusCode: error.statusCode } },
         { status: error.statusCode }
