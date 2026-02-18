@@ -22,30 +22,6 @@ export async function GET(request, { params }) {
   }
 }
 
-export async function PUT(request, { params }) {
-  try {
-    const decoded = verifyToken(request);
-    const { id } = await params;
-    if (decoded.id !== id) {
-      throw new AppError("Forbidden", 403);
-    }
-    const body = await request.json();
-    const user = await userService.updateUser(id, body);
-    return NextResponse.json(user);
-  } catch (error) {
-    if (error instanceof AppError) {
-      return NextResponse.json(
-        { error: { message: error.message, statusCode: error.statusCode } },
-        { status: error.statusCode }
-      );
-    }
-    return NextResponse.json(
-      { error: { message: "Internal server error", statusCode: 500 } },
-      { status: 500 }
-    );
-  }
-}
-
 export async function DELETE(request, { params }) {
   try {
     const decoded = verifyToken(request);
