@@ -36,6 +36,8 @@ const swaggerSpec = {
       post: {
         tags: ["Universities"],
         summary: "Create a university",
+        description: "Requires ADMIN role.",
+        security: [{ BearerAuth: [] }],
         requestBody: {
           required: true,
           content: {
@@ -91,6 +93,22 @@ const swaggerSpec = {
           },
           400: {
             description: "Validation error",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
+          401: {
+            description: "Authentication required",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
+          403: {
+            description: "Forbidden: ADMIN role required",
             content: {
               "application/json": {
                 schema: { $ref: "#/components/schemas/Error" },
@@ -249,6 +267,7 @@ const swaggerSpec = {
       get: {
         tags: ["Users"],
         summary: "List all users",
+        description: "Requires ADMIN or MODERATOR role.",
         security: [{ BearerAuth: [] }],
         responses: {
           200: {
@@ -264,6 +283,14 @@ const swaggerSpec = {
           },
           401: {
             description: "Authentication required",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
+          403: {
+            description: "Forbidden: ADMIN or MODERATOR role required",
             content: {
               "application/json": {
                 schema: { $ref: "#/components/schemas/Error" },
@@ -528,6 +555,7 @@ const swaggerSpec = {
         properties: {
           id: { type: "string", format: "uuid" },
           email: { type: "string", format: "email" },
+          role: { type: "string", enum: ["USER", "MODERATOR", "ADMIN"] },
           createdAt: { type: "string", format: "date-time" },
         },
       },
