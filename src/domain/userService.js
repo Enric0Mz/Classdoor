@@ -2,8 +2,10 @@ import bcrypt from "bcrypt";
 import { AppError } from "@/errors/AppError";
 import * as userRepository from "@/repositories/userRepository";
 import { signToken } from "@/lib/auth";
+import { generateUsername } from "@/lib/generateUsername";
 
 const MINIMUM_PASSWORD_LENGTH = 8;
+const USERNAME_REGEX = /^[a-zA-Z0-9_]{3,20}$/;
 
 function stripPassword({ password, ...user }) {
   return user;
@@ -26,22 +28,47 @@ function validatePassword(password) {
   }
 }
 
-export async function registerUser({ email, password }) {
-  if (!email || !password) {
-    throw new AppError("Email and password are required", 400);
+function validateUsername(username) {
+  if (!USERNAME_REGEX.test(username)) {
+    throw new AppError(
+      "Username must be 3-20 characters and contain only letters, numbers, and underscores",
+      400
+    );
+  }
+}
+
+export async function registerUser({ email, password, username } = {}) {
+  const resolvedUsername = username || generateUsername();
+  validateUsername(resolvedUsername);
+
+  const existingUsername = await userRepository.findByUsername(resolvedUsername);
+  if (existingUsername) {
+    throw new AppError("A user with this username already exists", 409);
   }
 
-  validateEmail(email);
+  if (!password) {
+    throw new AppError("Password is required", 400);
+  }
+
   validatePassword(password);
 
-  const existing = await userRepository.findByEmail(email);
-  if (existing) {
-    throw new AppError("A user with this email already exists", 409);
+  if (email) {
+    validateEmail(email);
+
+    const existingEmail = await userRepository.findByEmail(email);
+    if (existingEmail) {
+      throw new AppError("A user with this email already exists", 409);
+    }
   }
 
   const hash = await bcrypt.hash(password, 10);
-  const user = await userRepository.create({ email, password: hash });
-  const token = signToken({ id: user.id, email: user.email, role: user.role });
+  const userData = { username: resolvedUsername, password: hash };
+  if (email) {
+    userData.email = email;
+  }
+
+  const user = await userRepository.create(userData);
+  const token = signToken({ id: user.id, email: user.email || null, role: user.role });
 
   return { user: stripPassword(user), token };
 }
