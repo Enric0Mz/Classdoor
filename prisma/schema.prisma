@@ -38,13 +38,32 @@ model Review {
   difficultyLevel Int
   universityId    String
   university      University @relation(fields: [universityId], references: [id])
+  authorId        String?
+  author          User?      @relation(fields: [authorId], references: [id])
+  editToken       String?
   createdAt       DateTime   @default(now())
 }
 
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  password  String
-  role      Role     @default(USER)
-  createdAt DateTime @default(now())
+  id                           String                        @id @default(uuid())
+  email                        String?                       @unique
+  password                     String?
+  username                     String                        @unique
+  role                         Role                          @default(USER)
+  universityEmail              String?                       @unique
+  verified                     Boolean                       @default(false)
+  createdAt                    DateTime                      @default(now())
+
+  reviews                      Review[]
+  universityEmailVerifications UniversityEmailVerification[]
+}
+
+model UniversityEmailVerification {
+  id              String   @id @default(uuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id])
+  universityEmail String
+  token           String   @unique
+  expiresAt       DateTime
+  createdAt       DateTime @default(now())
 }
