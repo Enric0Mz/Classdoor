@@ -180,13 +180,43 @@ const swaggerSpec = {
       get: {
         tags: ["Reviews"],
         summary: "List all reviews",
+        parameters: [
+          {
+            name: "universityId",
+            in: "query",
+            required: false,
+            schema: { type: "string", format: "uuid" },
+            description: "Filter reviews by university ID",
+          },
+        ],
         responses: {
-          501: { description: "Not implemented" },
+          200: {
+            description: "A list of reviews",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "array",
+                  items: { $ref: "#/components/schemas/Review" },
+                },
+              },
+            },
+          },
+          500: {
+            description: "Internal server error",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
         },
       },
       post: {
         tags: ["Reviews"],
         summary: "Create a review",
+        description:
+          "Authentication is optional. If unauthenticated, an `editToken` is returned to allow future edits/deletions.",
+        security: [{ BearerAuth: [] }, {}],
         requestBody: {
           required: true,
           content: {
@@ -195,12 +225,13 @@ const swaggerSpec = {
                 type: "object",
                 required: ["rating", "difficultyLevel", "universityId"],
                 properties: {
-                  rating: { type: "integer", minimum: 1, maximum: 5 },
-                  comment: { type: "string", nullable: true },
+                  rating: { type: "integer", minimum: 1, maximum: 5, example: 4 },
+                  comment: { type: "string", nullable: true, example: "Great university" },
                   difficultyLevel: {
                     type: "integer",
                     minimum: 1,
                     maximum: 5,
+                    example: 3,
                   },
                   universityId: { type: "string", format: "uuid" },
                 },
@@ -209,7 +240,33 @@ const swaggerSpec = {
           },
         },
         responses: {
-          501: { description: "Not implemented" },
+          201: {
+            description: "Review created",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    review: { $ref: "#/components/schemas/Review" },
+                    editToken: {
+                      type: "string",
+                      format: "uuid",
+                      nullable: true,
+                      description: "Only present for unauthenticated requests. Keep this to edit or delete the review.",
+                    },
+                  },
+                },
+              },
+            },
+          },
+          400: {
+            description: "Validation error",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
         },
       },
     },
@@ -226,12 +283,30 @@ const swaggerSpec = {
         tags: ["Reviews"],
         summary: "Get a review by ID",
         responses: {
-          501: { description: "Not implemented" },
+          200: {
+            description: "Review found",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Review" },
+              },
+            },
+          },
+          404: {
+            description: "Review not found",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
         },
       },
       put: {
         tags: ["Reviews"],
         summary: "Update a review",
+        description:
+          "Requires either a Bearer token (authenticated author) or the `editToken` returned at creation time.",
+        security: [{ BearerAuth: [] }, {}],
         requestBody: {
           required: true,
           content: {
@@ -246,20 +321,96 @@ const swaggerSpec = {
                     minimum: 1,
                     maximum: 5,
                   },
+                  editToken: {
+                    type: "string",
+                    format: "uuid",
+                    nullable: true,
+                    description: "Required if not authenticated as the review author.",
+                  },
                 },
               },
             },
           },
         },
         responses: {
-          501: { description: "Not implemented" },
+          200: {
+            description: "Review updated",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Review" },
+              },
+            },
+          },
+          403: {
+            description: "Forbidden: not the author and no valid editToken",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
+          404: {
+            description: "Review not found",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
         },
       },
       delete: {
         tags: ["Reviews"],
         summary: "Delete a review",
+        description:
+          "Requires either a Bearer token (authenticated author) or the `editToken` in the request body.",
+        security: [{ BearerAuth: [] }, {}],
+        requestBody: {
+          required: false,
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                properties: {
+                  editToken: {
+                    type: "string",
+                    format: "uuid",
+                    nullable: true,
+                    description: "Required if not authenticated as the review author.",
+                  },
+                },
+              },
+            },
+          },
+        },
         responses: {
-          501: { description: "Not implemented" },
+          200: {
+            description: "Review deleted",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: { message: { type: "string" } },
+                },
+              },
+            },
+          },
+          403: {
+            description: "Forbidden: not the author and no valid editToken",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
+          404: {
+            description: "Review not found",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
         },
       },
     },
@@ -310,20 +461,33 @@ const swaggerSpec = {
       post: {
         tags: ["Users"],
         summary: "Register a new user",
+        description:
+          "All fields are optional. Omitting `email` and `password` creates an anonymous account with an auto-generated username.",
         requestBody: {
-          required: true,
+          required: false,
           content: {
             "application/json": {
               schema: {
                 type: "object",
-                required: ["email", "password"],
                 properties: {
                   email: {
                     type: "string",
                     format: "email",
+                    nullable: true,
                     example: "user@example.com",
                   },
-                  password: { type: "string", minLength: 8, example: "secret123" },
+                  password: {
+                    type: "string",
+                    minLength: 8,
+                    nullable: true,
+                    example: "secret123",
+                  },
+                  username: {
+                    type: "string",
+                    nullable: true,
+                    example: "BravoCapivara347",
+                    description: "Optional. Auto-generated if not provided.",
+                  },
                 },
               },
             },
@@ -331,7 +495,7 @@ const swaggerSpec = {
         },
         responses: {
           201: {
-            description: "User registered",
+            description: "User registered (email or anonymous)",
             content: {
               "application/json": {
                 schema: { $ref: "#/components/schemas/AuthResponse" },
@@ -347,7 +511,7 @@ const swaggerSpec = {
             },
           },
           409: {
-            description: "Email already exists",
+            description: "Email or username already exists",
             content: {
               "application/json": {
                 schema: { $ref: "#/components/schemas/Error" },
@@ -447,6 +611,116 @@ const swaggerSpec = {
         },
       },
     },
+    "/api/v1/users/me/university-email": {
+      post: {
+        tags: ["Users"],
+        summary: "Submit a university email for verification",
+        description:
+          "Requires authentication. Not available for anonymous accounts (accounts without a registered email).",
+        security: [{ BearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                required: ["universityEmail"],
+                properties: {
+                  universityEmail: {
+                    type: "string",
+                    format: "email",
+                    example: "joao.silva@uni.br",
+                  },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: "Verification email sent",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: { message: { type: "string" } },
+                },
+              },
+            },
+          },
+          400: {
+            description: "Missing or invalid universityEmail",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
+          401: {
+            description: "Authentication required",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
+          403: {
+            description: "Forbidden: anonymous accounts cannot verify a university email",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
+        },
+      },
+    },
+    "/api/v1/users/me/university-email/verify": {
+      get: {
+        tags: ["Users"],
+        summary: "Verify a university email token",
+        description:
+          "Public endpoint. Follow the link sent to the university email. On success, the user is marked as `verified`.",
+        parameters: [
+          {
+            name: "token",
+            in: "query",
+            required: true,
+            schema: { type: "string", format: "uuid" },
+            description: "The verification token received by email",
+          },
+        ],
+        responses: {
+          200: {
+            description: "University email verified successfully",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: { message: { type: "string" } },
+                },
+              },
+            },
+          },
+          400: {
+            description: "Missing token or token expired",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
+          404: {
+            description: "Token not found",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
+        },
+      },
+    },
     "/api/v1/users/{id}": {
       parameters: [
         {
@@ -459,12 +733,31 @@ const swaggerSpec = {
       get: {
         tags: ["Users"],
         summary: "Get a user by ID",
+        description:
+          "Requires authentication. USERs can only fetch their own profile. ADMIN and MODERATOR can fetch any user.",
+        security: [{ BearerAuth: [] }],
         responses: {
           200: {
             description: "User found",
             content: {
               "application/json": {
                 schema: { $ref: "#/components/schemas/User" },
+              },
+            },
+          },
+          401: {
+            description: "Authentication required",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
+          403: {
+            description: "Forbidden: USER can only access their own profile",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
               },
             },
           },
@@ -547,6 +840,22 @@ const swaggerSpec = {
           comment: { type: "string", nullable: true },
           difficultyLevel: { type: "integer" },
           universityId: { type: "string", format: "uuid" },
+          authorId: { type: "string", format: "uuid", nullable: true },
+          author: {
+            nullable: true,
+            type: "object",
+            properties: {
+              id: { type: "string", format: "uuid" },
+              username: { type: "string" },
+              verified: { type: "boolean" },
+            },
+          },
+          editToken: {
+            type: "string",
+            format: "uuid",
+            nullable: true,
+            description: "Only present in the creation response for unauthenticated reviews.",
+          },
           createdAt: { type: "string", format: "date-time" },
         },
       },
@@ -554,7 +863,10 @@ const swaggerSpec = {
         type: "object",
         properties: {
           id: { type: "string", format: "uuid" },
-          email: { type: "string", format: "email" },
+          email: { type: "string", format: "email", nullable: true },
+          username: { type: "string", example: "BravoCapivara347" },
+          universityEmail: { type: "string", format: "email", nullable: true },
+          verified: { type: "boolean", example: false },
           role: { type: "string", enum: ["USER", "MODERATOR", "ADMIN"] },
           createdAt: { type: "string", format: "date-time" },
         },
