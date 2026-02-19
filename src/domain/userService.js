@@ -92,18 +92,19 @@ export async function registerUser({ email, password, username } = {}) {
   return { user: stripPassword(user), token };
 }
 
-export async function loginUser({ email, username, password }) {
+export async function loginUser({ identifier, password }) {
   if (!password) {
     throw new AppError("Password is required", 400);
   }
 
-  if (!email && !username) {
+  if (!identifier) {
     throw new AppError("Email or username is required", 400);
   }
 
-  const user = email
-    ? await userRepository.findByEmail(email)
-    : await userRepository.findByUsername(username);
+  const isEmail = EMAIL_REGEX.test(identifier);
+  const user = isEmail
+    ? await userRepository.findByEmail(identifier)
+    : await userRepository.findByUsername(identifier);
 
   if (!user) {
     throw new AppError("Invalid credentials", 401);
