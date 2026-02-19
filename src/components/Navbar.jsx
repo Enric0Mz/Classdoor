@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Search, Bell, GraduationCap, Menu, X, Zap } from "lucide-react";
+import { Search, Bell, GraduationCap, Menu, X, Zap, UserCircle, LogOut } from "lucide-react";
 
 const NAV_LINKS = [
   { label: "Explorar 🔍", href: "/universities" },
@@ -149,13 +149,19 @@ export default function Navbar() {
                     <p className="truncate text-sm text-gray-500">{userEmail}</p>
                   </div>
                   <div className="p-1">
+                    <Link
+                      href="/me"
+                      onClick={() => setIsDropdownOpen(false)}
+                      className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-gray-600 transition-colors hover:bg-gray-50"
+                    >
+                      <UserCircle size={15} />
+                      Ver perfil
+                    </Link>
                     <button
                       onClick={handleLogout}
                       className="flex w-full cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-sm text-red-500 transition-colors hover:bg-red-50"
                     >
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="h-4 w-4">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 9V5.25A2.25 2.25 0 0 1 10.5 3h6a2.25 2.25 0 0 1 2.25 2.25v13.5A2.25 2.25 0 0 1 16.5 21h-6a2.25 2.25 0 0 1-2.25-2.25V15m-3 0-3-3m0 0 3-3m-3 3H15" />
-                      </svg>
+                      <LogOut size={15} />
                       Sair
                     </button>
                   </div>
