@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { GraduationCap, Mail, AtSign, Calendar, ShieldCheck, ShieldAlert } from "lucide-react";
+import { GraduationCap, Mail, AtSign, Calendar, ShieldCheck, ShieldAlert, LogOut } from "lucide-react";
 
 function getInitials(user) {
   if (user.username) {
@@ -28,6 +28,12 @@ export default function MePage() {
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  function handleLogout() {
+    localStorage.removeItem("token");
+    window.dispatchEvent(new Event("auth-change"));
+    router.push("/");
+  }
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -196,6 +202,15 @@ export default function MePage() {
               </div>
             </div>
           )}
+          {/* Logout */}
+          <button
+            onClick={handleLogout}
+            className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-2xl border border-red-100 bg-white py-3 text-sm font-medium text-red-500 transition-colors hover:bg-red-50"
+          >
+            <LogOut size={15} />
+            Sair da conta
+          </button>
+
         </div>
       </div>
     </main>
