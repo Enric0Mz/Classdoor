@@ -479,8 +479,10 @@ const swaggerSpec = {
                   password: {
                     type: "string",
                     minLength: 8,
+                    maxLength: 40,
                     nullable: true,
-                    example: "secret123",
+                    example: "Secret1!",
+                    description: "8-40 characters. Must include at least one uppercase letter, one lowercase letter, one number, and one symbol.",
                   },
                   username: {
                     type: "string",
@@ -538,7 +540,13 @@ const swaggerSpec = {
                     format: "email",
                     example: "user@example.com",
                   },
-                  password: { type: "string", minLength: 8, example: "secret123" },
+                  password: {
+                    type: "string",
+                    minLength: 8,
+                    maxLength: 40,
+                    example: "Secret1!",
+                    description: "8-40 characters. Must include at least one uppercase letter, one lowercase letter, one number, and one symbol.",
+                  },
                 },
               },
             },
@@ -585,7 +593,12 @@ const swaggerSpec = {
                 type: "object",
                 properties: {
                   email: { type: "string", format: "email" },
-                  password: { type: "string", minLength: 8 },
+                  password: {
+                    type: "string",
+                    minLength: 8,
+                    maxLength: 40,
+                    description: "8-40 characters. Must include at least one uppercase letter, one lowercase letter, one number, and one symbol.",
+                  },
                 },
               },
             },

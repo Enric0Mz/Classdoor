@@ -27,6 +27,8 @@ const makeRequest = (body) => ({
   headers: { get: jest.fn() },
 });
 
+const VALID_PASSWORD = "Newpass1!";
+
 beforeEach(() => jest.clearAllMocks());
 
 describe("userService.updateUser", () => {
@@ -47,9 +49,9 @@ describe("userService.updateUser", () => {
       id: "user-1", email: "test@test.com", password: "new-hash", createdAt: new Date(),
     });
 
-    await updateUser("user-1", { password: "newpass123" });
+    await updateUser("user-1", { password: VALID_PASSWORD });
 
-    expect(bcrypt.hash).toHaveBeenCalledWith("newpass123", 10);
+    expect(bcrypt.hash).toHaveBeenCalledWith(VALID_PASSWORD, 10);
     expect(userRepository.update).toHaveBeenCalledWith("user-1", { password: "new-hash" });
   });
 
@@ -61,12 +63,50 @@ describe("userService.updateUser", () => {
     expect(userRepository.update).not.toHaveBeenCalled();
   });
 
-  it("throws 400 when new password is too short", async () => {
-    await expect(updateUser("user-1", { password: "short" })).rejects.toMatchObject({
+  it("throws 400 when new password is too short (under 8 chars)", async () => {
+    await expect(updateUser("user-1", { password: "Aa1!" })).rejects.toMatchObject({
       message: "Password must be at least 8 characters long",
       statusCode: 400,
     });
     expect(userRepository.update).not.toHaveBeenCalled();
+  });
+
+  it("throws 400 when new password is too long (over 40 chars)", async () => {
+    await expect(
+      updateUser("user-1", { password: "Newpass1!" + "a".repeat(32) })
+    ).rejects.toMatchObject({
+      message: "Password must be at most 40 characters long",
+      statusCode: 400,
+    });
+    expect(userRepository.update).not.toHaveBeenCalled();
+  });
+
+  it("throws 400 when new password has no uppercase letter", async () => {
+    await expect(updateUser("user-1", { password: "newpass1!" })).rejects.toMatchObject({
+      message: "Password must contain at least one uppercase letter",
+      statusCode: 400,
+    });
+  });
+
+  it("throws 400 when new password has no lowercase letter", async () => {
+    await expect(updateUser("user-1", { password: "NEWPASS1!" })).rejects.toMatchObject({
+      message: "Password must contain at least one lowercase letter",
+      statusCode: 400,
+    });
+  });
+
+  it("throws 400 when new password has no number", async () => {
+    await expect(updateUser("user-1", { password: "Newpasss!" })).rejects.toMatchObject({
+      message: "Password must contain at least one number",
+      statusCode: 400,
+    });
+  });
+
+  it("throws 400 when new password has no symbol", async () => {
+    await expect(updateUser("user-1", { password: "Newpass12" })).rejects.toMatchObject({
+      message: "Password must contain at least one symbol",
+      statusCode: 400,
+    });
   });
 });
 
