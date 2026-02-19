@@ -581,6 +581,37 @@ const swaggerSpec = {
       },
     },
     "/api/v1/users/me": {
+      get: {
+        tags: ["Users"],
+        summary: "Get the authenticated user's profile",
+        security: [{ BearerAuth: [] }],
+        responses: {
+          200: {
+            description: "Authenticated user found",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/User" },
+              },
+            },
+          },
+          401: {
+            description: "Authentication required",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
+          404: {
+            description: "User not found",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
+        },
+      },
       put: {
         tags: ["Users"],
         summary: "Update the authenticated user",

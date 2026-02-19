@@ -1,17 +1,29 @@
 import prisma from "@/lib/prisma";
 
+const USER_PUBLIC_SELECT = {
+  id: true,
+  email: true,
+  username: true,
+  universityEmail: true,
+  verified: true,
+  role: true,
+  createdAt: true,
+};
+
 export async function findAll() {
-  return prisma.user.findMany({
-    select: { id: true, email: true, role: true, createdAt: true },
-  });
+  return prisma.user.findMany({ select: USER_PUBLIC_SELECT });
 }
 
 export async function findById(id) {
-  return prisma.user.findUnique({ where: { id } });
+  return prisma.user.findUnique({ where: { id }, select: USER_PUBLIC_SELECT });
 }
 
 export async function findByEmail(email) {
   return prisma.user.findUnique({ where: { email } });
+}
+
+export async function findByUsername(username) {
+  return prisma.user.findUnique({ where: { username } });
 }
 
 export async function create(data) {
