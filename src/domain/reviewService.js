@@ -1,4 +1,3 @@
-import crypto from "crypto";
 import { AppError } from "@/errors/AppError";
 import * as reviewRepository from "@/repositories/reviewRepository";
 
@@ -24,18 +23,8 @@ export async function createReview(body, authorId) {
   validateRating(rating);
   validateDifficultyLevel(difficultyLevel);
 
-  const reviewData = { rating, difficultyLevel, universityId, comment };
-
-  if (authorId) {
-    reviewData.authorId = authorId;
-    const review = await reviewRepository.create(reviewData);
-    return { review };
-  }
-
-  const editToken = crypto.randomUUID();
-  reviewData.editToken = editToken;
-  const review = await reviewRepository.create(reviewData);
-  return { review, editToken };
+  const review = await reviewRepository.create({ rating, difficultyLevel, universityId, comment, authorId });
+  return { review };
 }
 
 export async function listReviews({ universityId } = {}) {
@@ -50,16 +39,13 @@ export async function getReviewById(id) {
   return review;
 }
 
-export async function updateReview(id, data, requesterId, editToken) {
+export async function updateReview(id, data, requesterId) {
   const review = await reviewRepository.findById(id);
   if (!review) {
     throw new AppError("Review not found", 404);
   }
 
-  const isOwner = review.authorId && review.authorId === requesterId;
-  const hasValidEditToken = review.editToken && review.editToken === editToken;
-
-  if (!isOwner && !hasValidEditToken) {
+  if (review.authorId !== requesterId) {
     throw new AppError("Forbidden", 403);
   }
 
@@ -81,16 +67,13 @@ export async function updateReview(id, data, requesterId, editToken) {
   return reviewRepository.update(id, updateData);
 }
 
-export async function deleteReview(id, requesterId, editToken) {
+export async function deleteReview(id, requesterId) {
   const review = await reviewRepository.findById(id);
   if (!review) {
     throw new AppError("Review not found", 404);
   }
 
-  const isOwner = review.authorId && review.authorId === requesterId;
-  const hasValidEditToken = review.editToken && review.editToken === editToken;
-
-  if (!isOwner && !hasValidEditToken) {
+  if (review.authorId !== requesterId) {
     throw new AppError("Forbidden", 403);
   }
 

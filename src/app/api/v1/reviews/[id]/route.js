@@ -1,15 +1,6 @@
 import { NextResponse } from "next/server";
-import { AppError } from "@/errors/AppError";
 import * as reviewService from "@/domain/reviewService";
 import { verifyToken } from "@/lib/auth";
-
-function tryGetAuthenticatedUser(request) {
-  try {
-    return verifyToken(request);
-  } catch {
-    return null;
-  }
-}
 
 export async function GET(request, { params }) {
   try {
@@ -33,11 +24,9 @@ export async function GET(request, { params }) {
 export async function PUT(request, { params }) {
   try {
     const { id } = await params;
-    const decoded = tryGetAuthenticatedUser(request);
+    const decoded = verifyToken(request);
     const body = await request.json();
-    const requesterId = decoded ? decoded.id : null;
-    const editToken = body.editToken || null;
-    const review = await reviewService.updateReview(id, body, requesterId, editToken);
+    const review = await reviewService.updateReview(id, body, decoded.id);
     return NextResponse.json(review);
   } catch (error) {
     if (error.statusCode) {
@@ -56,11 +45,8 @@ export async function PUT(request, { params }) {
 export async function DELETE(request, { params }) {
   try {
     const { id } = await params;
-    const decoded = tryGetAuthenticatedUser(request);
-    const body = await request.json().catch(() => ({}));
-    const requesterId = decoded ? decoded.id : null;
-    const editToken = body.editToken || null;
-    await reviewService.deleteReview(id, requesterId, editToken);
+    const decoded = verifyToken(request);
+    await reviewService.deleteReview(id, decoded.id);
     return NextResponse.json({ message: "Review deleted" });
   } catch (error) {
     if (error.statusCode) {

@@ -1,15 +1,6 @@
 import { NextResponse } from "next/server";
-import { AppError } from "@/errors/AppError";
 import * as reviewService from "@/domain/reviewService";
 import { verifyToken } from "@/lib/auth";
-
-function tryGetAuthenticatedUser(request) {
-  try {
-    return verifyToken(request);
-  } catch {
-    return null;
-  }
-}
 
 export async function GET(request) {
   try {
@@ -33,10 +24,9 @@ export async function GET(request) {
 
 export async function POST(request) {
   try {
-    const decoded = tryGetAuthenticatedUser(request);
+    const decoded = verifyToken(request);
     const body = await request.json();
-    const authorId = decoded ? decoded.id : null;
-    const result = await reviewService.createReview(body, authorId);
+    const result = await reviewService.createReview(body, decoded.id);
     return NextResponse.json(result, { status: 201 });
   } catch (error) {
     if (error.statusCode) {

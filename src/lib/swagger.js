@@ -238,9 +238,8 @@ const swaggerSpec = {
       post: {
         tags: ["Reviews"],
         summary: "Create a review",
-        description:
-          "Authentication is optional. If unauthenticated, an `editToken` is returned to allow future edits/deletions.",
-        security: [{ BearerAuth: [] }, {}],
+        description: "Requires authentication. Only registered users can submit reviews.",
+        security: [{ BearerAuth: [] }],
         requestBody: {
           required: true,
           content: {
@@ -272,12 +271,6 @@ const swaggerSpec = {
                   type: "object",
                   properties: {
                     review: { $ref: "#/components/schemas/Review" },
-                    editToken: {
-                      type: "string",
-                      format: "uuid",
-                      nullable: true,
-                      description: "Only present for unauthenticated requests. Keep this to edit or delete the review.",
-                    },
                   },
                 },
               },
@@ -285,6 +278,14 @@ const swaggerSpec = {
           },
           400: {
             description: "Validation error",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
+          401: {
+            description: "Authentication required",
             content: {
               "application/json": {
                 schema: { $ref: "#/components/schemas/Error" },
@@ -328,9 +329,8 @@ const swaggerSpec = {
       put: {
         tags: ["Reviews"],
         summary: "Update a review",
-        description:
-          "Requires either a Bearer token (authenticated author) or the `editToken` returned at creation time.",
-        security: [{ BearerAuth: [] }, {}],
+        description: "Requires authentication. Only the author can update their own review.",
+        security: [{ BearerAuth: [] }],
         requestBody: {
           required: true,
           content: {
@@ -344,12 +344,6 @@ const swaggerSpec = {
                     type: "integer",
                     minimum: 1,
                     maximum: 5,
-                  },
-                  editToken: {
-                    type: "string",
-                    format: "uuid",
-                    nullable: true,
-                    description: "Required if not authenticated as the review author.",
                   },
                 },
               },
@@ -365,8 +359,16 @@ const swaggerSpec = {
               },
             },
           },
+          401: {
+            description: "Authentication required",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
           403: {
-            description: "Forbidden: not the author and no valid editToken",
+            description: "Forbidden: not the author of this review",
             content: {
               "application/json": {
                 schema: { $ref: "#/components/schemas/Error" },
@@ -386,27 +388,8 @@ const swaggerSpec = {
       delete: {
         tags: ["Reviews"],
         summary: "Delete a review",
-        description:
-          "Requires either a Bearer token (authenticated author) or the `editToken` in the request body.",
-        security: [{ BearerAuth: [] }, {}],
-        requestBody: {
-          required: false,
-          content: {
-            "application/json": {
-              schema: {
-                type: "object",
-                properties: {
-                  editToken: {
-                    type: "string",
-                    format: "uuid",
-                    nullable: true,
-                    description: "Required if not authenticated as the review author.",
-                  },
-                },
-              },
-            },
-          },
-        },
+        description: "Requires authentication. Only the author can delete their own review.",
+        security: [{ BearerAuth: [] }],
         responses: {
           200: {
             description: "Review deleted",
@@ -419,8 +402,16 @@ const swaggerSpec = {
               },
             },
           },
+          401: {
+            description: "Authentication required",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
           403: {
-            description: "Forbidden: not the author and no valid editToken",
+            description: "Forbidden: not the author of this review",
             content: {
               "application/json": {
                 schema: { $ref: "#/components/schemas/Error" },
