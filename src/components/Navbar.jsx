@@ -125,7 +125,7 @@ export default function Navbar() {
 
           {/* Avaliar — hidden on mobile */}
           <Link
-            href="#"
+            href={userEmail ? "/avaliar" : "/register"}
             className="brand-gradient hidden items-center gap-2 rounded-xl px-4 py-2 text-[0.85rem] text-white transition-opacity hover:opacity-90 sm:flex"
           >
             <Zap size={16} />
@@ -222,7 +222,7 @@ export default function Navbar() {
 
           {/* Mobile Avaliar button */}
           <Link
-            href="#"
+            href={userEmail ? "/avaliar" : "/register"}
             className="brand-gradient mt-2 flex w-full items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-[0.85rem] text-white"
             onClick={() => setIsMobileMenuOpen(false)}
           >

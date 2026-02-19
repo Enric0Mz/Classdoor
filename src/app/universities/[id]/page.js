@@ -451,14 +451,22 @@ export default function UniversityDetailPage() {
 
   return (
     <main className="mx-auto max-w-3xl px-4 py-6 sm:px-6">
-      {/* Back link */}
-      <Link
-        href="/universities"
-        className="mb-4 inline-flex items-center gap-1.5 text-sm text-gray-400 transition-colors hover:text-indigo-600"
-      >
-        <ArrowLeft size={14} />
-        Todas as universidades
-      </Link>
+      {/* Top bar: back + CTA */}
+      <div className="mb-4 flex items-center justify-between">
+        <Link
+          href="/universities"
+          className="inline-flex items-center gap-1.5 text-sm text-gray-400 transition-colors hover:text-indigo-600"
+        >
+          <ArrowLeft size={14} />
+          Todas as universidades
+        </Link>
+        <Link
+          href={`/avaliar?universityId=${id}`}
+          className="brand-gradient flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+        >
+          ⭐ Avaliar
+        </Link>
+      </div>
 
       <div className="space-y-4">
         <UniversityHeader
