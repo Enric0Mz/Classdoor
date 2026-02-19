@@ -6,6 +6,7 @@ import { POST } from "@/app/api/v1/users/login/route";
 
 jest.mock("@/repositories/userRepository", () => ({
   findByEmail: jest.fn(),
+  findByUsername: jest.fn(),
 }));
 
 jest.mock("bcrypt", () => ({
@@ -24,52 +25,82 @@ jest.mock("next/server", () => ({
 
 const makeRequest = (body) => ({ json: jest.fn().mockResolvedValue(body) });
 
+const USER_IN_DB = { id: "user-1", email: "test@test.com", password: "hashed", role: "USER", createdAt: new Date() };
+const USER_NO_EMAIL = { id: "user-2", email: null, username: "AgilOnca123", password: "hashed", role: "USER", createdAt: new Date() };
+
 beforeEach(() => jest.clearAllMocks());
 
 describe("userService.loginUser", () => {
-  it("logs in with valid credentials", async () => {
-    const user = { id: "user-1", email: "test@test.com", password: "hashed", createdAt: new Date() };
-    userRepository.findByEmail.mockResolvedValue(user);
+  it("logs in with valid email and password", async () => {
+    userRepository.findByEmail.mockResolvedValue(USER_IN_DB);
     bcrypt.compare.mockResolvedValue(true);
     signToken.mockReturnValue("jwt-token");
 
     const result = await loginUser({ email: "test@test.com", password: "secret" });
 
+    expect(userRepository.findByEmail).toHaveBeenCalledWith("test@test.com");
     expect(result.user).not.toHaveProperty("password");
     expect(result.token).toBe("jwt-token");
   });
 
-  it("throws 400 when email is missing", async () => {
-    await expect(loginUser({ password: "secret" })).rejects.toMatchObject({
-      message: "Email and password are required",
+  it("logs in with valid username and password", async () => {
+    userRepository.findByUsername.mockResolvedValue(USER_NO_EMAIL);
+    bcrypt.compare.mockResolvedValue(true);
+    signToken.mockReturnValue("jwt-token");
+
+    const result = await loginUser({ username: "AgilOnca123", password: "secret" });
+
+    expect(userRepository.findByUsername).toHaveBeenCalledWith("AgilOnca123");
+    expect(result.user).not.toHaveProperty("password");
+    expect(result.token).toBe("jwt-token");
+  });
+
+  it("throws 400 when password is missing", async () => {
+    await expect(loginUser({ email: "test@test.com" })).rejects.toMatchObject({
+      message: "Password is required",
       statusCode: 400,
     });
   });
 
-  it("throws 401 when email not found", async () => {
+  it("throws 400 when neither email nor username is provided", async () => {
+    await expect(loginUser({ password: "secret" })).rejects.toMatchObject({
+      message: "Email or username is required",
+      statusCode: 400,
+    });
+  });
+
+  it("throws 401 when email is not found", async () => {
     userRepository.findByEmail.mockResolvedValue(null);
 
     await expect(loginUser({ email: "no@test.com", password: "secret" })).rejects.toMatchObject({
-      message: "Invalid email or password",
+      message: "Invalid credentials",
+      statusCode: 401,
+    });
+  });
+
+  it("throws 401 when username is not found", async () => {
+    userRepository.findByUsername.mockResolvedValue(null);
+
+    await expect(loginUser({ username: "GhostUser123", password: "secret" })).rejects.toMatchObject({
+      message: "Invalid credentials",
       statusCode: 401,
     });
   });
 
   it("throws 401 when password is wrong", async () => {
-    userRepository.findByEmail.mockResolvedValue({ id: "user-1", email: "test@test.com", password: "hashed" });
+    userRepository.findByEmail.mockResolvedValue(USER_IN_DB);
     bcrypt.compare.mockResolvedValue(false);
 
     await expect(loginUser({ email: "test@test.com", password: "wrong" })).rejects.toMatchObject({
-      message: "Invalid email or password",
+      message: "Invalid credentials",
       statusCode: 401,
     });
   });
 });
 
 describe("POST /api/v1/users/login", () => {
-  it("returns 200 with user and token", async () => {
-    const user = { id: "user-1", email: "test@test.com", password: "hashed", createdAt: "2024-01-01T00:00:00.000Z" };
-    userRepository.findByEmail.mockResolvedValue(user);
+  it("returns 200 with user and token on email login", async () => {
+    userRepository.findByEmail.mockResolvedValue(USER_IN_DB);
     bcrypt.compare.mockResolvedValue(true);
     signToken.mockReturnValue("jwt-token");
 
@@ -80,12 +111,33 @@ describe("POST /api/v1/users/login", () => {
     expect(response.body.user).not.toHaveProperty("password");
   });
 
-  it("returns 400 when fields are missing", async () => {
-    const response = await POST(makeRequest({}));
+  it("returns 200 with user and token on username login", async () => {
+    userRepository.findByUsername.mockResolvedValue(USER_NO_EMAIL);
+    bcrypt.compare.mockResolvedValue(true);
+    signToken.mockReturnValue("jwt-token");
+
+    const response = await POST(makeRequest({ username: "AgilOnca123", password: "secret" }));
+
+    expect(response.status).toBe(200);
+    expect(response.body.token).toBe("jwt-token");
+    expect(response.body.user).not.toHaveProperty("password");
+  });
+
+  it("returns 400 when password is missing", async () => {
+    const response = await POST(makeRequest({ email: "test@test.com" }));
 
     expect(response.status).toBe(400);
     expect(response.body).toEqual({
-      error: { message: "Email and password are required", statusCode: 400 },
+      error: { message: "Password is required", statusCode: 400 },
+    });
+  });
+
+  it("returns 400 when neither email nor username is provided", async () => {
+    const response = await POST(makeRequest({ password: "secret" }));
+
+    expect(response.status).toBe(400);
+    expect(response.body).toEqual({
+      error: { message: "Email or username is required", statusCode: 400 },
     });
   });
 
@@ -96,7 +148,7 @@ describe("POST /api/v1/users/login", () => {
 
     expect(response.status).toBe(401);
     expect(response.body).toEqual({
-      error: { message: "Invalid email or password", statusCode: 401 },
+      error: { message: "Invalid credentials", statusCode: 401 },
     });
   });
 });

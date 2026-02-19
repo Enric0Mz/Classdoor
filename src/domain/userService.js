@@ -92,22 +92,29 @@ export async function registerUser({ email, password, username } = {}) {
   return { user: stripPassword(user), token };
 }
 
-export async function loginUser({ email, password }) {
-  if (!email || !password) {
-    throw new AppError("Email and password are required", 400);
+export async function loginUser({ email, username, password }) {
+  if (!password) {
+    throw new AppError("Password is required", 400);
   }
 
-  const user = await userRepository.findByEmail(email);
+  if (!email && !username) {
+    throw new AppError("Email or username is required", 400);
+  }
+
+  const user = email
+    ? await userRepository.findByEmail(email)
+    : await userRepository.findByUsername(username);
+
   if (!user) {
-    throw new AppError("Invalid email or password", 401);
+    throw new AppError("Invalid credentials", 401);
   }
 
   const valid = await bcrypt.compare(password, user.password);
   if (!valid) {
-    throw new AppError("Invalid email or password", 401);
+    throw new AppError("Invalid credentials", 401);
   }
 
-  const token = signToken({ id: user.id, email: user.email, role: user.role });
+  const token = signToken({ id: user.id, email: user.email || null, role: user.role });
   return { user: stripPassword(user), token };
 }
 
