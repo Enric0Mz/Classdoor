@@ -1,1 +1,42 @@
-// Review repository — not yet implemented
+import prisma from "@/lib/prisma";
+
+const AUTHOR_SELECT = {
+  id: true,
+  username: true,
+  verified: true,
+};
+
+export async function create(data) {
+  return prisma.review.create({
+    data,
+    include: { author: { select: AUTHOR_SELECT } },
+  });
+}
+
+export async function findAll({ universityId } = {}) {
+  const where = universityId ? { universityId } : {};
+  return prisma.review.findMany({
+    where,
+    include: { author: { select: AUTHOR_SELECT } },
+    orderBy: { createdAt: "desc" },
+  });
+}
+
+export async function findById(id) {
+  return prisma.review.findUnique({
+    where: { id },
+    include: { author: { select: AUTHOR_SELECT } },
+  });
+}
+
+export async function update(id, data) {
+  return prisma.review.update({
+    where: { id },
+    data,
+    include: { author: { select: AUTHOR_SELECT } },
+  });
+}
+
+export async function remove(id) {
+  return prisma.review.delete({ where: { id } });
+}
