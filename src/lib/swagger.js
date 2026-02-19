@@ -138,8 +138,32 @@ const swaggerSpec = {
       get: {
         tags: ["Universities"],
         summary: "Get a university by ID",
+        description: "Returns university details, aggregate review stats, and the full list of reviews with author info. Reviews are included in a single query to avoid N+1.",
         responses: {
-          501: { description: "Not implemented" },
+          200: {
+            description: "University found",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/UniversityDetail" },
+              },
+            },
+          },
+          404: {
+            description: "University not found",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
+          500: {
+            description: "Internal server error",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
         },
       },
       put: {
@@ -879,6 +903,30 @@ const swaggerSpec = {
           rating: { type: "number", format: "float", nullable: true },
           createdAt: { type: "string", format: "date-time" },
         },
+      },
+      UniversityStats: {
+        type: "object",
+        properties: {
+          reviewCount: { type: "integer", example: 18 },
+          averageRating: { type: "number", format: "float", nullable: true, example: 4.3 },
+          averageDifficultyLevel: { type: "number", format: "float", nullable: true, example: 3.5 },
+          recommendationPercentage: { type: "integer", nullable: true, example: 87, description: "Percentage of reviews with rating ≥ 4" },
+        },
+      },
+      UniversityDetail: {
+        allOf: [
+          { $ref: "#/components/schemas/University" },
+          {
+            type: "object",
+            properties: {
+              stats: { $ref: "#/components/schemas/UniversityStats" },
+              reviews: {
+                type: "array",
+                items: { $ref: "#/components/schemas/Review" },
+              },
+            },
+          },
+        ],
       },
       Review: {
         type: "object",
