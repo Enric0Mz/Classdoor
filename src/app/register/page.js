@@ -160,6 +160,12 @@ export default function RegisterPage() {
                   className="w-full rounded-xl border border-gray-200 bg-gray-50 py-2.5 pl-9 pr-3 text-sm text-gray-800 outline-none transition-colors placeholder:text-gray-400 focus:border-indigo-300 focus:bg-white focus:ring-2 focus:ring-indigo-100"
                 />
               </div>
+              <p className="flex items-center gap-1.5 text-xs text-gray-400">
+                <span className="inline-flex items-center gap-1 rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-medium text-indigo-600">
+                  ✓ Verificado
+                </span>
+                Use seu email institucional (ex: nome@usp.br) para ganhar o selo de verificado.
+              </p>
             </div>
 
             {/* Password */}
