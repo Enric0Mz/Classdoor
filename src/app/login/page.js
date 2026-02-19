@@ -3,11 +3,11 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { GraduationCap, Mail, Lock, Eye, EyeOff } from "lucide-react";
+import { GraduationCap, AtSign, Lock, Eye, EyeOff } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState("");
+  const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState(null);
@@ -22,7 +22,7 @@ export default function LoginPage() {
       const response = await fetch("/api/v1/users/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ identifier, password }),
       });
 
       const data = await response.json();
@@ -77,20 +77,20 @@ export default function LoginPage() {
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-5">
 
-            {/* Email */}
+            {/* Identifier */}
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="email" className="text-sm font-medium text-gray-700">
-                Email
+              <label htmlFor="identifier" className="text-sm font-medium text-gray-700">
+                Email ou nome de usuário
               </label>
               <div className="relative">
-                <Mail size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <AtSign size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                 <input
-                  id="email"
-                  type="email"
+                  id="identifier"
+                  type="text"
                   required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="seu@email.com"
+                  value={identifier}
+                  onChange={(e) => setIdentifier(e.target.value)}
+                  placeholder="seu@email.com ou AgilOnca472"
                   className="w-full rounded-xl border border-gray-200 bg-gray-50 py-2.5 pl-9 pr-3 text-sm text-gray-800 outline-none transition-colors placeholder:text-gray-400 focus:border-indigo-300 focus:bg-white focus:ring-2 focus:ring-indigo-100"
                 />
               </div>
