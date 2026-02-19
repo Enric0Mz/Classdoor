@@ -28,8 +28,8 @@ export default function RegisterPage() {
     if (!/^[a-zA-Z0-9_]{3,20}$/.test(username)) {
       return "O nome de usuário deve ter entre 3 e 20 caracteres e conter apenas letras, números e underscore.";
     }
-    if (password.length < 8) {
-      return "A senha deve ter no mínimo 8 caracteres.";
+    if (!PASSWORD_RULES.every((rule) => rule.test(password))) {
+      return "A senha não atende a todos os requisitos.";
     }
     if (password !== passwordConfirmation) {
       return "As senhas não coincidem.";
@@ -182,7 +182,7 @@ export default function RegisterPage() {
                   minLength={8}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Mínimo 8 caracteres"
+                  placeholder="Mínimo 8 caracteres, com maiúscula e símbolo"
                   className="w-full rounded-xl border border-gray-200 bg-gray-50 py-2.5 pl-9 pr-10 text-sm text-gray-800 outline-none transition-colors placeholder:text-gray-400 focus:border-indigo-300 focus:bg-white focus:ring-2 focus:ring-indigo-100"
                 />
                 <button
@@ -194,7 +194,7 @@ export default function RegisterPage() {
                 </button>
               </div>
               {password.length > 0 && (
-                <PasswordStrengthBar password={password} />
+                <PasswordRules password={password} />
               )}
             </div>
 
@@ -261,40 +261,34 @@ export default function RegisterPage() {
   );
 }
 
-function PasswordStrengthBar({ password }) {
-  const strength = getPasswordStrength(password);
+const PASSWORD_RULES = [
+  { label: "Entre 8 e 40 caracteres",  test: (p) => p.length >= 8 && p.length <= 40 },
+  { label: "1 letra maiúscula",         test: (p) => /[A-Z]/.test(p) },
+  { label: "1 letra minúscula",         test: (p) => /[a-z]/.test(p) },
+  { label: "1 número",                  test: (p) => /[0-9]/.test(p) },
+  { label: "1 símbolo (!@#$…)",         test: (p) => /[^a-zA-Z0-9]/.test(p) },
+];
 
-  const levels = [
-    { label: "Fraca", color: "bg-red-400" },
-    { label: "Razoável", color: "bg-yellow-400" },
-    { label: "Boa", color: "bg-blue-400" },
-    { label: "Forte", color: "bg-green-500" },
-  ];
-
-  const current = levels[strength - 1];
-
+function PasswordRules({ password }) {
   return (
-    <div className="flex items-center gap-2">
-      <div className="flex flex-1 gap-1">
-        {levels.map((level, index) => (
-          <div
-            key={level.label}
-            className={`h-1 flex-1 rounded-full transition-colors ${
-              index < strength ? current.color : "bg-gray-200"
-            }`}
-          />
-        ))}
-      </div>
-      <span className="text-xs text-gray-400">{current.label}</span>
-    </div>
+    <ul className="flex flex-col gap-1.5 pt-1">
+      {PASSWORD_RULES.map((rule) => {
+        const met = rule.test(password);
+        return (
+          <li key={rule.label} className="flex items-center gap-2">
+            <svg
+              className={`h-3.5 w-3.5 shrink-0 transition-colors ${met ? "text-green-500" : "text-gray-300"}`}
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z" clipRule="evenodd" />
+            </svg>
+            <span className={`text-xs transition-colors ${met ? "text-green-600" : "text-gray-400"}`}>
+              {rule.label}
+            </span>
+          </li>
+        );
+      })}
+    </ul>
   );
-}
-
-function getPasswordStrength(password) {
-  let score = 0;
-  if (password.length >= 8) score++;
-  if (password.length >= 12) score++;
-  if (/[A-Z]/.test(password) && /[a-z]/.test(password)) score++;
-  if (/[0-9]/.test(password) && /[^a-zA-Z0-9]/.test(password)) score++;
-  return Math.max(1, score);
 }
