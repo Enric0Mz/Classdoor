@@ -5,7 +5,12 @@ import { verifyToken } from "@/lib/auth";
 
 export async function GET(request, { params }) {
   try {
+    const decoded = verifyToken(request);
     const { id } = await params;
+    const isAdminOrModerator = ["ADMIN", "MODERATOR"].includes(decoded.role);
+    if (!isAdminOrModerator && decoded.id !== id) {
+      throw new AppError("Forbidden", 403);
+    }
     const user = await userService.getUserById(id);
     return NextResponse.json(user);
   } catch (error) {
