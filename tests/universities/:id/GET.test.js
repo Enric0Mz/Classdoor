@@ -38,7 +38,7 @@ function makeParams(id) {
 }
 
 describe("universityService.getUniversityById", () => {
-  it("returns university with correct stats computed from reviews", async () => {
+  it("returns university with correct stats computed from all reviews", async () => {
     universityRepository.findById.mockResolvedValue(UNIVERSITY_IN_DB);
 
     const result = await getUniversityById("uni-1");
@@ -50,16 +50,17 @@ describe("universityService.getUniversityById", () => {
     expect(result.stats.recommendationPercentage).toBe(67);
   });
 
-  it("returns reviews on the result", async () => {
+  it("does not include reviews array in the response", async () => {
     universityRepository.findById.mockResolvedValue(UNIVERSITY_IN_DB);
 
     const result = await getUniversityById("uni-1");
 
-    expect(result.reviews).toHaveLength(3);
-    expect(result.reviews[0].author).toEqual({ id: "u-1", username: "AgilOnca123", verified: true });
+    expect(result).not.toHaveProperty("reviews");
+    expect(result).toHaveProperty("stats");
+    expect(result.name).toBe("USP");
   });
 
-  it("returns null stats and empty reviews when university has no reviews", async () => {
+  it("returns null stats when university has no reviews", async () => {
     universityRepository.findById.mockResolvedValue({ ...UNIVERSITY_IN_DB, reviews: [] });
 
     const result = await getUniversityById("uni-1");
@@ -70,18 +71,7 @@ describe("universityService.getUniversityById", () => {
       recommendationPercentage: null,
       reviewCount: 0,
     });
-    expect(result.reviews).toHaveLength(0);
-  });
-
-  it("does not expose the reviews array directly on the university root", async () => {
-    universityRepository.findById.mockResolvedValue(UNIVERSITY_IN_DB);
-
-    const result = await getUniversityById("uni-1");
-
-    // reviews should be a top-level key, not nested inside universityData twice
-    expect(result).toHaveProperty("reviews");
-    expect(result).toHaveProperty("stats");
-    expect(result.name).toBe("USP");
+    expect(result).not.toHaveProperty("reviews");
   });
 
   it("throws 404 when university does not exist", async () => {
@@ -95,7 +85,7 @@ describe("universityService.getUniversityById", () => {
 });
 
 describe("GET /api/v1/universities/:id", () => {
-  it("returns 200 with university, stats, and reviews", async () => {
+  it("returns 200 with university and stats but no reviews array", async () => {
     universityRepository.findById.mockResolvedValue(UNIVERSITY_IN_DB);
 
     const response = await GET({}, makeParams("uni-1"));
@@ -103,7 +93,7 @@ describe("GET /api/v1/universities/:id", () => {
     expect(response.status).toBe(200);
     expect(response.body.name).toBe("USP");
     expect(response.body.stats).toHaveProperty("reviewCount", 3);
-    expect(response.body.reviews).toHaveLength(3);
+    expect(response.body).not.toHaveProperty("reviews");
   });
 
   it("returns 404 when university is not found", async () => {

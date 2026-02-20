@@ -486,41 +486,72 @@ function Skeleton() {
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
+const REVIEWS_PER_PAGE = 10;
+
 export default function UniversityDetailPage() {
   const { id } = useParams();
   const router = useRouter();
   const [university, setUniversity] = useState(null);
+  const [reviews, setReviews] = useState([]);
+  const [reviewsPagination, setReviewsPagination] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState("Avaliações ⭐");
   const [activeFilter, setActiveFilter] = useState("Mais recentes");
 
   useEffect(() => {
-    async function fetchUniversity() {
+    async function fetchAll() {
       try {
-        const response = await fetch(`/api/v1/universities/${id}`);
-        if (!response.ok) {
-          const data = await response.json();
+        const [uniResponse, reviewsResponse] = await Promise.all([
+          fetch(`/api/v1/universities/${id}`),
+          fetch(`/api/v1/reviews?universityId=${id}&limit=${REVIEWS_PER_PAGE}&page=1`),
+        ]);
+
+        if (!uniResponse.ok) {
+          const data = await uniResponse.json();
           throw new Error(data.error?.message || "Universidade não encontrada.");
         }
-        const data = await response.json();
-        setUniversity(data);
+
+        const uniData = await uniResponse.json();
+        const reviewsData = await reviewsResponse.json();
+
+        setUniversity(uniData);
+        setReviews(reviewsData.data ?? []);
+        setReviewsPagination(reviewsData.pagination ?? null);
       } catch (err) {
         setError(err.message);
       } finally {
         setIsLoading(false);
       }
     }
-    fetchUniversity();
+    fetchAll();
   }, [id]);
 
+  async function loadMoreReviews() {
+    if (!reviewsPagination || isLoadingMore) return;
+    const nextPage = reviewsPagination.page + 1;
+    setIsLoadingMore(true);
+    try {
+      const response = await fetch(
+        `/api/v1/reviews?universityId=${id}&limit=${REVIEWS_PER_PAGE}&page=${nextPage}`
+      );
+      const data = await response.json();
+      setReviews((prev) => [...prev, ...(data.data ?? [])]);
+      setReviewsPagination(data.pagination ?? null);
+    } finally {
+      setIsLoadingMore(false);
+    }
+  }
+
   const sortedReviews = useMemo(() => {
-    if (!university?.reviews) return [];
-    const reviews = [...university.reviews];
-    if (activeFilter === "Nota alta") return reviews.sort((a, b) => b.rating - a.rating);
-    if (activeFilter === "Nota baixa") return reviews.sort((a, b) => a.rating - b.rating);
-    return reviews.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-  }, [university, activeFilter]);
+    const copy = [...reviews];
+    if (activeFilter === "Nota alta") return copy.sort((a, b) => b.rating - a.rating);
+    if (activeFilter === "Nota baixa") return copy.sort((a, b) => a.rating - b.rating);
+    return copy.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  }, [reviews, activeFilter]);
+
+  const hasMoreReviews = reviewsPagination && reviewsPagination.page < reviewsPagination.totalPages;
 
   if (isLoading) {
     return (
@@ -582,11 +613,44 @@ export default function UniversityDetailPage() {
                 Nenhuma avaliação ainda. Seja o primeiro! 🎓
               </div>
             ) : (
-              <div className="space-y-3">
-                {sortedReviews.map((review) => (
-                  <ReviewCard key={review.id} review={review} />
-                ))}
-              </div>
+              <>
+                <div className="space-y-3">
+                  {sortedReviews.map((review) => (
+                    <ReviewCard key={review.id} review={review} />
+                  ))}
+                </div>
+
+                {hasMoreReviews && (
+                  <button
+                    onClick={loadMoreReviews}
+                    disabled={isLoadingMore}
+                    className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-2xl border border-gray-100 bg-white py-3.5 text-sm font-medium text-gray-500 shadow-sm transition-colors hover:border-indigo-200 hover:text-indigo-600 disabled:opacity-60"
+                  >
+                    {isLoadingMore ? (
+                      <>
+                        <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 0 1 8-8v4a4 4 0 0 0-4 4H4z" />
+                        </svg>
+                        Carregando...
+                      </>
+                    ) : (
+                      <>
+                        Carregar mais avaliações
+                        <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-400">
+                          {reviewsPagination.total - reviews.length} restantes
+                        </span>
+                      </>
+                    )}
+                  </button>
+                )}
+
+                {!hasMoreReviews && reviews.length > 0 && (
+                  <p className="py-2 text-center text-xs text-gray-300">
+                    Todas as {reviews.length} avaliações carregadas
+                  </p>
+                )}
+              </>
             )}
           </>
         )}

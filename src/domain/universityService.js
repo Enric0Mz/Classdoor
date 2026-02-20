@@ -69,6 +69,5 @@ export async function getUniversityById(id) {
   return {
     ...universityData,
     stats: computeStats(reviews),
-    reviews,
   };
 }
