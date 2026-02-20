@@ -176,6 +176,8 @@ const swaggerSpec = {
       put: {
         tags: ["Universities"],
         summary: "Update a university",
+        description: "Requires ADMIN role.",
+        security: [{ BearerAuth: [] }],
         requestBody: {
           required: true,
           content: {
@@ -197,13 +199,19 @@ const swaggerSpec = {
         },
         responses: {
           501: { description: "Not implemented" },
+          401: { description: "Authentication required", content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } } },
+          403: { description: "Forbidden: ADMIN role required", content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } } },
         },
       },
       delete: {
         tags: ["Universities"],
         summary: "Delete a university",
+        description: "Requires ADMIN role.",
+        security: [{ BearerAuth: [] }],
         responses: {
           501: { description: "Not implemented" },
+          401: { description: "Authentication required", content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } } },
+          403: { description: "Forbidden: ADMIN role required", content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } } },
         },
       },
     },
