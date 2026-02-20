@@ -98,7 +98,7 @@ function UniversityHeader({ university, activeTab, onTabChange }) {
   const typeLabel = university.type === "PUBLIC" ? "Pública" : "Privada";
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
+    <div className="overflow-hidden rounded-2xl border border-border bg-white shadow-sm">
       {/* Banner */}
       <div className="relative h-36 sm:h-44 overflow-hidden">
         {university.image ? (
@@ -159,7 +159,7 @@ function UniversityHeader({ university, activeTab, onTabChange }) {
 
         {/* Tabs */}
         <div className="-mx-5 mt-3 overflow-x-auto sm:-mx-6">
-          <div className="flex min-w-max border-t border-gray-100 px-5 sm:px-6">
+          <div className="flex min-w-max border-t border-border px-5 sm:px-6">
             {TABS.map((tab) => {
               const isActive = activeTab === tab;
               return (
@@ -188,14 +188,16 @@ function UniversityHeader({ university, activeTab, onTabChange }) {
 function RatingOverview({ stats }) {
   if (!stats || stats.reviewCount === 0) {
     return (
-      <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm text-center text-sm text-gray-400">
-        Ainda não há avaliações para esta universidade.
+      <div className="rounded-2xl border border-border bg-white p-8 shadow-sm text-center">
+        <p className="text-2xl mb-2">🎓</p>
+        <p className="text-sm font-medium text-gray-500">Ainda não há avaliações.</p>
+        <p className="mt-0.5 text-xs text-gray-400">Seja o primeiro a avaliar esta universidade!</p>
       </div>
     );
   }
 
   return (
-    <div className="rounded-2xl border border-gray-100 bg-white shadow-sm overflow-hidden">
+    <div className="overflow-hidden rounded-2xl border border-border bg-white shadow-sm">
       <div className="p-5">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-base font-semibold text-gray-900">O que a galera acha? 🤔</h2>
@@ -225,24 +227,23 @@ function RatingOverview({ stats }) {
         {/* Difficulty */}
         {stats.averageDifficultyLevel && (
           <div className="mt-4 flex items-center gap-3">
-            <span className="text-sm text-gray-500">Dificuldade média</span>
+            <span className="shrink-0 text-sm text-gray-500">Dificuldade média</span>
             <div className="flex flex-1 gap-1">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <div
-                  key={i}
-                  className={`h-1.5 flex-1 rounded-full transition-colors ${
-                    i < Math.round(stats.averageDifficultyLevel) ? "bg-indigo-400" : "bg-gray-100"
-                  }`}
-                />
-              ))}
+              {Array.from({ length: 5 }).map((_, i) => {
+                const filled = i < Math.round(stats.averageDifficultyLevel);
+                const color = filled
+                  ? i < 2 ? "bg-green-400" : i < 4 ? "bg-amber-400" : "bg-red-400"
+                  : "bg-gray-100";
+                return <div key={i} className={`h-2 flex-1 rounded-full transition-colors ${color}`} />;
+              })}
             </div>
-            <span className="text-sm font-semibold text-gray-700">{stats.averageDifficultyLevel}</span>
+            <span className="text-sm font-semibold text-gray-700">{stats.averageDifficultyLevel}/5</span>
           </div>
         )}
       </div>
 
       {/* Trust banner */}
-      <div className="border-t border-gray-50 bg-gray-50/50 px-5 py-3 flex items-center gap-2.5">
+      <div className="flex items-center gap-2.5 border-t border-border bg-gray-50/40 px-5 py-3">
         <ShieldCheck size={15} className="shrink-0 text-indigo-500" />
         <p className="text-xs text-gray-500">
           <span className="font-semibold text-indigo-600">Avaliações 100% reais 🔒</span>
@@ -279,7 +280,7 @@ function FilterBar({ activeFilter, onFilterChange }) {
   }
 
   return (
-    <div className="flex items-center justify-between rounded-2xl border border-gray-100 bg-white px-4 py-3 shadow-sm">
+    <div className="flex items-center justify-between rounded-2xl border border-border bg-white px-4 py-3 shadow-sm">
       <span className="text-[0.82rem] text-gray-400">
         {hasActiveFilter ? (
           <>Ordenando por: <span className="font-semibold text-indigo-600">{activeFilter}</span></>
@@ -303,7 +304,7 @@ function FilterBar({ activeFilter, onFilterChange }) {
         </button>
 
         {isOpen && (
-          <div className="absolute right-0 top-full z-20 mt-1.5 w-44 overflow-hidden rounded-xl border border-gray-100 bg-white shadow-lg">
+          <div className="absolute right-0 top-full z-20 mt-1.5 w-44 overflow-hidden rounded-xl border border-border bg-white shadow-lg">
             {FILTERS.map((filter) => {
               const isActive = activeFilter === filter;
               return (
@@ -354,7 +355,7 @@ function ReviewCard({ review }) {
     : (!expanded && parsedComment?.text?.length > TRUNCATE_LENGTH);
 
   return (
-    <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm transition-shadow hover:shadow-md">
+    <div className="rounded-2xl border border-border bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-px hover:shadow-md">
 
       {/* Top row: avatar + rating + verified */}
       <div className="flex items-start gap-3">
@@ -367,8 +368,8 @@ function ReviewCard({ review }) {
             <StarRating rating={review.rating} size={14} />
             <span className="text-[0.82rem] font-semibold text-gray-700">{review.rating.toFixed(1)}</span>
             {review.author?.verified && (
-              <span className="flex items-center gap-1 text-[0.72rem] text-indigo-500">
-                <ShieldCheck size={11} />
+              <span className="flex items-center gap-1 rounded-full bg-indigo-50 px-2 py-0.5 text-[0.7rem] font-medium text-indigo-600">
+                <ShieldCheck size={10} />
                 Verificado
               </span>
             )}
@@ -385,8 +386,8 @@ function ReviewCard({ review }) {
         </div>
 
         {/* Difficulty badge */}
-        <span className="shrink-0 rounded-lg bg-gray-50 px-2.5 py-1 text-[0.72rem] text-gray-500">
-          Dif. {review.difficultyLevel}/5
+        <span className="shrink-0 rounded-full bg-gray-100 px-2.5 py-1 text-[0.7rem] font-medium text-gray-500">
+          dif. {review.difficultyLevel}/5
         </span>
       </div>
 
@@ -396,10 +397,10 @@ function ReviewCard({ review }) {
           {parsedComment.structured ? (
             <>
               {parsedComment.pros && (
-                <div>
-                  <div className="mb-1 flex items-center gap-1.5">
+                <div className="rounded-xl border border-green-100 bg-green-50/60 px-3.5 py-2.5">
+                  <div className="mb-1.5 flex items-center gap-1.5">
                     <span className="text-xs">✅</span>
-                    <span className="text-xs font-semibold text-green-700">Prós</span>
+                    <span className="text-[0.7rem] font-semibold uppercase tracking-wide text-green-700">Prós</span>
                   </div>
                   <p className="text-[0.85rem] leading-relaxed text-gray-700">
                     {expanded || parsedComment.pros.length <= TRUNCATE_LENGTH
@@ -409,10 +410,10 @@ function ReviewCard({ review }) {
                 </div>
               )}
               {parsedComment.cons && (
-                <div>
-                  <div className="mb-1 flex items-center gap-1.5">
+                <div className="rounded-xl border border-amber-100 bg-amber-50/60 px-3.5 py-2.5">
+                  <div className="mb-1.5 flex items-center gap-1.5">
                     <span className="text-xs">⚠️</span>
-                    <span className="text-xs font-semibold text-amber-700">Contras</span>
+                    <span className="text-[0.7rem] font-semibold uppercase tracking-wide text-amber-700">Contras</span>
                   </div>
                   <p className="text-[0.85rem] leading-relaxed text-gray-700">
                     {expanded || parsedComment.cons.length <= TRUNCATE_LENGTH
@@ -444,7 +445,7 @@ function ReviewCard({ review }) {
       )}
 
       {/* Action row */}
-      <div className="mt-4 flex items-center gap-2 border-t border-gray-50 pt-3 pl-[52px]">
+      <div className="mt-4 flex items-center gap-2 border-t border-border pt-3 pl-[52px]">
         <button
           onClick={handleLike}
           className={`flex cursor-pointer items-center gap-1.5 rounded-xl px-3 py-1.5 text-[0.8rem] transition-all ${
@@ -609,8 +610,10 @@ export default function UniversityDetailPage() {
             <FilterBar activeFilter={activeFilter} onFilterChange={setActiveFilter} />
 
             {sortedReviews.length === 0 ? (
-              <div className="rounded-2xl border border-gray-100 bg-white p-10 text-center text-sm text-gray-400 shadow-sm">
-                Nenhuma avaliação ainda. Seja o primeiro! 🎓
+              <div className="rounded-2xl border border-border bg-white p-10 text-center shadow-sm">
+                <p className="text-2xl mb-2">🎓</p>
+                <p className="text-sm font-medium text-gray-500">Nenhuma avaliação ainda.</p>
+                <p className="mt-0.5 text-xs text-gray-400">Seja o primeiro a avaliar!</p>
               </div>
             ) : (
               <>
@@ -624,7 +627,7 @@ export default function UniversityDetailPage() {
                   <button
                     onClick={loadMoreReviews}
                     disabled={isLoadingMore}
-                    className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-2xl border border-gray-100 bg-white py-3.5 text-sm font-medium text-gray-500 shadow-sm transition-colors hover:border-indigo-200 hover:text-indigo-600 disabled:opacity-60"
+                    className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-2xl border border-border bg-white py-3.5 text-sm font-medium text-gray-500 shadow-sm transition-colors hover:border-indigo-200 hover:text-indigo-600 disabled:opacity-60"
                   >
                     {isLoadingMore ? (
                       <>
@@ -656,7 +659,7 @@ export default function UniversityDetailPage() {
         )}
 
         {activeTab !== "Avaliações ⭐" && (
-          <div className="rounded-2xl border border-gray-100 bg-white p-10 text-center text-sm text-gray-400 shadow-sm">
+          <div className="rounded-2xl border border-border bg-white p-10 text-center text-sm text-gray-400 shadow-sm">
             Em breve. 🚧
           </div>
         )}
