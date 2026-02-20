@@ -542,25 +542,19 @@ const swaggerSpec = {
       post: {
         tags: ["Users"],
         summary: "Log in a user",
-        description: "Provide either `email` or `username` together with `password`.",
+        description: "Pass your email address or username in the `identifier` field together with `password`.",
         requestBody: {
           required: true,
           content: {
             "application/json": {
               schema: {
                 type: "object",
-                required: ["password"],
+                required: ["identifier", "password"],
                 properties: {
-                  email: {
+                  identifier: {
                     type: "string",
-                    format: "email",
                     example: "user@example.com",
-                    description: "Required if `username` is not provided.",
-                  },
-                  username: {
-                    type: "string",
-                    example: "BravoCapivara347",
-                    description: "Required if `email` is not provided.",
+                    description: "Your email address or username.",
                   },
                   password: {
                     type: "string",
