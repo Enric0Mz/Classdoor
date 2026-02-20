@@ -39,13 +39,16 @@ export async function getReviewById(id) {
   return review;
 }
 
-export async function updateReview(id, data, requesterId) {
+export async function updateReview(id, data, requesterId, requesterRole) {
   const review = await reviewRepository.findById(id);
   if (!review) {
     throw new AppError("Review not found", 404);
   }
 
-  if (review.authorId !== requesterId) {
+  const isAuthor = review.authorId === requesterId;
+  const isAdminOrMod = ["ADMIN", "MODERATOR"].includes(requesterRole);
+
+  if (!isAuthor && !isAdminOrMod) {
     throw new AppError("Forbidden", 403);
   }
 
@@ -67,13 +70,16 @@ export async function updateReview(id, data, requesterId) {
   return reviewRepository.update(id, updateData);
 }
 
-export async function deleteReview(id, requesterId) {
+export async function deleteReview(id, requesterId, requesterRole) {
   const review = await reviewRepository.findById(id);
   if (!review) {
     throw new AppError("Review not found", 404);
   }
 
-  if (review.authorId !== requesterId) {
+  const isAuthor = review.authorId === requesterId;
+  const isAdminOrMod = ["ADMIN", "MODERATOR"].includes(requesterRole);
+
+  if (!isAuthor && !isAdminOrMod) {
     throw new AppError("Forbidden", 403);
   }
 

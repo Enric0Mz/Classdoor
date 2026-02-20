@@ -26,7 +26,7 @@ export async function PUT(request, { params }) {
     const { id } = await params;
     const decoded = verifyToken(request);
     const body = await request.json();
-    const review = await reviewService.updateReview(id, body, decoded.id);
+    const review = await reviewService.updateReview(id, body, decoded.id, decoded.role);
     return NextResponse.json(review);
   } catch (error) {
     if (error.statusCode) {
@@ -46,7 +46,7 @@ export async function DELETE(request, { params }) {
   try {
     const { id } = await params;
     const decoded = verifyToken(request);
-    await reviewService.deleteReview(id, decoded.id);
+    await reviewService.deleteReview(id, decoded.id, decoded.role);
     return NextResponse.json({ message: "Review deleted" });
   } catch (error) {
     if (error.statusCode) {
