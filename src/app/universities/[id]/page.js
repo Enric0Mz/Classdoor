@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import {
@@ -255,30 +255,78 @@ function RatingOverview({ stats }) {
 
 // ─── Filter Bar ───────────────────────────────────────────────────────────────
 
+const DEFAULT_FILTER = "Mais recentes";
+
 function FilterBar({ activeFilter, onFilterChange }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
+  const hasActiveFilter = activeFilter !== DEFAULT_FILTER;
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  function selectFilter(filter) {
+    onFilterChange(filter);
+    setIsOpen(false);
+  }
+
   return (
-    <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
-      <div className="flex items-center gap-2 text-gray-400">
-        <SlidersHorizontal size={15} />
-        <span className="text-[0.82rem]">Filtrar:</span>
-      </div>
-      <div className="flex flex-wrap gap-2">
-        {FILTERS.map((filter) => {
-          const isActive = activeFilter === filter;
-          return (
-            <button
-              key={filter}
-              onClick={() => onFilterChange(filter)}
-              className={`cursor-pointer rounded-full px-3.5 py-1.5 text-[0.8rem] font-medium transition-all ${
-                isActive
-                  ? "border border-indigo-200 bg-indigo-50 text-indigo-600"
-                  : "border border-transparent bg-gray-50 text-gray-500 hover:bg-gray-100"
-              }`}
-            >
-              {filter}
-            </button>
-          );
-        })}
+    <div className="flex items-center justify-between rounded-2xl border border-gray-100 bg-white px-4 py-3 shadow-sm">
+      <span className="text-[0.82rem] text-gray-400">
+        {hasActiveFilter ? (
+          <>Ordenando por: <span className="font-semibold text-indigo-600">{activeFilter}</span></>
+        ) : (
+          <span className="text-gray-500 font-medium">{`${activeFilter}`}</span>
+        )}
+      </span>
+
+      <div className="relative" ref={dropdownRef}>
+        <button
+          onClick={() => setIsOpen((prev) => !prev)}
+          className={`flex cursor-pointer items-center gap-2 rounded-xl px-3.5 py-1.5 text-[0.8rem] font-medium transition-all ${
+            hasActiveFilter
+              ? "border border-indigo-200 bg-indigo-50 text-indigo-600"
+              : "border border-gray-200 bg-gray-50 text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+          }`}
+        >
+          <SlidersHorizontal size={13} />
+          Ordenar
+          <ChevronDown size={13} className={`transition-transform ${isOpen ? "rotate-180" : ""}`} />
+        </button>
+
+        {isOpen && (
+          <div className="absolute right-0 top-full z-20 mt-1.5 w-44 overflow-hidden rounded-xl border border-gray-100 bg-white shadow-lg">
+            {FILTERS.map((filter) => {
+              const isActive = activeFilter === filter;
+              return (
+                <button
+                  key={filter}
+                  onClick={() => selectFilter(filter)}
+                  className={`flex w-full cursor-pointer items-center justify-between px-4 py-2.5 text-[0.82rem] transition-colors ${
+                    isActive
+                      ? "bg-indigo-50 font-semibold text-indigo-600"
+                      : "text-gray-600 hover:bg-gray-50"
+                  }`}
+                >
+                  {filter}
+                  {isActive && (
+                    <svg className="h-3.5 w-3.5 text-indigo-500" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 00-1.414 0L8 12.586 4.707 9.293a1 1 0 00-1.414 1.414l4 4a1 1 0 001.414 0l8-8a1 1 0 000-1.414z" clipRule="evenodd" />
+                    </svg>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        )}
       </div>
     </div>
   );
