@@ -33,6 +33,19 @@ function formatDate(dateString) {
   });
 }
 
+function parseComment(raw) {
+  if (!raw) return null;
+  try {
+    const parsed = JSON.parse(raw);
+    if (parsed && (parsed.pros || parsed.cons)) {
+      return { structured: true, pros: parsed.pros || "", cons: parsed.cons || "" };
+    }
+  } catch {
+    // not JSON — fall through to plain text
+  }
+  return { structured: false, text: raw };
+}
+
 const TABS = ["Visão geral 👀", "Avaliações ⭐", "Cursos 📖", "Salários 💸"];
 const FILTERS = ["Mais recentes", "Nota alta", "Nota baixa"];
 
@@ -280,13 +293,17 @@ function ReviewCard({ review }) {
 
   const authorInitials = getAuthorInitials(review.author);
   const isAnonymous = !review.author;
-  const comment = review.comment || "";
+  const parsedComment = parseComment(review.comment);
   const TRUNCATE_LENGTH = 180;
 
   function handleLike() {
     setHelpfulCount((c) => (liked ? c - 1 : c + 1));
     setLiked((prev) => !prev);
   }
+
+  const needsExpand = parsedComment?.structured
+    ? (!expanded && (parsedComment.pros.length > TRUNCATE_LENGTH || parsedComment.cons.length > TRUNCATE_LENGTH))
+    : (!expanded && parsedComment?.text?.length > TRUNCATE_LENGTH);
 
   return (
     <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm transition-shadow hover:shadow-md">
@@ -326,17 +343,49 @@ function ReviewCard({ review }) {
       </div>
 
       {/* Comment body */}
-      {comment ? (
-        <div className="mt-4 pl-[52px]">
-          <p className="text-[0.85rem] leading-relaxed text-gray-700">
-            {expanded || comment.length <= TRUNCATE_LENGTH
-              ? comment
-              : comment.slice(0, TRUNCATE_LENGTH) + "..."}
-          </p>
-          {comment.length > TRUNCATE_LENGTH && !expanded && (
+      {parsedComment ? (
+        <div className="mt-4 pl-[52px] space-y-3">
+          {parsedComment.structured ? (
+            <>
+              {parsedComment.pros && (
+                <div>
+                  <div className="mb-1 flex items-center gap-1.5">
+                    <span className="text-xs">✅</span>
+                    <span className="text-xs font-semibold text-green-700">Prós</span>
+                  </div>
+                  <p className="text-[0.85rem] leading-relaxed text-gray-700">
+                    {expanded || parsedComment.pros.length <= TRUNCATE_LENGTH
+                      ? parsedComment.pros
+                      : parsedComment.pros.slice(0, TRUNCATE_LENGTH) + "..."}
+                  </p>
+                </div>
+              )}
+              {parsedComment.cons && (
+                <div>
+                  <div className="mb-1 flex items-center gap-1.5">
+                    <span className="text-xs">⚠️</span>
+                    <span className="text-xs font-semibold text-amber-700">Contras</span>
+                  </div>
+                  <p className="text-[0.85rem] leading-relaxed text-gray-700">
+                    {expanded || parsedComment.cons.length <= TRUNCATE_LENGTH
+                      ? parsedComment.cons
+                      : parsedComment.cons.slice(0, TRUNCATE_LENGTH) + "..."}
+                  </p>
+                </div>
+              )}
+            </>
+          ) : (
+            <p className="text-[0.85rem] leading-relaxed text-gray-700">
+              {expanded || parsedComment.text.length <= TRUNCATE_LENGTH
+                ? parsedComment.text
+                : parsedComment.text.slice(0, TRUNCATE_LENGTH) + "..."}
+            </p>
+          )}
+
+          {needsExpand && (
             <button
               onClick={() => setExpanded(true)}
-              className="mt-1 flex cursor-pointer items-center gap-0.5 text-[0.82rem] font-medium text-indigo-500 hover:opacity-80"
+              className="flex cursor-pointer items-center gap-0.5 text-[0.82rem] font-medium text-indigo-500 hover:opacity-80"
             >
               Ler mais <ChevronDown size={13} />
             </button>

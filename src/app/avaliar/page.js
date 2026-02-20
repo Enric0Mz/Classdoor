@@ -159,7 +159,8 @@ export default function AvaliarPage() {
   const [universityId, setUniversityId] = useState(preselectedUniversityId || "");
   const [rating, setRating] = useState(0);
   const [difficultyLevel, setDifficultyLevel] = useState(0);
-  const [comment, setComment] = useState("");
+  const [pros, setPros] = useState("");
+  const [cons, setCons] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [token, setToken] = useState(null);
@@ -210,6 +211,12 @@ export default function AvaliarPage() {
     setIsLoading(true);
 
     try {
+      const prosText = pros.trim();
+      const consText = cons.trim();
+      const comment = (prosText || consText)
+        ? JSON.stringify({ pros: prosText, cons: consText })
+        : undefined;
+
       const response = await fetch("/api/v1/reviews", {
         method: "POST",
         headers: {
@@ -304,23 +311,46 @@ export default function AvaliarPage() {
               <DifficultyPicker value={difficultyLevel} onChange={setDifficultyLevel} />
             </div>
 
-            {/* Comment */}
-            <div className="flex flex-col gap-2">
-              <div className="flex items-baseline justify-between">
-                <label htmlFor="comment" className="text-sm font-semibold text-gray-700">
-                  Comentário
-                </label>
-                <span className="text-xs text-gray-400">opcional · {comment.length}/1000</span>
+            {/* Comment — Prós & Contras */}
+            <div className="flex flex-col gap-4">
+              <label className="text-sm font-semibold text-gray-700">
+                Comentário{" "}
+                <span className="font-normal text-gray-400">(opcional)</span>
+              </label>
+
+              {/* Prós */}
+              <div className="flex flex-col gap-1.5">
+                <div className="flex items-center gap-1.5">
+                  <span>✅</span>
+                  <span className="text-sm font-semibold text-green-700">Prós</span>
+                  <span className="ml-auto text-xs text-gray-400">{pros.length}/500</span>
+                </div>
+                <textarea
+                  rows={3}
+                  maxLength={500}
+                  value={pros}
+                  onChange={(e) => setPros(e.target.value)}
+                  placeholder="Pontos positivos: infraestrutura, professores, oportunidades..."
+                  className="w-full resize-none rounded-xl border border-green-200 bg-green-50/50 px-4 py-3 text-sm text-gray-800 outline-none transition-colors placeholder:text-gray-400 focus:border-green-300 focus:bg-white focus:ring-2 focus:ring-green-100"
+                />
               </div>
-              <textarea
-                id="comment"
-                rows={5}
-                maxLength={1000}
-                value={comment}
-                onChange={(e) => setComment(e.target.value)}
-                placeholder="Conte sua experiência: pontos positivos, negativos, infraestrutura, professores..."
-                className="w-full resize-none rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-800 outline-none transition-colors placeholder:text-gray-400 focus:border-indigo-300 focus:bg-white focus:ring-2 focus:ring-indigo-100"
-              />
+
+              {/* Contras */}
+              <div className="flex flex-col gap-1.5">
+                <div className="flex items-center gap-1.5">
+                  <span>⚠️</span>
+                  <span className="text-sm font-semibold text-amber-700">Contras</span>
+                  <span className="ml-auto text-xs text-gray-400">{cons.length}/500</span>
+                </div>
+                <textarea
+                  rows={3}
+                  maxLength={500}
+                  value={cons}
+                  onChange={(e) => setCons(e.target.value)}
+                  placeholder="Pontos negativos: burocracia, infraestrutura, dificuldades..."
+                  className="w-full resize-none rounded-xl border border-amber-200 bg-amber-50/50 px-4 py-3 text-sm text-gray-800 outline-none transition-colors placeholder:text-gray-400 focus:border-amber-300 focus:bg-white focus:ring-2 focus:ring-amber-100"
+                />
+              </div>
             </div>
 
             {/* Submit */}
