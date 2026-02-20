@@ -6,20 +6,21 @@ const USER_PUBLIC_SELECT = {
   username: true,
   universityEmail: true,
   verified: true,
+  active: true,
   role: true,
   createdAt: true,
 };
 
 export async function findAll({ skip, take } = {}) {
   const [data, total] = await prisma.$transaction([
-    prisma.user.findMany({ select: USER_PUBLIC_SELECT, skip, take }),
-    prisma.user.count(),
+    prisma.user.findMany({ where: { active: true }, select: USER_PUBLIC_SELECT, skip, take }),
+    prisma.user.count({ where: { active: true } }),
   ]);
   return { data, total };
 }
 
 export async function findById(id) {
-  return prisma.user.findUnique({ where: { id }, select: USER_PUBLIC_SELECT });
+  return prisma.user.findFirst({ where: { id, active: true }, select: USER_PUBLIC_SELECT });
 }
 
 export async function findByEmail(email) {
@@ -38,6 +39,6 @@ export async function update(id, data) {
   return prisma.user.update({ where: { id }, data });
 }
 
-export async function remove(id) {
-  return prisma.user.delete({ where: { id } });
+export async function deactivate(id) {
+  return prisma.user.update({ where: { id }, data: { active: false } });
 }

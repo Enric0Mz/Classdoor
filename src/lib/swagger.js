@@ -877,6 +877,49 @@ const swaggerSpec = {
           },
         },
       },
+      delete: {
+        tags: ["Users"],
+        summary: "Deactivate a user by ID",
+        description: "Requires ADMIN role. Sets the user's active flag to false (soft delete). The user's data is preserved.",
+        security: [{ BearerAuth: [] }],
+        responses: {
+          200: {
+            description: "User deactivated",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: { message: { type: "string" } },
+                },
+              },
+            },
+          },
+          401: {
+            description: "Authentication required",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
+          403: {
+            description: "Forbidden: ADMIN role required",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
+          404: {
+            description: "User not found",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
+        },
+      },
     },
   },
   components: {
@@ -970,6 +1013,7 @@ const swaggerSpec = {
           username: { type: "string", example: "BravoCapivara347" },
           universityEmail: { type: "string", format: "email", nullable: true },
           verified: { type: "boolean", example: false },
+          active: { type: "boolean", example: true },
           role: { type: "string", enum: ["USER", "MODERATOR", "ADMIN"] },
           createdAt: { type: "string", format: "date-time" },
         },

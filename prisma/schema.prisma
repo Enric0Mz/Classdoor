@@ -52,6 +52,7 @@ model User {
   role                         Role                          @default(USER)
   universityEmail              String?                       @unique
   verified                     Boolean                       @default(false)
+  active                       Boolean                       @default(true)
   createdAt                    DateTime                      @default(now())
 
   reviews                      Review[]

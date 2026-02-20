@@ -106,7 +106,7 @@ export async function loginUser({ identifier, password }) {
     ? await userRepository.findByEmail(identifier)
     : await userRepository.findByUsername(identifier);
 
-  if (!user) {
+  if (!user || !user.active) {
     throw new AppError("Invalid credentials", 401);
   }
 
@@ -167,5 +167,5 @@ export async function updateUser(id, data) {
 }
 
 export async function deleteUser(id) {
-  return userRepository.remove(id);
+  return userRepository.deactivate(id);
 }
