@@ -11,12 +11,12 @@ export async function GET(request) {
     if (error.statusCode) {
       return NextResponse.json(
         { error: { message: error.message, statusCode: error.statusCode } },
-        { status: error.statusCode }
+        { status: error.statusCode },
       );
     }
     return NextResponse.json(
       { error: { message: "Internal server error", statusCode: 500 } },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -31,12 +31,12 @@ export async function PUT(request) {
     if (error.statusCode) {
       return NextResponse.json(
         { error: { message: error.message, statusCode: error.statusCode } },
-        { status: error.statusCode }
+        { status: error.statusCode },
       );
     }
     return NextResponse.json(
       { error: { message: "Internal server error", statusCode: 500 } },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -50,12 +50,12 @@ export async function DELETE(request) {
     if (error.statusCode) {
       return NextResponse.json(
         { error: { message: error.message, statusCode: error.statusCode } },
-        { status: error.statusCode }
+        { status: error.statusCode },
       );
     }
     return NextResponse.json(
       { error: { message: "Internal server error", statusCode: 500 } },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

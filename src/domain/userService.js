@@ -132,14 +132,37 @@ export async function getUserById(id) {
 }
 
 export async function updateUser(id, data) {
-  if (data.email) {
-    validateEmail(data.email);
+  const { email, password, username } = data;
+  const updateData = {};
+
+  if (username !== undefined) {
+    validateUsername(username);
+    const existingUsername = await userRepository.findByUsername(username);
+    if (existingUsername && existingUsername.id !== id) {
+      throw new AppError("A user with this username already exists", 409);
+    }
+    updateData.username = username;
   }
-  if (data.password) {
-    validatePassword(data.password);
-    data.password = await bcrypt.hash(data.password, 10);
+
+  if (email !== undefined) {
+    validateEmail(email);
+    const existingEmail = await userRepository.findByEmail(email);
+    if (existingEmail && existingEmail.id !== id) {
+      throw new AppError("A user with this email already exists", 409);
+    }
+    updateData.email = email;
   }
-  const user = await userRepository.update(id, data);
+
+  if (password !== undefined) {
+    validatePassword(password);
+    updateData.password = await bcrypt.hash(password, 10);
+  }
+
+  if (Object.keys(updateData).length === 0) {
+    return getUserById(id);
+  }
+
+  const user = await userRepository.update(id, updateData);
   return stripPassword(user);
 }
 
