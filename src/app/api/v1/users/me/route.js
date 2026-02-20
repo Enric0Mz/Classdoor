@@ -40,3 +40,22 @@ export async function PUT(request) {
     );
   }
 }
+
+export async function DELETE(request) {
+  try {
+    const decoded = verifyToken(request);
+    await userService.deleteUser(decoded.id);
+    return NextResponse.json({ message: "User deleted" });
+  } catch (error) {
+    if (error.statusCode) {
+      return NextResponse.json(
+        { error: { message: error.message, statusCode: error.statusCode } },
+        { status: error.statusCode }
+      );
+    }
+    return NextResponse.json(
+      { error: { message: "Internal server error", statusCode: 500 } },
+      { status: 500 }
+    );
+  }
+}

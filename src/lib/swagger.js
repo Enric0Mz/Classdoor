@@ -625,6 +625,34 @@ const swaggerSpec = {
           },
         },
       },
+      delete: {
+        tags: ["Users"],
+        summary: "Delete the authenticated user's account",
+        security: [{ BearerAuth: [] }],
+        responses: {
+          200: {
+            description: "Account deleted",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    message: { type: "string" },
+                  },
+                },
+              },
+            },
+          },
+          401: {
+            description: "Authentication required",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
+        },
+      },
       put: {
         tags: ["Users"],
         summary: "Update the authenticated user",
@@ -820,42 +848,6 @@ const swaggerSpec = {
           },
           404: {
             description: "User not found",
-            content: {
-              "application/json": {
-                schema: { $ref: "#/components/schemas/Error" },
-              },
-            },
-          },
-        },
-      },
-      delete: {
-        tags: ["Users"],
-        summary: "Delete a user",
-        security: [{ BearerAuth: [] }],
-        responses: {
-          200: {
-            description: "User deleted",
-            content: {
-              "application/json": {
-                schema: {
-                  type: "object",
-                  properties: {
-                    message: { type: "string" },
-                  },
-                },
-              },
-            },
-          },
-          401: {
-            description: "Authentication required",
-            content: {
-              "application/json": {
-                schema: { $ref: "#/components/schemas/Error" },
-              },
-            },
-          },
-          403: {
-            description: "Forbidden",
             content: {
               "application/json": {
                 schema: { $ref: "#/components/schemas/Error" },
