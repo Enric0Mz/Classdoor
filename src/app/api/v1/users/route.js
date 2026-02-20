@@ -2,13 +2,16 @@ import { NextResponse } from "next/server";
 import * as userService from "@/domain/userService";
 import { verifyToken } from "@/lib/auth";
 import { requireRole } from "@/lib/authorization";
+import { parsePagination, paginatedResponse } from "@/lib/pagination";
 
 export async function GET(request) {
   try {
     const decoded = verifyToken(request);
     requireRole(decoded, ["ADMIN", "MODERATOR"]);
-    const users = await userService.listUsers();
-    return NextResponse.json(users);
+    const { searchParams } = new URL(request.url);
+    const { page, limit, skip } = parsePagination(searchParams);
+    const { data, total } = await userService.listUsers({ skip, take: limit });
+    return NextResponse.json(paginatedResponse(data, total, page, limit));
   } catch (error) {
     if (error.statusCode) {
       return NextResponse.json(

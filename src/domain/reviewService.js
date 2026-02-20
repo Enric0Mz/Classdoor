@@ -27,8 +27,8 @@ export async function createReview(body, authorId) {
   return { review };
 }
 
-export async function listReviews({ universityId } = {}) {
-  return reviewRepository.findAll({ universityId });
+export async function listReviews({ universityId, skip, take } = {}) {
+  return reviewRepository.findAll({ universityId, skip, take });
 }
 
 export async function getReviewById(id) {

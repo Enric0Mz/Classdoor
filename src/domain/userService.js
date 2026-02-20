@@ -119,8 +119,8 @@ export async function loginUser({ identifier, password }) {
   return { user: stripPassword(user), token };
 }
 
-export async function listUsers() {
-  return userRepository.findAll();
+export async function listUsers({ skip, take } = {}) {
+  return userRepository.findAll({ skip, take });
 }
 
 export async function getUserById(id) {

@@ -2,11 +2,14 @@ import { NextResponse } from "next/server";
 import * as universityService from "@/domain/universityService";
 import { verifyToken } from "@/lib/auth";
 import { requireRole } from "@/lib/authorization";
+import { parsePagination, paginatedResponse } from "@/lib/pagination";
 
-export async function GET() {
+export async function GET(request) {
   try {
-    const universities = await universityService.listUniversities();
-    return NextResponse.json(universities);
+    const { searchParams } = new URL(request.url);
+    const { page, limit, skip } = parsePagination(searchParams);
+    const { data, total } = await universityService.listUniversities({ skip, take: limit });
+    return NextResponse.json(paginatedResponse(data, total, page, limit));
   } catch (error) {
     if (error.statusCode) {
       return NextResponse.json(

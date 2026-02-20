@@ -1,13 +1,15 @@
 import { NextResponse } from "next/server";
 import * as reviewService from "@/domain/reviewService";
 import { verifyToken } from "@/lib/auth";
+import { parsePagination, paginatedResponse } from "@/lib/pagination";
 
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
     const universityId = searchParams.get("universityId");
-    const reviews = await reviewService.listReviews({ universityId });
-    return NextResponse.json(reviews);
+    const { page, limit, skip } = parsePagination(searchParams);
+    const { data, total } = await reviewService.listReviews({ universityId, skip, take: limit });
+    return NextResponse.json(paginatedResponse(data, total, page, limit));
   } catch (error) {
     if (error.statusCode) {
       return NextResponse.json(

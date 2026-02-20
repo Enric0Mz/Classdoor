@@ -6,8 +6,12 @@ const REVIEW_AUTHOR_SELECT = {
   verified: true,
 };
 
-export async function findAll() {
-  return prisma.university.findMany();
+export async function findAll({ skip, take } = {}) {
+  const [data, total] = await prisma.$transaction([
+    prisma.university.findMany({ skip, take }),
+    prisma.university.count(),
+  ]);
+  return { data, total };
 }
 
 export async function findById(id) {

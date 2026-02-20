@@ -28,8 +28,8 @@ export async function createUniversity({ name, location, website, image, type, c
   return universityRepository.create({ name, location, website, image, type, courses, rating });
 }
 
-export async function listUniversities() {
-  return universityRepository.findAll();
+export async function listUniversities({ skip, take } = {}) {
+  return universityRepository.findAll({ skip, take });
 }
 
 function computeStats(reviews) {

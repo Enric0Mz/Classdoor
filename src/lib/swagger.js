@@ -11,14 +11,21 @@ const swaggerSpec = {
       get: {
         tags: ["Universities"],
         summary: "List all universities",
+        parameters: [
+          { name: "page", in: "query", required: false, schema: { type: "integer", default: 1 }, description: "Page number" },
+          { name: "limit", in: "query", required: false, schema: { type: "integer", default: 10, maximum: 100 }, description: "Number of items per page" },
+        ],
         responses: {
           200: {
-            description: "A list of universities",
+            description: "A paginated list of universities",
             content: {
               "application/json": {
                 schema: {
-                  type: "array",
-                  items: { $ref: "#/components/schemas/University" },
+                  type: "object",
+                  properties: {
+                    data: { type: "array", items: { $ref: "#/components/schemas/University" } },
+                    pagination: { $ref: "#/components/schemas/Pagination" },
+                  },
                 },
               },
             },
@@ -205,22 +212,21 @@ const swaggerSpec = {
         tags: ["Reviews"],
         summary: "List all reviews",
         parameters: [
-          {
-            name: "universityId",
-            in: "query",
-            required: false,
-            schema: { type: "string", format: "uuid" },
-            description: "Filter reviews by university ID",
-          },
+          { name: "universityId", in: "query", required: false, schema: { type: "string", format: "uuid" }, description: "Filter reviews by university ID" },
+          { name: "page", in: "query", required: false, schema: { type: "integer", default: 1 }, description: "Page number" },
+          { name: "limit", in: "query", required: false, schema: { type: "integer", default: 10, maximum: 100 }, description: "Number of items per page" },
         ],
         responses: {
           200: {
-            description: "A list of reviews",
+            description: "A paginated list of reviews",
             content: {
               "application/json": {
                 schema: {
-                  type: "array",
-                  items: { $ref: "#/components/schemas/Review" },
+                  type: "object",
+                  properties: {
+                    data: { type: "array", items: { $ref: "#/components/schemas/Review" } },
+                    pagination: { $ref: "#/components/schemas/Pagination" },
+                  },
                 },
               },
             },
@@ -435,14 +441,21 @@ const swaggerSpec = {
         summary: "List all users",
         description: "Requires ADMIN or MODERATOR role.",
         security: [{ BearerAuth: [] }],
+        parameters: [
+          { name: "page", in: "query", required: false, schema: { type: "integer", default: 1 }, description: "Page number" },
+          { name: "limit", in: "query", required: false, schema: { type: "integer", default: 10, maximum: 100 }, description: "Number of items per page" },
+        ],
         responses: {
           200: {
-            description: "A list of users",
+            description: "A paginated list of users",
             content: {
               "application/json": {
                 schema: {
-                  type: "array",
-                  items: { $ref: "#/components/schemas/User" },
+                  type: "object",
+                  properties: {
+                    data: { type: "array", items: { $ref: "#/components/schemas/User" } },
+                    pagination: { $ref: "#/components/schemas/Pagination" },
+                  },
                 },
               },
             },
@@ -867,6 +880,15 @@ const swaggerSpec = {
       },
     },
     schemas: {
+      Pagination: {
+        type: "object",
+        properties: {
+          page: { type: "integer", example: 1 },
+          limit: { type: "integer", example: 10 },
+          total: { type: "integer", example: 25 },
+          totalPages: { type: "integer", example: 3 },
+        },
+      },
       University: {
         type: "object",
         properties: {

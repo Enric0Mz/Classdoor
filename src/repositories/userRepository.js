@@ -10,8 +10,12 @@ const USER_PUBLIC_SELECT = {
   createdAt: true,
 };
 
-export async function findAll() {
-  return prisma.user.findMany({ select: USER_PUBLIC_SELECT });
+export async function findAll({ skip, take } = {}) {
+  const [data, total] = await prisma.$transaction([
+    prisma.user.findMany({ select: USER_PUBLIC_SELECT, skip, take }),
+    prisma.user.count(),
+  ]);
+  return { data, total };
 }
 
 export async function findById(id) {

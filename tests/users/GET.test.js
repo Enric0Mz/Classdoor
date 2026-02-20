@@ -27,43 +27,61 @@ const USERS = [
   { id: "b2c3d4e5-f6a7-8901-bcde-f12345678901", email: "b@test.com", createdAt: "2024-01-01T00:00:00.000Z" },
 ];
 
-const makeRequest = () => ({
+const PAGINATED_USERS = { data: USERS, total: 2 };
+
+const makeRequest = (searchParams = "") => ({
   headers: { get: jest.fn() },
+  url: `http://localhost/api/v1/users${searchParams}`,
 });
 
 beforeEach(() => jest.clearAllMocks());
 
 describe("userService.listUsers", () => {
-  it("returns all users from the repository", async () => {
-    userRepository.findAll.mockResolvedValue(USERS);
+  it("returns paginated users from the repository", async () => {
+    userRepository.findAll.mockResolvedValue(PAGINATED_USERS);
 
     const result = await listUsers();
 
     expect(userRepository.findAll).toHaveBeenCalledTimes(1);
-    expect(result).toEqual(USERS);
+    expect(result).toEqual(PAGINATED_USERS);
   });
 
-  it("returns an empty array when no users exist", async () => {
-    userRepository.findAll.mockResolvedValue([]);
+  it("returns empty data when no users exist", async () => {
+    userRepository.findAll.mockResolvedValue({ data: [], total: 0 });
 
     const result = await listUsers();
 
-    expect(result).toEqual([]);
+    expect(result).toEqual({ data: [], total: 0 });
   });
 });
 
 describe("GET /api/v1/users", () => {
-  it("returns 200 with the list of users when authenticated as ADMIN", async () => {
+  it("returns 200 with paginated users when authenticated as ADMIN", async () => {
     verifyToken.mockReturnValue({ id: "user-1", email: "a@test.com", role: "ADMIN" });
     requireRole.mockReturnValue(undefined);
-    userRepository.findAll.mockResolvedValue(USERS);
+    userRepository.findAll.mockResolvedValue(PAGINATED_USERS);
 
     const response = await GET(makeRequest());
 
     expect(verifyToken).toHaveBeenCalled();
     expect(requireRole).toHaveBeenCalledWith({ id: "user-1", email: "a@test.com", role: "ADMIN" }, ["ADMIN", "MODERATOR"]);
     expect(response.status).toBe(200);
-    expect(response.body).toEqual(USERS);
+    expect(response.body).toEqual({
+      data: USERS,
+      pagination: { page: 1, limit: 10, total: 2, totalPages: 1 },
+    });
+  });
+
+  it("returns 200 with correct pagination when page and limit are provided", async () => {
+    verifyToken.mockReturnValue({ id: "user-1", email: "a@test.com", role: "ADMIN" });
+    requireRole.mockReturnValue(undefined);
+    userRepository.findAll.mockResolvedValue(PAGINATED_USERS);
+
+    const response = await GET(makeRequest("?page=2&limit=5"));
+
+    expect(userRepository.findAll).toHaveBeenCalledWith({ skip: 5, take: 5 });
+    expect(response.status).toBe(200);
+    expect(response.body.pagination).toEqual({ page: 2, limit: 5, total: 2, totalPages: 1 });
   });
 
   it("returns 401 when no token provided", async () => {
