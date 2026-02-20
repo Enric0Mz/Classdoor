@@ -1,10 +1,11 @@
 import { getUserById } from "@/domain/userService";
 import * as userRepository from "@/repositories/userRepository";
 import { verifyToken } from "@/lib/auth";
-import { GET } from "@/app/api/v1/users/[id]/route";
+import { GET, DELETE } from "@/app/api/v1/users/[id]/route";
 
 jest.mock("@/repositories/userRepository", () => ({
   findById: jest.fn(),
+  deactivate: jest.fn(),
 }));
 
 jest.mock("@/lib/auth", () => ({
@@ -114,5 +115,37 @@ describe("GET /api/v1/users/:id", () => {
     expect(response.body).toEqual({
       error: { message: "User not found", statusCode: 404 },
     });
+  });
+});
+
+describe("DELETE /api/v1/users/:id", () => {
+  it("returns 200 when ADMIN deletes a user", async () => {
+    verifyToken.mockReturnValue({ id: "admin-1", role: "ADMIN" });
+    userRepository.deactivate.mockResolvedValue();
+
+    const response = await DELETE({}, makeParams("user-1"));
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({ message: "User deleted" });
+    expect(userRepository.deactivate).toHaveBeenCalledWith("user-1");
+  });
+
+  it("returns 403 when a non-ADMIN tries to delete a user", async () => {
+    verifyToken.mockReturnValue({ id: "user-1", role: "USER" });
+
+    const response = await DELETE({}, makeParams("user-2"));
+
+    expect(response.status).toBe(403);
+  });
+
+  it("returns 401 when request has no token", async () => {
+    const { AppError } = require("@/errors/AppError");
+    verifyToken.mockImplementation(() => {
+      throw new AppError("Unauthorized", 401);
+    });
+
+    const response = await DELETE({}, makeParams("user-1"));
+
+    expect(response.status).toBe(401);
   });
 });

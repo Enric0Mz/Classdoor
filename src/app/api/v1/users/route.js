@@ -3,44 +3,19 @@ import * as userService from "@/domain/userService";
 import { verifyToken } from "@/lib/auth";
 import { requireRole } from "@/lib/authorization";
 import { parsePagination, paginatedResponse } from "@/lib/pagination";
+import { withErrorHandler } from "@/lib/errorHandler";
 
-export async function GET(request) {
-  try {
-    const decoded = verifyToken(request);
-    requireRole(decoded, ["ADMIN", "MODERATOR"]);
-    const { searchParams } = new URL(request.url);
-    const { page, limit, skip } = parsePagination(searchParams);
-    const { data, total } = await userService.listUsers({ skip, take: limit });
-    return NextResponse.json(paginatedResponse(data, total, page, limit));
-  } catch (error) {
-    if (error.statusCode) {
-      return NextResponse.json(
-        { error: { message: error.message, statusCode: error.statusCode } },
-        { status: error.statusCode }
-      );
-    }
-    return NextResponse.json(
-      { error: { message: "Internal server error", statusCode: 500 } },
-      { status: 500 }
-    );
-  }
-}
+export const GET = withErrorHandler(async (request) => {
+  const decoded = verifyToken(request);
+  requireRole(decoded, ["ADMIN", "MODERATOR"]);
+  const { searchParams } = new URL(request.url);
+  const { page, limit, skip } = parsePagination(searchParams);
+  const { data, total } = await userService.listUsers({ skip, take: limit });
+  return NextResponse.json(paginatedResponse(data, total, page, limit));
+});
 
-export async function POST(request) {
-  try {
-    const body = await request.json();
-    const result = await userService.registerUser(body);
-    return NextResponse.json(result, { status: 201 });
-  } catch (error) {
-    if (error.statusCode) {
-      return NextResponse.json(
-        { error: { message: error.message, statusCode: error.statusCode } },
-        { status: error.statusCode }
-      );
-    }
-    return NextResponse.json(
-      { error: { message: "Internal server error", statusCode: 500 } },
-      { status: 500 }
-    );
-  }
-}
+export const POST = withErrorHandler(async (request) => {
+  const body = await request.json();
+  const result = await userService.registerUser(body);
+  return NextResponse.json(result, { status: 201 });
+});

@@ -5,6 +5,8 @@ import { verifyToken } from "@/lib/auth";
 import { PUT } from "@/app/api/v1/users/me/route";
 
 jest.mock("@/repositories/userRepository", () => ({
+  findByEmail: jest.fn(),
+  findByUsername: jest.fn(),
   update: jest.fn(),
 }));
 
@@ -33,6 +35,7 @@ beforeEach(() => jest.clearAllMocks());
 
 describe("userService.updateUser", () => {
   it("updates user and strips password", async () => {
+    userRepository.findByEmail.mockResolvedValue(null);
     userRepository.update.mockResolvedValue({
       id: "user-1", email: "new@test.com", password: "hashed", createdAt: new Date(),
     });
@@ -41,6 +44,16 @@ describe("userService.updateUser", () => {
 
     expect(result).not.toHaveProperty("password");
     expect(result.email).toBe("new@test.com");
+  });
+
+  it("throws 409 when email is already taken by another user", async () => {
+    userRepository.findByEmail.mockResolvedValue({ id: "user-2", email: "taken@test.com" });
+
+    await expect(updateUser("user-1", { email: "taken@test.com" })).rejects.toMatchObject({
+      message: "A user with this email already exists",
+      statusCode: 409,
+    });
+    expect(userRepository.update).not.toHaveBeenCalled();
   });
 
   it("hashes new password when provided", async () => {
@@ -113,6 +126,7 @@ describe("userService.updateUser", () => {
 describe("PUT /api/v1/users/me", () => {
   it("returns 200 with updated user using token id", async () => {
     verifyToken.mockReturnValue({ id: "user-1", email: "test@test.com" });
+    userRepository.findByEmail.mockResolvedValue(null);
     userRepository.update.mockResolvedValue({
       id: "user-1", email: "new@test.com", password: "hashed", createdAt: "2024-01-01T00:00:00.000Z",
     });

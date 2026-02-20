@@ -1,4 +1,4 @@
-import { requireRole } from "@/lib/authorization";
+import { requireRole, requireSelfOrRole } from "@/lib/authorization";
 import { AppError } from "@/errors/AppError";
 
 describe("requireRole", () => {
@@ -28,6 +28,43 @@ describe("requireRole", () => {
 
     try {
       requireRole(decodedToken, ["ADMIN", "MODERATOR"]);
+    } catch (error) {
+      expect(error.statusCode).toBe(403);
+    }
+  });
+});
+
+describe("requireSelfOrRole", () => {
+  it("does not throw when the user is accessing their own resource", () => {
+    const decodedToken = { id: "user-1", role: "USER" };
+
+    expect(() => requireSelfOrRole(decodedToken, "user-1", ["ADMIN"])).not.toThrow();
+  });
+
+  it("does not throw when the user has an allowed role", () => {
+    const decodedToken = { id: "admin-1", role: "ADMIN" };
+
+    expect(() => requireSelfOrRole(decodedToken, "user-1", ["ADMIN"])).not.toThrow();
+  });
+
+  it("does not throw when the user has one of multiple allowed roles", () => {
+    const decodedToken = { id: "mod-1", role: "MODERATOR" };
+
+    expect(() => requireSelfOrRole(decodedToken, "user-1", ["ADMIN", "MODERATOR"])).not.toThrow();
+  });
+
+  it("throws 403 when the user is not the owner and lacks an allowed role", () => {
+    const decodedToken = { id: "user-2", role: "USER" };
+
+    expect(() => requireSelfOrRole(decodedToken, "user-1", ["ADMIN"])).toThrow(AppError);
+    expect(() => requireSelfOrRole(decodedToken, "user-1", ["ADMIN"])).toThrow("Forbidden");
+  });
+
+  it("throws 403 with the correct status code", () => {
+    const decodedToken = { id: "user-2", role: "USER" };
+
+    try {
+      requireSelfOrRole(decodedToken, "user-1", ["ADMIN"]);
     } catch (error) {
       expect(error.statusCode).toBe(403);
     }
