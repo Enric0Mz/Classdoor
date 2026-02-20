@@ -182,7 +182,7 @@ export default function AvaliarPage() {
         const res = await fetch("/api/v1/universities");
         if (res.ok) {
           const data = await res.json();
-          setUniversities(data);
+          setUniversities(data.data ?? []);
         }
       } catch {
         // non-blocking — university list is a convenience

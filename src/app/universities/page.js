@@ -27,7 +27,7 @@ export default function UniversitiesPage() {
         const res = await fetch("/api/v1/universities");
         if (!res.ok) throw new Error("Falha ao carregar universidades");
         const data = await res.json();
-        setUniversities(data);
+        setUniversities(data.data ?? []);
       } catch (err) {
         setError(err.message);
       } finally {
