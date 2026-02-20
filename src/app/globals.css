@@ -4,7 +4,7 @@
 
 :root {
   --font-size: 16px;
-  --background: #ffffff;
+  --background: #f9f9fb;
   --foreground: oklch(0.145 0 0);
   --card: #ffffff;
   --card-foreground: oklch(0.145 0 0);
@@ -124,12 +124,12 @@
 @layer components {
   .hero-gradient {
     background: linear-gradient(
-      180deg,
-      #f0f0ff 0%,
-      #e8e6ff 30%,
-      #ddd8ff 50%,
-      #e8e6ff 70%,
-      #ffffff 100%
+      160deg,
+      #eef0ff 0%,
+      #e5e1ff 25%,
+      #ede9ff 55%,
+      #f3f1ff 75%,
+      #f9f9fb 100%
     );
   }
 
@@ -150,38 +150,29 @@
     @apply border-border outline-ring/50;
   }
 
-  body {
-    @apply bg-background text-foreground;
-  }
-
   html {
     font-size: var(--font-size);
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    scroll-behavior: smooth;
   }
 
-  h1 {
-    font-size: var(--text-2xl);
-    font-weight: var(--font-weight-medium);
-    line-height: 1.5;
+  body {
+    @apply bg-background text-foreground;
+    line-height: 1.65;
   }
 
-  h2 {
-    font-size: var(--text-xl);
+  h1, h2, h3, h4, h5, h6 {
+    letter-spacing: -0.02em;
+    line-height: 1.3;
     font-weight: var(--font-weight-medium);
-    line-height: 1.5;
   }
 
-  h3 {
-    font-size: var(--text-lg);
-    font-weight: var(--font-weight-medium);
-    line-height: 1.5;
-  }
-
-  h4 {
-    font-size: var(--text-base);
-    font-weight: var(--font-weight-medium);
-    line-height: 1.5;
-  }
+  h1 { font-size: var(--text-2xl); }
+  h2 { font-size: var(--text-xl); }
+  h3 { font-size: var(--text-lg); }
+  h4 { font-size: var(--text-base); }
 
   label {
     font-size: var(--text-base);
@@ -193,9 +184,10 @@
     font-size: var(--text-base);
     font-weight: var(--font-weight-medium);
     line-height: 1.5;
+    letter-spacing: -0.01em;
   }
 
-  input {
+  input, textarea {
     font-size: var(--text-base);
     font-weight: var(--font-weight-normal);
     line-height: 1.5;

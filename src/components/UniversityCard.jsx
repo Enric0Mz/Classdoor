@@ -57,38 +57,38 @@ export default function UniversityCard({ university }) {
   return (
     <Link
       href={`/universities/${university.id}`}
-      className="group block overflow-hidden rounded-xl border border-border bg-card transition-shadow hover:shadow-lg"
+      className="group block overflow-hidden rounded-2xl border border-border bg-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
     >
       {/* Image area */}
-      <div className="relative h-48 w-full overflow-hidden">
+      <div className="relative h-44 w-full overflow-hidden">
         {university.image ? (
           <img
             src={university.image}
             alt={university.name}
-            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
         ) : (
-          <div className="h-full w-full bg-gradient-to-br from-indigo-400 via-purple-500 to-indigo-700" />
+          <div className="h-full w-full bg-gradient-to-br from-indigo-400 via-violet-500 to-indigo-700" />
         )}
 
-        {/* Dark gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+        {/* Gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/15 to-transparent" />
 
-        {/* Bottom-left overlay: icon + name + location */}
-        <div className="absolute bottom-3 left-3 flex items-center gap-2.5">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-600 text-sm font-bold text-white shadow-md">
-            {initials.slice(0, 2)}
+        {/* Bottom overlay: initials icon + name + location */}
+        <div className="absolute bottom-3 left-3 right-3 flex items-end gap-2.5">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white/20 text-xs font-bold text-white shadow backdrop-blur-sm ring-1 ring-white/30">
+            {initials.slice(0, 3)}
           </div>
-          <div>
-            <p className="text-sm font-semibold text-white drop-shadow">
-              {initials}
+          <div className="min-w-0">
+            <p className="truncate text-[0.82rem] font-semibold leading-tight text-white drop-shadow-sm">
+              {university.name}
             </p>
-            <div className="flex items-center gap-1 text-xs text-white/80">
-              <svg className="h-3 w-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+            <div className="mt-0.5 flex items-center gap-1 text-[0.72rem] text-white/75">
+              <svg className="h-3 w-3 shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
                 <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
               </svg>
-              <span>{university.location}</span>
+              <span className="truncate">{university.location}</span>
             </div>
           </div>
         </div>
@@ -96,46 +96,37 @@ export default function UniversityCard({ university }) {
 
       {/* Info area */}
       <div className="p-4">
-        <h3 className="truncate text-sm font-medium text-card-foreground">
-          {university.name}
-        </h3>
-
         {/* Rating row */}
-        {university.rating != null && (
-          <div className="mt-2 flex items-center gap-2">
+        {university.rating != null ? (
+          <div className="flex items-center gap-2">
             <StarRating rating={university.rating} />
-            <span className="text-sm font-semibold text-card-foreground">
+            <span className="text-sm font-semibold text-gray-800">
               {university.rating.toFixed(1)}
             </span>
           </div>
+        ) : (
+          <p className="text-xs text-gray-400">Sem avaliações ainda</p>
         )}
 
         {/* Tags */}
         <div className="mt-3 flex flex-wrap gap-1.5">
-          <span className={`rounded-md px-2 py-0.5 text-xs font-medium ${typeColor}`}>
+          <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${typeColor}`}>
             {typeLabel}
           </span>
           {university.courses?.slice(0, 2).map((course) => (
             <span
               key={course}
-              className="rounded-md bg-muted px-2 py-0.5 text-xs text-muted-foreground"
+              className="rounded-full bg-gray-100 px-2.5 py-0.5 text-xs text-gray-500"
             >
               {course}
             </span>
           ))}
+          {university.courses?.length > 2 && (
+            <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-xs text-gray-400">
+              +{university.courses.length - 2}
+            </span>
+          )}
         </div>
-
-        {/* Stats row */}
-        {university.courses?.length > 0 && (
-          <div className="mt-3 flex items-center gap-4 text-xs text-muted-foreground">
-            <div className="flex items-center gap-1">
-              <svg className="h-3.5 w-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25" />
-              </svg>
-              <span>{university.courses.length}</span>
-            </div>
-          </div>
-        )}
       </div>
     </Link>
   );
