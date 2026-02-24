@@ -12,6 +12,14 @@ jest.mock("@/repositories/userRepository", () => ({
   update: jest.fn(),
 }));
 
+jest.mock("@/repositories/universityRepository", () => ({
+  findByEmailDomain: jest.fn(),
+}));
+
+jest.mock("@/lib/universityDomains", () => ({
+  findUniversityByDomain: jest.fn().mockReturnValue(null),
+}));
+
 jest.mock("@/lib/emailService", () => ({
   sendEmailVerification: jest.fn(),
 }));

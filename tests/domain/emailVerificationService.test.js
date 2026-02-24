@@ -4,7 +4,9 @@ import {
 } from "@/domain/emailVerificationService";
 import * as emailVerificationRepository from "@/repositories/emailVerificationRepository";
 import * as userRepository from "@/repositories/userRepository";
+import * as universityRepository from "@/repositories/universityRepository";
 import { sendEmailVerification } from "@/lib/emailService";
+import { findUniversityByDomain } from "@/lib/universityDomains";
 
 jest.mock("@/repositories/emailVerificationRepository", () => ({
   create: jest.fn(),
@@ -17,8 +19,16 @@ jest.mock("@/repositories/userRepository", () => ({
   update: jest.fn(),
 }));
 
+jest.mock("@/repositories/universityRepository", () => ({
+  findByEmailDomain: jest.fn(),
+}));
+
 jest.mock("@/lib/emailService", () => ({
   sendEmailVerification: jest.fn(),
+}));
+
+jest.mock("@/lib/universityDomains", () => ({
+  findUniversityByDomain: jest.fn(),
 }));
 
 beforeEach(() => jest.clearAllMocks());
@@ -71,22 +81,71 @@ describe("emailVerificationService.sendEmailVerificationToUser", () => {
 });
 
 describe("emailVerificationService.verifyEmail", () => {
-  it("sets emailVerified to true and deletes the token on success", async () => {
+  it("sets only emailVerified=true for a personal email domain", async () => {
     const futureDate = new Date(Date.now() + 60 * 60 * 1000);
     emailVerificationRepository.findByToken.mockResolvedValue({
       userId: "user-1",
-      email: "user@test.com",
+      email: "user@gmail.com",
       token: "valid-token",
       expiresAt: futureDate,
     });
+    findUniversityByDomain.mockReturnValue(null);
     userRepository.update.mockResolvedValue({ id: "user-1", emailVerified: true });
     emailVerificationRepository.deleteByUserId.mockResolvedValue(undefined);
 
     const result = await verifyEmail("valid-token");
 
     expect(userRepository.update).toHaveBeenCalledWith("user-1", { emailVerified: true });
-    expect(emailVerificationRepository.deleteByUserId).toHaveBeenCalledWith("user-1");
+    expect(universityRepository.findByEmailDomain).not.toHaveBeenCalled();
     expect(result).toEqual({ message: "Email verified successfully" });
+  });
+
+  it("also sets universityEmail, verified, and universityId when the email belongs to a known university domain", async () => {
+    const futureDate = new Date(Date.now() + 60 * 60 * 1000);
+    emailVerificationRepository.findByToken.mockResolvedValue({
+      userId: "user-1",
+      email: "student@usp.br",
+      token: "valid-token",
+      expiresAt: futureDate,
+    });
+    findUniversityByDomain.mockReturnValue({ name: "Universidade de São Paulo" });
+    universityRepository.findByEmailDomain.mockResolvedValue({ id: "univ-usp" });
+    userRepository.update.mockResolvedValue({ id: "user-1" });
+    emailVerificationRepository.deleteByUserId.mockResolvedValue(undefined);
+
+    const result = await verifyEmail("valid-token");
+
+    expect(universityRepository.findByEmailDomain).toHaveBeenCalledWith("usp.br");
+    expect(userRepository.update).toHaveBeenCalledWith("user-1", {
+      emailVerified: true,
+      universityEmail: "student@usp.br",
+      verified: true,
+      universityId: "univ-usp",
+    });
+    expect(result).toEqual({ message: "Email verified successfully" });
+  });
+
+  it("sets universityId to null when the domain is a known university but not in the DB yet", async () => {
+    const futureDate = new Date(Date.now() + 60 * 60 * 1000);
+    emailVerificationRepository.findByToken.mockResolvedValue({
+      userId: "user-1",
+      email: "student@unknownuni.br",
+      token: "valid-token",
+      expiresAt: futureDate,
+    });
+    findUniversityByDomain.mockReturnValue({ name: "Unknown University" });
+    universityRepository.findByEmailDomain.mockResolvedValue(null);
+    userRepository.update.mockResolvedValue({ id: "user-1" });
+    emailVerificationRepository.deleteByUserId.mockResolvedValue(undefined);
+
+    await verifyEmail("valid-token");
+
+    expect(userRepository.update).toHaveBeenCalledWith("user-1", {
+      emailVerified: true,
+      universityEmail: "student@unknownuni.br",
+      verified: true,
+      universityId: null,
+    });
   });
 
   it("throws 404 when token does not exist", async () => {

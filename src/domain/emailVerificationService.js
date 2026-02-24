@@ -2,7 +2,9 @@ import crypto from "crypto";
 import { AppError } from "@/errors/AppError";
 import * as emailVerificationRepository from "@/repositories/emailVerificationRepository";
 import * as userRepository from "@/repositories/userRepository";
+import * as universityRepository from "@/repositories/universityRepository";
 import { sendEmailVerification } from "@/lib/emailService";
+import { findUniversityByDomain } from "@/lib/universityDomains";
 
 const VERIFICATION_TOKEN_EXPIRY_HOURS = 24;
 
@@ -36,7 +38,19 @@ export async function verifyEmail(token) {
     throw new AppError("Token has expired", 400);
   }
 
-  await userRepository.update(record.userId, { emailVerified: true });
+  const domain = record.email.split("@")[1].toLowerCase();
+  const isUniversityEmail = findUniversityByDomain(domain) !== null;
+
+  const updateData = { emailVerified: true };
+
+  if (isUniversityEmail) {
+    const linkedUniversity = await universityRepository.findByEmailDomain(domain);
+    updateData.universityEmail = record.email;
+    updateData.verified = true;
+    updateData.universityId = linkedUniversity?.id ?? null;
+  }
+
+  await userRepository.update(record.userId, updateData);
   await emailVerificationRepository.deleteByUserId(record.userId);
 
   return { message: "Email verified successfully" };
