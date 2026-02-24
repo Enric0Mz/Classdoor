@@ -1,6 +1,36 @@
-// TODO: Replace with a real email provider (e.g., SendGrid, Resend) when ready for production
+import { Resend } from "resend";
+
+const resend = new Resend(process.env.RESEND_API_KEY);
+const APP_URL = process.env.APP_URL || "http://localhost:3000";
+
+export async function sendEmailVerification(toEmail, token) {
+  const verificationUrl = `${APP_URL}/api/v1/users/me/email/verify?token=${token}`;
+
+  await resend.emails.send({
+    from: "Classdoor <onboarding@resend.dev>",
+    to: toEmail,
+    subject: "Verify your Classdoor email",
+    html: `
+      <p>Welcome to Classdoor!</p>
+      <p>Click the link below to verify your email address. The link expires in 24 hours.</p>
+      <a href="${verificationUrl}">${verificationUrl}</a>
+      <p>If you did not create an account, you can ignore this email.</p>
+    `,
+  });
+}
+
 export async function sendVerificationEmail(toEmail, token) {
-  console.log(`[EmailService] Sending verification email to ${toEmail}`);
-  console.log(`[EmailService] Verification token: ${token}`);
-  console.log(`[EmailService] Verification URL: /api/v1/users/me/university-email/verify?token=${token}`);
+  const verificationUrl = `${APP_URL}/api/v1/users/me/university-email/verify?token=${token}`;
+
+  await resend.emails.send({
+    from: "Classdoor <onboarding@resend.dev>",
+    to: toEmail,
+    subject: "Verify your university email on Classdoor",
+    html: `
+      <p>You requested to verify your university email on Classdoor.</p>
+      <p>Click the link below to confirm. The link expires in 24 hours.</p>
+      <a href="${verificationUrl}">${verificationUrl}</a>
+      <p>If you did not request this, you can ignore this email.</p>
+    `,
+  });
 }

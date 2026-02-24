@@ -1,6 +1,7 @@
 import bcrypt from "bcrypt";
 import { AppError } from "@/errors/AppError";
 import * as userRepository from "@/repositories/userRepository";
+import * as emailVerificationService from "@/domain/emailVerificationService";
 import { signToken } from "@/lib/auth";
 import { generateUsername } from "@/lib/generateUsername";
 
@@ -57,19 +58,13 @@ function validateUsername(username) {
 }
 
 export async function registerUser({ email, password, username } = {}) {
-  const resolvedUsername = username || generateUsername();
-  validateUsername(resolvedUsername);
-
-  const existingUsername = await userRepository.findByUsername(resolvedUsername);
-  if (existingUsername) {
-    throw new AppError("A user with this username already exists", 409);
-  }
-
   if (!password) {
     throw new AppError("Password is required", 400);
   }
 
   validatePassword(password);
+
+  const hash = await bcrypt.hash(password, 10);
 
   if (email) {
     validateEmail(email);
@@ -80,7 +75,14 @@ export async function registerUser({ email, password, username } = {}) {
     }
   }
 
-  const hash = await bcrypt.hash(password, 10);
+  const resolvedUsername = username || generateUsername();
+  validateUsername(resolvedUsername);
+
+  const existingUsername = await userRepository.findByUsername(resolvedUsername);
+  if (existingUsername) {
+    throw new AppError("A user with this username already exists", 409);
+  }
+
   const userData = { username: resolvedUsername, password: hash };
   if (email) {
     userData.email = email;
@@ -88,6 +90,10 @@ export async function registerUser({ email, password, username } = {}) {
 
   const user = await userRepository.create(userData);
   const token = signToken({ id: user.id, email: user.email || null, role: user.role });
+
+  if (user.email) {
+    await emailVerificationService.sendEmailVerificationToUser(user.id, user.email);
+  }
 
   return { user: stripPassword(user), token };
 }
@@ -106,7 +112,7 @@ export async function loginUser({ identifier, password }) {
     ? await userRepository.findByEmail(identifier)
     : await userRepository.findByUsername(identifier);
 
-  if (!user || !user.active) {
+  if (!user) {
     throw new AppError("Invalid credentials", 401);
   }
 
@@ -167,5 +173,5 @@ export async function updateUser(id, data) {
 }
 
 export async function deleteUser(id) {
-  return userRepository.deactivate(id);
+  return userRepository.deleteUser(id);
 }

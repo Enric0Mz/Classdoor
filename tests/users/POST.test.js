@@ -1,5 +1,7 @@
 import { registerUser } from "@/domain/userService";
 import * as userRepository from "@/repositories/userRepository";
+import * as emailVerificationRepository from "@/repositories/emailVerificationRepository";
+import { sendEmailVerification } from "@/lib/emailService";
 import bcrypt from "bcrypt";
 import { signToken } from "@/lib/auth";
 import { POST } from "@/app/api/v1/users/route";
@@ -8,6 +10,16 @@ jest.mock("@/repositories/userRepository", () => ({
   findByEmail: jest.fn(),
   findByUsername: jest.fn(),
   create: jest.fn(),
+  update: jest.fn(),
+}));
+
+jest.mock("@/repositories/emailVerificationRepository", () => ({
+  create: jest.fn(),
+  deleteByUserId: jest.fn(),
+}));
+
+jest.mock("@/lib/emailService", () => ({
+  sendEmailVerification: jest.fn(),
 }));
 
 jest.mock("bcrypt", () => ({
@@ -69,6 +81,9 @@ describe("userService.registerUser", () => {
     bcrypt.hash.mockResolvedValue("hashed");
     userRepository.create.mockResolvedValue(created);
     signToken.mockReturnValue("jwt-token");
+    emailVerificationRepository.deleteByUserId.mockResolvedValue(undefined);
+    emailVerificationRepository.create.mockResolvedValue({ id: "verif-1" });
+    sendEmailVerification.mockResolvedValue(undefined);
 
     const result = await registerUser({ username: "AgilOnca123", email: "test@test.com", password: VALID_PASSWORD });
 
@@ -78,6 +93,48 @@ describe("userService.registerUser", () => {
     );
     expect(result.user).not.toHaveProperty("password");
     expect(result.token).toBe("jwt-token");
+  });
+
+  it("sends a verification email after registering with an email", async () => {
+    const created = {
+      id: "user-2",
+      email: "test@test.com",
+      username: "AgilOnca123",
+      password: "hashed",
+      role: "USER",
+      createdAt: new Date(),
+    };
+    userRepository.findByUsername.mockResolvedValue(null);
+    userRepository.findByEmail.mockResolvedValue(null);
+    bcrypt.hash.mockResolvedValue("hashed");
+    userRepository.create.mockResolvedValue(created);
+    signToken.mockReturnValue("jwt-token");
+    emailVerificationRepository.deleteByUserId.mockResolvedValue(undefined);
+    emailVerificationRepository.create.mockResolvedValue({ id: "verif-1" });
+    sendEmailVerification.mockResolvedValue(undefined);
+
+    await registerUser({ username: "AgilOnca123", email: "test@test.com", password: VALID_PASSWORD });
+
+    expect(sendEmailVerification).toHaveBeenCalledWith("test@test.com", expect.any(String));
+  });
+
+  it("does not send a verification email for anonymous registration (no email)", async () => {
+    const created = {
+      id: "user-1",
+      email: null,
+      username: "AgilOnca123",
+      password: "hashed",
+      role: "USER",
+      createdAt: new Date(),
+    };
+    userRepository.findByUsername.mockResolvedValue(null);
+    bcrypt.hash.mockResolvedValue("hashed");
+    userRepository.create.mockResolvedValue(created);
+    signToken.mockReturnValue("jwt-token");
+
+    await registerUser({ username: "AgilOnca123", password: VALID_PASSWORD });
+
+    expect(sendEmailVerification).not.toHaveBeenCalled();
   });
 
   it("auto-generates username when not provided", async () => {
@@ -183,7 +240,7 @@ describe("userService.registerUser", () => {
 
   it("throws 409 when email already exists", async () => {
     userRepository.findByUsername.mockResolvedValue(null);
-    userRepository.findByEmail.mockResolvedValue({ id: "user-1", email: "test@test.com" });
+    userRepository.findByEmail.mockResolvedValue({ id: "user-1", email: "test@test.com", active: true });
 
     await expect(
       registerUser({ username: "AgilOnca123", email: "test@test.com", password: VALID_PASSWORD })
@@ -203,6 +260,8 @@ describe("userService.registerUser", () => {
     });
     expect(userRepository.create).not.toHaveBeenCalled();
   });
+
+
 });
 
 describe("POST /api/v1/users", () => {
@@ -241,6 +300,9 @@ describe("POST /api/v1/users", () => {
     bcrypt.hash.mockResolvedValue("hashed");
     userRepository.create.mockResolvedValue(created);
     signToken.mockReturnValue("jwt-token");
+    emailVerificationRepository.deleteByUserId.mockResolvedValue(undefined);
+    emailVerificationRepository.create.mockResolvedValue({ id: "verif-1" });
+    sendEmailVerification.mockResolvedValue(undefined);
 
     const response = await POST(makeRequest({ username: "AgilOnca123", email: "test@test.com", password: VALID_PASSWORD }));
 
@@ -269,7 +331,7 @@ describe("POST /api/v1/users", () => {
 
   it("returns 409 when email already exists", async () => {
     userRepository.findByUsername.mockResolvedValue(null);
-    userRepository.findByEmail.mockResolvedValue({ id: "user-1", email: "test@test.com" });
+    userRepository.findByEmail.mockResolvedValue({ id: "user-1", email: "test@test.com", active: true });
 
     const response = await POST(makeRequest({ username: "AgilOnca123", email: "test@test.com", password: VALID_PASSWORD }));
 

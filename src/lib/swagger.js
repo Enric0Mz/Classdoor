@@ -717,6 +717,70 @@ const swaggerSpec = {
         },
       },
     },
+    "/api/v1/users/me/email/verify": {
+      get: {
+        tags: ["Users"],
+        summary: "Verify account email via token",
+        description: "Public endpoint. Follow the link sent to your email after registration. On success the account is marked as emailVerified.",
+        parameters: [
+          {
+            name: "token",
+            in: "query",
+            required: true,
+            schema: { type: "string", format: "uuid" },
+            description: "The verification token received by email",
+          },
+        ],
+        responses: {
+          200: {
+            description: "Email verified successfully",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: { message: { type: "string" } },
+                },
+              },
+            },
+          },
+          400: {
+            description: "Missing or expired token",
+            content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } },
+          },
+          404: {
+            description: "Token not found",
+            content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } },
+          },
+        },
+      },
+      post: {
+        tags: ["Users"],
+        summary: "Resend email verification",
+        description: "Requires authentication. Sends a new verification email to the account's registered email address.",
+        security: [{ BearerAuth: [] }],
+        responses: {
+          200: {
+            description: "Verification email sent",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: { message: { type: "string" } },
+                },
+              },
+            },
+          },
+          400: {
+            description: "Account has no email address",
+            content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } },
+          },
+          401: {
+            description: "Authentication required",
+            content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } },
+          },
+        },
+      },
+    },
     "/api/v1/users/me/university-email": {
       post: {
         tags: ["Users"],
@@ -1013,6 +1077,7 @@ const swaggerSpec = {
           username: { type: "string", example: "BravoCapivara347" },
           universityEmail: { type: "string", format: "email", nullable: true },
           verified: { type: "boolean", example: false },
+          emailVerified: { type: "boolean", example: false },
           active: { type: "boolean", example: true },
           role: { type: "string", enum: ["USER", "MODERATOR", "ADMIN"] },
           createdAt: { type: "string", format: "date-time" },
