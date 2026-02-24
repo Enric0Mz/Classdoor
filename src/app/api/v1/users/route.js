@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
 import * as userService from "@/domain/userService";
-import { verifyToken } from "@/lib/auth";
+import { requireVerifiedUser } from "@/lib/auth";
 import { requireRole } from "@/lib/authorization";
 import { parsePagination, paginatedResponse } from "@/lib/pagination";
 import { withErrorHandler } from "@/lib/errorHandler";
 
 export const GET = withErrorHandler(async (request) => {
-  const decoded = verifyToken(request);
+  const decoded = await requireVerifiedUser(request);
   requireRole(decoded, ["ADMIN", "MODERATOR"]);
   const { searchParams } = new URL(request.url);
   const { page, limit, skip } = parsePagination(searchParams);

@@ -1,5 +1,5 @@
 import * as userRepository from "@/repositories/userRepository";
-import { verifyToken } from "@/lib/auth";
+import { requireVerifiedUser } from "@/lib/auth";
 import { GET } from "@/app/api/v1/users/me/route";
 
 jest.mock("@/repositories/userRepository", () => ({
@@ -7,7 +7,7 @@ jest.mock("@/repositories/userRepository", () => ({
 }));
 
 jest.mock("@/lib/auth", () => ({
-  verifyToken: jest.fn(),
+  requireVerifiedUser: jest.fn(),
 }));
 
 jest.mock("next/server", () => ({
@@ -28,7 +28,7 @@ const USER_IN_DB = {
 
 describe("GET /api/v1/users/me", () => {
   it("returns 200 and user without password when token is valid", async () => {
-    verifyToken.mockReturnValue({ id: "user-1", email: "test@test.com", role: "USER" });
+    requireVerifiedUser.mockReturnValue({ id: "user-1", email: "test@test.com", role: "USER" });
     userRepository.findById.mockResolvedValue(USER_IN_DB);
 
     const response = await GET({});
@@ -39,7 +39,7 @@ describe("GET /api/v1/users/me", () => {
   });
 
   it("returns 404 when user no longer exists in the database", async () => {
-    verifyToken.mockReturnValue({ id: "user-1", email: "test@test.com", role: "USER" });
+    requireVerifiedUser.mockReturnValue({ id: "user-1", email: "test@test.com", role: "USER" });
     userRepository.findById.mockResolvedValue(null);
 
     const response = await GET({});
@@ -50,9 +50,9 @@ describe("GET /api/v1/users/me", () => {
     });
   });
 
-  it("returns 401 when verifyToken throws an AppError for missing or invalid token", async () => {
+  it("returns 401 when requireVerifiedUser throws an AppError for missing or invalid token", async () => {
     const { AppError } = require("@/errors/AppError");
-    verifyToken.mockImplementation(() => {
+    requireVerifiedUser.mockImplementation(() => {
       throw new AppError("Unauthorized", 401);
     });
 
@@ -64,8 +64,8 @@ describe("GET /api/v1/users/me", () => {
     });
   });
 
-  it("returns 500 when verifyToken throws an unexpected non-AppError", async () => {
-    verifyToken.mockImplementation(() => {
+  it("returns 500 when requireVerifiedUser throws an unexpected non-AppError", async () => {
+    requireVerifiedUser.mockImplementation(() => {
       throw new Error("Something went very wrong");
     });
 

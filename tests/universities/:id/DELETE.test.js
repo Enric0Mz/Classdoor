@@ -1,9 +1,9 @@
 import { DELETE } from "@/app/api/v1/universities/[id]/route";
-import { verifyToken } from "@/lib/auth";
+import { requireVerifiedUser } from "@/lib/auth";
 import { requireRole } from "@/lib/authorization";
 
 jest.mock("@/lib/auth", () => ({
-  verifyToken: jest.fn(),
+  requireVerifiedUser: jest.fn(),
 }));
 
 jest.mock("@/lib/authorization", () => ({
@@ -26,12 +26,12 @@ beforeEach(() => jest.clearAllMocks());
 
 describe("DELETE /api/v1/universities/:id", () => {
   it("returns 501 when authenticated as ADMIN", async () => {
-    verifyToken.mockReturnValue({ id: "admin-1", role: "ADMIN" });
+    requireVerifiedUser.mockReturnValue({ id: "admin-1", role: "ADMIN" });
     requireRole.mockReturnValue(undefined);
 
     const response = await DELETE(makeRequest(), makeParams("uni-1"));
 
-    expect(verifyToken).toHaveBeenCalled();
+    expect(requireVerifiedUser).toHaveBeenCalled();
     expect(requireRole).toHaveBeenCalledWith({ id: "admin-1", role: "ADMIN" }, ["ADMIN"]);
     expect(response.status).toBe(501);
     expect(response.body).toEqual({ message: "Not implemented" });
@@ -39,7 +39,7 @@ describe("DELETE /api/v1/universities/:id", () => {
 
   it("returns 401 when no token is provided", async () => {
     const { AppError } = require("@/errors/AppError");
-    verifyToken.mockImplementation(() => {
+    requireVerifiedUser.mockImplementation(() => {
       throw new AppError("Authentication required", 401);
     });
 
@@ -53,7 +53,7 @@ describe("DELETE /api/v1/universities/:id", () => {
 
   it("returns 403 when authenticated user is not ADMIN", async () => {
     const { AppError } = require("@/errors/AppError");
-    verifyToken.mockReturnValue({ id: "user-1", role: "USER" });
+    requireVerifiedUser.mockReturnValue({ id: "user-1", role: "USER" });
     requireRole.mockImplementation(() => {
       throw new AppError("Forbidden: insufficient permissions", 403);
     });

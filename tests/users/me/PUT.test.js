@@ -1,7 +1,7 @@
 import { updateUser } from "@/domain/userService";
 import * as userRepository from "@/repositories/userRepository";
 import bcrypt from "bcrypt";
-import { verifyToken } from "@/lib/auth";
+import { requireVerifiedUser } from "@/lib/auth";
 import { PUT } from "@/app/api/v1/users/me/route";
 
 jest.mock("@/repositories/userRepository", () => ({
@@ -15,7 +15,7 @@ jest.mock("bcrypt", () => ({
 }));
 
 jest.mock("@/lib/auth", () => ({
-  verifyToken: jest.fn(),
+  requireVerifiedUser: jest.fn(),
 }));
 
 jest.mock("next/server", () => ({
@@ -125,7 +125,7 @@ describe("userService.updateUser", () => {
 
 describe("PUT /api/v1/users/me", () => {
   it("returns 200 with updated user using token id", async () => {
-    verifyToken.mockReturnValue({ id: "user-1", email: "test@test.com" });
+    requireVerifiedUser.mockReturnValue({ id: "user-1", email: "test@test.com" });
     userRepository.findByEmail.mockResolvedValue(null);
     userRepository.update.mockResolvedValue({
       id: "user-1", email: "new@test.com", password: "hashed", createdAt: "2024-01-01T00:00:00.000Z",
@@ -140,7 +140,7 @@ describe("PUT /api/v1/users/me", () => {
 
   it("returns 401 when no token provided", async () => {
     const { AppError } = require("@/errors/AppError");
-    verifyToken.mockImplementation(() => {
+    requireVerifiedUser.mockImplementation(() => {
       throw new AppError("Authentication required", 401);
     });
 

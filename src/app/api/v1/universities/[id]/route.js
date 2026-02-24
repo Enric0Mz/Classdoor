@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import * as universityService from "@/domain/universityService";
-import { verifyToken } from "@/lib/auth";
+import { requireVerifiedUser } from "@/lib/auth";
 import { requireRole } from "@/lib/authorization";
 import { withErrorHandler } from "@/lib/errorHandler";
 
@@ -11,13 +11,13 @@ export const GET = withErrorHandler(async (request, { params }) => {
 });
 
 export const PUT = withErrorHandler(async (request, { params }) => {
-  const decoded = verifyToken(request);
+  const decoded = await requireVerifiedUser(request);
   requireRole(decoded, ["ADMIN"]);
   return NextResponse.json({ message: "Not implemented" }, { status: 501 });
 });
 
 export const DELETE = withErrorHandler(async (request, { params }) => {
-  const decoded = verifyToken(request);
+  const decoded = await requireVerifiedUser(request);
   requireRole(decoded, ["ADMIN"]);
   return NextResponse.json({ message: "Not implemented" }, { status: 501 });
 });

@@ -1,6 +1,6 @@
 import { listUsers } from "@/domain/userService";
 import * as userRepository from "@/repositories/userRepository";
-import { verifyToken } from "@/lib/auth";
+import { requireVerifiedUser } from "@/lib/auth";
 import { requireRole } from "@/lib/authorization";
 import { GET } from "@/app/api/v1/users/route";
 
@@ -9,7 +9,7 @@ jest.mock("@/repositories/userRepository", () => ({
 }));
 
 jest.mock("@/lib/auth", () => ({
-  verifyToken: jest.fn(),
+  requireVerifiedUser: jest.fn(),
 }));
 
 jest.mock("@/lib/authorization", () => ({
@@ -57,13 +57,13 @@ describe("userService.listUsers", () => {
 
 describe("GET /api/v1/users", () => {
   it("returns 200 with paginated users when authenticated as ADMIN", async () => {
-    verifyToken.mockReturnValue({ id: "user-1", email: "a@test.com", role: "ADMIN" });
+    requireVerifiedUser.mockReturnValue({ id: "user-1", email: "a@test.com", role: "ADMIN" });
     requireRole.mockReturnValue(undefined);
     userRepository.findAll.mockResolvedValue(PAGINATED_USERS);
 
     const response = await GET(makeRequest());
 
-    expect(verifyToken).toHaveBeenCalled();
+    expect(requireVerifiedUser).toHaveBeenCalled();
     expect(requireRole).toHaveBeenCalledWith({ id: "user-1", email: "a@test.com", role: "ADMIN" }, ["ADMIN", "MODERATOR"]);
     expect(response.status).toBe(200);
     expect(response.body).toEqual({
@@ -73,7 +73,7 @@ describe("GET /api/v1/users", () => {
   });
 
   it("returns 200 with correct pagination when page and limit are provided", async () => {
-    verifyToken.mockReturnValue({ id: "user-1", email: "a@test.com", role: "ADMIN" });
+    requireVerifiedUser.mockReturnValue({ id: "user-1", email: "a@test.com", role: "ADMIN" });
     requireRole.mockReturnValue(undefined);
     userRepository.findAll.mockResolvedValue(PAGINATED_USERS);
 
@@ -86,7 +86,7 @@ describe("GET /api/v1/users", () => {
 
   it("returns 401 when no token provided", async () => {
     const { AppError } = require("@/errors/AppError");
-    verifyToken.mockImplementation(() => {
+    requireVerifiedUser.mockImplementation(() => {
       throw new AppError("Authentication required", 401);
     });
 
@@ -100,7 +100,7 @@ describe("GET /api/v1/users", () => {
 
   it("returns 403 when authenticated user has USER role", async () => {
     const { AppError } = require("@/errors/AppError");
-    verifyToken.mockReturnValue({ id: "user-1", email: "a@test.com", role: "USER" });
+    requireVerifiedUser.mockReturnValue({ id: "user-1", email: "a@test.com", role: "USER" });
     requireRole.mockImplementation(() => {
       throw new AppError("Forbidden: insufficient permissions", 403);
     });
@@ -114,7 +114,7 @@ describe("GET /api/v1/users", () => {
   });
 
   it("returns 500 on unexpected repository error", async () => {
-    verifyToken.mockReturnValue({ id: "user-1", email: "a@test.com", role: "ADMIN" });
+    requireVerifiedUser.mockReturnValue({ id: "user-1", email: "a@test.com", role: "ADMIN" });
     requireRole.mockReturnValue(undefined);
     userRepository.findAll.mockRejectedValue(new Error("DB down"));
 

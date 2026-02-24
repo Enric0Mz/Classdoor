@@ -1,6 +1,6 @@
 import { createReview } from "@/domain/reviewService";
 import * as reviewRepository from "@/repositories/reviewRepository";
-import { verifyToken } from "@/lib/auth";
+import { requireVerifiedUser } from "@/lib/auth";
 import { POST } from "@/app/api/v1/reviews/route";
 
 jest.mock("@/repositories/reviewRepository", () => ({
@@ -8,7 +8,7 @@ jest.mock("@/repositories/reviewRepository", () => ({
 }));
 
 jest.mock("@/lib/auth", () => ({
-  verifyToken: jest.fn(),
+  requireVerifiedUser: jest.fn(),
 }));
 
 jest.mock("next/server", () => ({
@@ -74,7 +74,7 @@ function makeRequest(body) {
 
 describe("POST /api/v1/reviews", () => {
   it("returns 201 with the created review when authenticated", async () => {
-    verifyToken.mockReturnValue({ id: "user-1", email: "user@test.com", role: "USER" });
+    requireVerifiedUser.mockReturnValue({ id: "user-1", email: "user@test.com", role: "USER" });
     const created = { id: "review-1", ...VALID_REVIEW_BODY, authorId: "user-1" };
     reviewRepository.create.mockResolvedValue(created);
 
@@ -87,7 +87,7 @@ describe("POST /api/v1/reviews", () => {
 
   it("returns 401 when no token is provided", async () => {
     const { AppError } = require("@/errors/AppError");
-    verifyToken.mockImplementation(() => {
+    requireVerifiedUser.mockImplementation(() => {
       throw new AppError("Unauthorized", 401);
     });
 
@@ -100,7 +100,7 @@ describe("POST /api/v1/reviews", () => {
   });
 
   it("returns 400 when required fields are missing", async () => {
-    verifyToken.mockReturnValue({ id: "user-1", email: "user@test.com", role: "USER" });
+    requireVerifiedUser.mockReturnValue({ id: "user-1", email: "user@test.com", role: "USER" });
 
     const response = await POST(makeRequest({ rating: 4, difficultyLevel: 3 }));
 

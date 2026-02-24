@@ -1,6 +1,6 @@
 import { createUniversity } from "@/domain/universityService";
 import * as universityRepository from "@/repositories/universityRepository";
-import { verifyToken } from "@/lib/auth";
+import { requireVerifiedUser } from "@/lib/auth";
 import { requireRole } from "@/lib/authorization";
 import { POST } from "@/app/api/v1/universities/route";
 
@@ -10,7 +10,7 @@ jest.mock("@/repositories/universityRepository", () => ({
 }));
 
 jest.mock("@/lib/auth", () => ({
-  verifyToken: jest.fn(),
+  requireVerifiedUser: jest.fn(),
 }));
 
 jest.mock("@/lib/authorization", () => ({
@@ -112,14 +112,14 @@ describe("POST /api/v1/universities", () => {
   it("returns 201 with the created university when authenticated as ADMIN", async () => {
     const input = { name: "MIT", location: "Cambridge", website: "https://mit.edu", type: "PRIVATE", courses: ["Business"], rating: 4.5 };
     const created = { id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890", ...input, createdAt: "2024-01-01T00:00:00.000Z" };
-    verifyToken.mockReturnValue({ id: "admin-1", email: "admin@test.com", role: "ADMIN" });
+    requireVerifiedUser.mockReturnValue({ id: "admin-1", email: "admin@test.com", role: "ADMIN" });
     requireRole.mockReturnValue(undefined);
     universityRepository.findByName.mockResolvedValue(null);
     universityRepository.create.mockResolvedValue(created);
 
     const response = await POST(makeRequest(input));
 
-    expect(verifyToken).toHaveBeenCalled();
+    expect(requireVerifiedUser).toHaveBeenCalled();
     expect(requireRole).toHaveBeenCalledWith({ id: "admin-1", email: "admin@test.com", role: "ADMIN" }, ["ADMIN"]);
     expect(response.status).toBe(201);
     expect(response.body).toEqual(created);
@@ -127,7 +127,7 @@ describe("POST /api/v1/universities", () => {
 
   it("returns 401 when no token provided", async () => {
     const { AppError } = require("@/errors/AppError");
-    verifyToken.mockImplementation(() => {
+    requireVerifiedUser.mockImplementation(() => {
       throw new AppError("Authentication required", 401);
     });
 
@@ -141,7 +141,7 @@ describe("POST /api/v1/universities", () => {
 
   it("returns 403 when authenticated user is not ADMIN", async () => {
     const { AppError } = require("@/errors/AppError");
-    verifyToken.mockReturnValue({ id: "user-1", email: "user@test.com", role: "USER" });
+    requireVerifiedUser.mockReturnValue({ id: "user-1", email: "user@test.com", role: "USER" });
     requireRole.mockImplementation(() => {
       throw new AppError("Forbidden: insufficient permissions", 403);
     });
@@ -155,7 +155,7 @@ describe("POST /api/v1/universities", () => {
   });
 
   it("returns 400 when name is missing", async () => {
-    verifyToken.mockReturnValue({ id: "admin-1", email: "admin@test.com", role: "ADMIN" });
+    requireVerifiedUser.mockReturnValue({ id: "admin-1", email: "admin@test.com", role: "ADMIN" });
     requireRole.mockReturnValue(undefined);
 
     const response = await POST(makeRequest({ location: "Cambridge", type: "PUBLIC" }));
@@ -167,7 +167,7 @@ describe("POST /api/v1/universities", () => {
   });
 
   it("returns 400 when location is missing", async () => {
-    verifyToken.mockReturnValue({ id: "admin-1", email: "admin@test.com", role: "ADMIN" });
+    requireVerifiedUser.mockReturnValue({ id: "admin-1", email: "admin@test.com", role: "ADMIN" });
     requireRole.mockReturnValue(undefined);
 
     const response = await POST(makeRequest({ name: "MIT", type: "PUBLIC" }));
@@ -179,7 +179,7 @@ describe("POST /api/v1/universities", () => {
   });
 
   it("returns 400 when type is missing", async () => {
-    verifyToken.mockReturnValue({ id: "admin-1", email: "admin@test.com", role: "ADMIN" });
+    requireVerifiedUser.mockReturnValue({ id: "admin-1", email: "admin@test.com", role: "ADMIN" });
     requireRole.mockReturnValue(undefined);
 
     const response = await POST(makeRequest({ name: "MIT", location: "Cambridge" }));
@@ -191,7 +191,7 @@ describe("POST /api/v1/universities", () => {
   });
 
   it("returns 400 when type is invalid", async () => {
-    verifyToken.mockReturnValue({ id: "admin-1", email: "admin@test.com", role: "ADMIN" });
+    requireVerifiedUser.mockReturnValue({ id: "admin-1", email: "admin@test.com", role: "ADMIN" });
     requireRole.mockReturnValue(undefined);
 
     const response = await POST(makeRequest({ name: "MIT", location: "Cambridge", type: "HYBRID" }));
@@ -203,7 +203,7 @@ describe("POST /api/v1/universities", () => {
   });
 
   it("returns 409 when the university already exists", async () => {
-    verifyToken.mockReturnValue({ id: "admin-1", email: "admin@test.com", role: "ADMIN" });
+    requireVerifiedUser.mockReturnValue({ id: "admin-1", email: "admin@test.com", role: "ADMIN" });
     requireRole.mockReturnValue(undefined);
     universityRepository.findByName.mockResolvedValue({ id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890", name: "MIT" });
 
@@ -216,7 +216,7 @@ describe("POST /api/v1/universities", () => {
   });
 
   it("returns 500 on unexpected repository error", async () => {
-    verifyToken.mockReturnValue({ id: "admin-1", email: "admin@test.com", role: "ADMIN" });
+    requireVerifiedUser.mockReturnValue({ id: "admin-1", email: "admin@test.com", role: "ADMIN" });
     requireRole.mockReturnValue(undefined);
     universityRepository.findByName.mockResolvedValue(null);
     universityRepository.create.mockRejectedValue(new Error("DB down"));

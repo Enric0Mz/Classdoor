@@ -2,7 +2,7 @@ import { submitUniversityEmail } from "@/domain/universityEmailVerificationServi
 import * as verificationRepository from "@/repositories/universityEmailVerificationRepository";
 import * as userRepository from "@/repositories/userRepository";
 import { sendVerificationEmail } from "@/lib/emailService";
-import { verifyToken } from "@/lib/auth";
+import { requireVerifiedUser } from "@/lib/auth";
 import { POST } from "@/app/api/v1/users/me/university-email/route";
 
 jest.mock("@/repositories/universityEmailVerificationRepository", () => ({
@@ -20,7 +20,7 @@ jest.mock("@/lib/emailService", () => ({
 }));
 
 jest.mock("@/lib/auth", () => ({
-  verifyToken: jest.fn(),
+  requireVerifiedUser: jest.fn(),
 }));
 
 jest.mock("next/server", () => ({
@@ -97,7 +97,7 @@ function makeRequest(body, token) {
 
 describe("POST /api/v1/users/me/university-email", () => {
   it("returns 200 with success message for authenticated user", async () => {
-    verifyToken.mockReturnValue({ id: "user-1", email: "user@email.com", role: "USER" });
+    requireVerifiedUser.mockReturnValue({ id: "user-1", email: "user@email.com", role: "USER" });
     verificationRepository.deleteByUserId.mockResolvedValue(undefined);
     verificationRepository.create.mockResolvedValue({ id: "verif-1" });
     sendVerificationEmail.mockResolvedValue(undefined);
@@ -110,7 +110,7 @@ describe("POST /api/v1/users/me/university-email", () => {
 
   it("returns 401 when no auth token is provided", async () => {
     const { AppError } = require("@/errors/AppError");
-    verifyToken.mockImplementation(() => {
+    requireVerifiedUser.mockImplementation(() => {
       throw new AppError("Unauthorized", 401);
     });
 
@@ -120,7 +120,7 @@ describe("POST /api/v1/users/me/university-email", () => {
   });
 
   it("returns 403 for anonymous user without a registered email", async () => {
-    verifyToken.mockReturnValue({ id: "user-anon", email: null, role: "USER" });
+    requireVerifiedUser.mockReturnValue({ id: "user-anon", email: null, role: "USER" });
 
     const response = await POST(makeRequest({ universityEmail: "me@uni.br" }, "anon-token"));
 
@@ -134,7 +134,7 @@ describe("POST /api/v1/users/me/university-email", () => {
   });
 
   it("returns 400 when universityEmail field is missing", async () => {
-    verifyToken.mockReturnValue({ id: "user-1", email: "user@email.com", role: "USER" });
+    requireVerifiedUser.mockReturnValue({ id: "user-1", email: "user@email.com", role: "USER" });
 
     const response = await POST(makeRequest({}, "valid-token"));
 

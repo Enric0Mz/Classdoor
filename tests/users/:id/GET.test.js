@@ -1,15 +1,15 @@
 import { getUserById } from "@/domain/userService";
 import * as userRepository from "@/repositories/userRepository";
-import { verifyToken } from "@/lib/auth";
+import { requireVerifiedUser } from "@/lib/auth";
 import { GET, DELETE } from "@/app/api/v1/users/[id]/route";
 
 jest.mock("@/repositories/userRepository", () => ({
   findById: jest.fn(),
-  deactivate: jest.fn(),
+  deleteUser: jest.fn(),
 }));
 
 jest.mock("@/lib/auth", () => ({
-  verifyToken: jest.fn(),
+  requireVerifiedUser: jest.fn(),
 }));
 
 jest.mock("next/server", () => ({
@@ -29,7 +29,7 @@ const USER_IN_DB = {
 };
 
 function makeParams(id) {
-  return { params: Promise.resolve({ id }) };
+  return { params: { id } };
 }
 
 describe("userService.getUserById", () => {
@@ -56,7 +56,7 @@ describe("userService.getUserById", () => {
 
 describe("GET /api/v1/users/:id", () => {
   it("returns 200 when user fetches their own data", async () => {
-    verifyToken.mockReturnValue({ id: "user-1", email: "test@test.com", role: "USER" });
+    requireVerifiedUser.mockReturnValue({ id: "user-1", email: "test@test.com", role: "USER" });
     userRepository.findById.mockResolvedValue(USER_IN_DB);
 
     const response = await GET({}, makeParams("user-1"));
@@ -66,7 +66,7 @@ describe("GET /api/v1/users/:id", () => {
   });
 
   it("returns 200 when ADMIN fetches any user", async () => {
-    verifyToken.mockReturnValue({ id: "admin-1", email: "admin@test.com", role: "ADMIN" });
+    requireVerifiedUser.mockReturnValue({ id: "admin-1", email: "admin@test.com", role: "ADMIN" });
     userRepository.findById.mockResolvedValue(USER_IN_DB);
 
     const response = await GET({}, makeParams("user-1"));
@@ -75,7 +75,7 @@ describe("GET /api/v1/users/:id", () => {
   });
 
   it("returns 200 when MODERATOR fetches any user", async () => {
-    verifyToken.mockReturnValue({ id: "mod-1", email: "mod@test.com", role: "MODERATOR" });
+    requireVerifiedUser.mockReturnValue({ id: "mod-1", email: "mod@test.com", role: "MODERATOR" });
     userRepository.findById.mockResolvedValue(USER_IN_DB);
 
     const response = await GET({}, makeParams("user-1"));
@@ -84,7 +84,7 @@ describe("GET /api/v1/users/:id", () => {
   });
 
   it("returns 403 when USER fetches another user's data", async () => {
-    verifyToken.mockReturnValue({ id: "user-2", email: "other@test.com", role: "USER" });
+    requireVerifiedUser.mockReturnValue({ id: "user-2", email: "other@test.com", role: "USER" });
 
     const response = await GET({}, makeParams("user-1"));
 
@@ -96,7 +96,7 @@ describe("GET /api/v1/users/:id", () => {
 
   it("returns 401 when request has no token", async () => {
     const { AppError } = require("@/errors/AppError");
-    verifyToken.mockImplementation(() => {
+    requireVerifiedUser.mockImplementation(() => {
       throw new AppError("Unauthorized", 401);
     });
 
@@ -106,7 +106,7 @@ describe("GET /api/v1/users/:id", () => {
   });
 
   it("returns 404 when user not found", async () => {
-    verifyToken.mockReturnValue({ id: "user-1", email: "test@test.com", role: "USER" });
+    requireVerifiedUser.mockReturnValue({ id: "user-1", email: "test@test.com", role: "USER" });
     userRepository.findById.mockResolvedValue(null);
 
     const response = await GET({}, makeParams("user-1"));
@@ -120,18 +120,18 @@ describe("GET /api/v1/users/:id", () => {
 
 describe("DELETE /api/v1/users/:id", () => {
   it("returns 200 when ADMIN deletes a user", async () => {
-    verifyToken.mockReturnValue({ id: "admin-1", role: "ADMIN" });
-    userRepository.deactivate.mockResolvedValue();
+    requireVerifiedUser.mockReturnValue({ id: "admin-1", role: "ADMIN" });
+    userRepository.deleteUser.mockResolvedValue();
 
     const response = await DELETE({}, makeParams("user-1"));
 
     expect(response.status).toBe(200);
     expect(response.body).toEqual({ message: "User deleted" });
-    expect(userRepository.deactivate).toHaveBeenCalledWith("user-1");
+    expect(userRepository.deleteUser).toHaveBeenCalledWith("user-1");
   });
 
   it("returns 403 when a non-ADMIN tries to delete a user", async () => {
-    verifyToken.mockReturnValue({ id: "user-1", role: "USER" });
+    requireVerifiedUser.mockReturnValue({ id: "user-1", role: "USER" });
 
     const response = await DELETE({}, makeParams("user-2"));
 
@@ -140,7 +140,7 @@ describe("DELETE /api/v1/users/:id", () => {
 
   it("returns 401 when request has no token", async () => {
     const { AppError } = require("@/errors/AppError");
-    verifyToken.mockImplementation(() => {
+    requireVerifiedUser.mockImplementation(() => {
       throw new AppError("Unauthorized", 401);
     });
 

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import * as universityService from "@/domain/universityService";
-import { verifyToken } from "@/lib/auth";
+import { requireVerifiedUser } from "@/lib/auth";
 import { requireRole } from "@/lib/authorization";
 import { parsePagination, paginatedResponse } from "@/lib/pagination";
 import { withErrorHandler } from "@/lib/errorHandler";
@@ -13,7 +13,7 @@ export const GET = withErrorHandler(async (request) => {
 });
 
 export const POST = withErrorHandler(async (request) => {
-  const decoded = verifyToken(request);
+  const decoded = await requireVerifiedUser(request);
   requireRole(decoded, ["ADMIN"]);
   const body = await request.json();
   const university = await universityService.createUniversity(body);

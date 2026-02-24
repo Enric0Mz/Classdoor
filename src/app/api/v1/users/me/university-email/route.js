@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
 import { AppError } from "@/errors/AppError";
 import * as verificationService from "@/domain/universityEmailVerificationService";
-import { verifyToken } from "@/lib/auth";
+import { requireVerifiedUser } from "@/lib/auth";
 import { withErrorHandler } from "@/lib/errorHandler";
 
 export const POST = withErrorHandler(async (request) => {
-  const decoded = verifyToken(request);
+  const decoded = await requireVerifiedUser(request);
   const { universityEmail } = await request.json();
 
   if (!universityEmail) {

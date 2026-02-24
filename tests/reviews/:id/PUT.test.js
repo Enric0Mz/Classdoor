@@ -1,6 +1,6 @@
 import { updateReview } from "@/domain/reviewService";
 import * as reviewRepository from "@/repositories/reviewRepository";
-import { verifyToken } from "@/lib/auth";
+import { requireVerifiedUser } from "@/lib/auth";
 import { PUT } from "@/app/api/v1/reviews/[id]/route";
 
 jest.mock("@/repositories/reviewRepository", () => ({
@@ -9,7 +9,7 @@ jest.mock("@/repositories/reviewRepository", () => ({
 }));
 
 jest.mock("@/lib/auth", () => ({
-  verifyToken: jest.fn(),
+  requireVerifiedUser: jest.fn(),
 }));
 
 jest.mock("next/server", () => ({
@@ -72,7 +72,7 @@ describe("reviewService.updateReview", () => {
 
 describe("PUT /api/v1/reviews/:id", () => {
   it("returns 200 when the authenticated user is the author", async () => {
-    verifyToken.mockReturnValue({ id: "user-1", email: "user@test.com", role: "USER" });
+    requireVerifiedUser.mockReturnValue({ id: "user-1", email: "user@test.com", role: "USER" });
     const updatedReview = { ...REVIEW, rating: 5 };
     reviewRepository.findById.mockResolvedValue(REVIEW);
     reviewRepository.update.mockResolvedValue(updatedReview);
@@ -88,7 +88,7 @@ describe("PUT /api/v1/reviews/:id", () => {
 
   it("returns 401 when no token is provided", async () => {
     const { AppError } = require("@/errors/AppError");
-    verifyToken.mockImplementation(() => {
+    requireVerifiedUser.mockImplementation(() => {
       throw new AppError("Unauthorized", 401);
     });
 
@@ -100,7 +100,7 @@ describe("PUT /api/v1/reviews/:id", () => {
   });
 
   it("returns 403 when authenticated user is not the author", async () => {
-    verifyToken.mockReturnValue({ id: "other-user", email: "other@test.com", role: "USER" });
+    requireVerifiedUser.mockReturnValue({ id: "other-user", email: "other@test.com", role: "USER" });
     reviewRepository.findById.mockResolvedValue(REVIEW);
 
     const request = { json: jest.fn().mockResolvedValue(UPDATE_DATA) };
