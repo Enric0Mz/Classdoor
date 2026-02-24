@@ -7,6 +7,15 @@ import { sendEmailVerification } from "@/lib/emailService";
 const VERIFICATION_TOKEN_EXPIRY_HOURS = 24;
 
 export async function sendEmailVerificationToUser(userId, email) {
+  const user = await userRepository.findById(userId);
+  if (!user) {
+    throw new AppError("User not found", 404);
+  }
+
+  if (user.emailVerified) {
+    throw new AppError("Email already verified", 400);
+  }
+
   const token = crypto.randomUUID();
   const expiresAt = new Date(Date.now() + VERIFICATION_TOKEN_EXPIRY_HOURS * 60 * 60 * 1000);
 

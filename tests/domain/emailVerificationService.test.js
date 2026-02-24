@@ -13,6 +13,7 @@ jest.mock("@/repositories/emailVerificationRepository", () => ({
 }));
 
 jest.mock("@/repositories/userRepository", () => ({
+  findById: jest.fn(),
   update: jest.fn(),
 }));
 
@@ -24,6 +25,7 @@ beforeEach(() => jest.clearAllMocks());
 
 describe("emailVerificationService.sendEmailVerificationToUser", () => {
   it("deletes any existing token, creates a new one, and sends the email", async () => {
+    userRepository.findById.mockResolvedValue({ id: "user-1", emailVerified: false });
     emailVerificationRepository.deleteByUserId.mockResolvedValue(undefined);
     emailVerificationRepository.create.mockResolvedValue({ id: "verif-1" });
     sendEmailVerification.mockResolvedValue(undefined);
@@ -44,6 +46,7 @@ describe("emailVerificationService.sendEmailVerificationToUser", () => {
   });
 
   it("deletes existing token before creating a new one", async () => {
+    userRepository.findById.mockResolvedValue({ id: "user-1", emailVerified: false });
     emailVerificationRepository.deleteByUserId.mockResolvedValue(undefined);
     emailVerificationRepository.create.mockResolvedValue({ id: "verif-2" });
     sendEmailVerification.mockResolvedValue(undefined);
@@ -53,6 +56,17 @@ describe("emailVerificationService.sendEmailVerificationToUser", () => {
     const deleteOrder = emailVerificationRepository.deleteByUserId.mock.invocationCallOrder[0];
     const createOrder = emailVerificationRepository.create.mock.invocationCallOrder[0];
     expect(deleteOrder).toBeLessThan(createOrder);
+  });
+
+  it("throws 400 when email is already verified", async () => {
+    userRepository.findById.mockResolvedValue({ id: "user-1", emailVerified: true });
+
+    await expect(
+      sendEmailVerificationToUser("user-1", "user@test.com")
+    ).rejects.toMatchObject({ message: "Email already verified", statusCode: 400 });
+
+    expect(emailVerificationRepository.create).not.toHaveBeenCalled();
+    expect(sendEmailVerification).not.toHaveBeenCalled();
   });
 });
 

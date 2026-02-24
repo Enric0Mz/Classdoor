@@ -7,6 +7,7 @@ import { signToken } from "@/lib/auth";
 import { POST } from "@/app/api/v1/users/route";
 
 jest.mock("@/repositories/userRepository", () => ({
+  findById: jest.fn(),
   findByEmail: jest.fn(),
   findByUsername: jest.fn(),
   create: jest.fn(),
@@ -78,6 +79,7 @@ describe("userService.registerUser", () => {
     };
     userRepository.findByUsername.mockResolvedValue(null);
     userRepository.findByEmail.mockResolvedValue(null);
+    userRepository.findById.mockResolvedValue({ id: "user-2", emailVerified: false });
     bcrypt.hash.mockResolvedValue("hashed");
     userRepository.create.mockResolvedValue(created);
     signToken.mockReturnValue("jwt-token");
@@ -106,6 +108,7 @@ describe("userService.registerUser", () => {
     };
     userRepository.findByUsername.mockResolvedValue(null);
     userRepository.findByEmail.mockResolvedValue(null);
+    userRepository.findById.mockResolvedValue({ id: "user-2", emailVerified: false });
     bcrypt.hash.mockResolvedValue("hashed");
     userRepository.create.mockResolvedValue(created);
     signToken.mockReturnValue("jwt-token");
@@ -297,6 +300,7 @@ describe("POST /api/v1/users", () => {
     };
     userRepository.findByUsername.mockResolvedValue(null);
     userRepository.findByEmail.mockResolvedValue(null);
+    userRepository.findById.mockResolvedValue({ id: "user-2", emailVerified: false });
     bcrypt.hash.mockResolvedValue("hashed");
     userRepository.create.mockResolvedValue(created);
     signToken.mockReturnValue("jwt-token");

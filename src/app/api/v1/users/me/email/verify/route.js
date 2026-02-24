@@ -23,6 +23,9 @@ export const POST = withErrorHandler(async (request) => {
     throw new AppError("Account has no email address to verify", 400);
   }
 
-  const result = await emailVerificationService.sendEmailVerificationToUser(decoded.id, decoded.email);
+  const result = await emailVerificationService.sendEmailVerificationToUser(
+    decoded.id,
+    decoded.email,
+  );
   return NextResponse.json(result);
 });

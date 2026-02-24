@@ -35,7 +35,6 @@ export async function requireVerifiedUser(request) {
   if (!user) {
     throw new AppError("User not found", 404);
   }
-  console.log("USER", user);
   if (!user.emailVerified) {
     throw new AppError("Email verification required", 403);
   }
