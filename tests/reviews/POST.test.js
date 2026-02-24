@@ -36,7 +36,7 @@ describe("reviewService.createReview", () => {
     expect(reviewRepository.create).toHaveBeenCalledWith(
       expect.objectContaining({ authorId: "user-1", universityId: "uni-1", rating: 4 })
     );
-    expect(result).toEqual({ review: created });
+    expect(result).toEqual({ review: { ...created, isVerified: false } });
     expect(result).not.toHaveProperty("editToken");
   });
 
@@ -81,7 +81,7 @@ describe("POST /api/v1/reviews", () => {
     const response = await POST(makeRequest(VALID_REVIEW_BODY));
 
     expect(response.status).toBe(201);
-    expect(response.body).toEqual({ review: created });
+    expect(response.body).toEqual({ review: { ...created, isVerified: false } });
     expect(response.body).not.toHaveProperty("editToken");
   });
 

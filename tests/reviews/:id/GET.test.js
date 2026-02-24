@@ -21,6 +21,7 @@ const SAMPLE_REVIEW = {
   universityId: "uni-1",
   author: { id: "user-1", username: "AgilOnca123", verified: true },
   createdAt: new Date(),
+  isVerified: false,
 };
 
 function makeParams(id) {

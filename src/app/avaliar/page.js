@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { GraduationCap, Search, ChevronDown, ArrowLeft } from "lucide-react";
@@ -148,9 +148,9 @@ function UniversitySelector({ value, onChange, universities }) {
   );
 }
 
-// ─── Page ─────────────────────────────────────────────────────────────────────
+// ─── Content ──────────────────────────────────────────────────────────────────
 
-export default function AvaliarPage() {
+function AvaliarContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const preselectedUniversityId = searchParams.get("universityId");
@@ -243,149 +243,161 @@ export default function AvaliarPage() {
   if (!token) return null;
 
   return (
-    <main className="hero-gradient min-h-screen px-4 py-12">
-      <div className="mx-auto w-full max-w-lg">
+    <div className="mx-auto w-full max-w-lg">
 
-        {/* Header */}
-        <div className="mb-8 text-center">
-          <Link href="/" className="inline-flex items-center gap-2.5">
-            <div className="brand-gradient flex h-10 w-10 items-center justify-center rounded-xl text-white">
-              <GraduationCap size={22} />
+      {/* Header */}
+      <div className="mb-8 text-center">
+        <Link href="/" className="inline-flex items-center gap-2.5">
+          <div className="brand-gradient flex h-10 w-10 items-center justify-center rounded-xl text-white">
+            <GraduationCap size={22} />
+          </div>
+          <span className="brand-gradient-text text-[1.4rem] font-extrabold tracking-tight">
+            classdoor
+          </span>
+        </Link>
+        <h1 className="mt-5 text-2xl font-semibold tracking-tight text-gray-900">
+          Avaliar universidade
+        </h1>
+        <p className="mt-1.5 text-sm text-gray-500">
+          Sua avaliação ajuda outros estudantes a escolherem melhor
+        </p>
+      </div>
+
+      {/* Card */}
+      <div className="rounded-2xl border border-gray-100 bg-white p-8 shadow-sm">
+
+        {error && (
+          <div className="mb-6 flex items-start gap-2.5 rounded-xl border border-red-100 bg-red-50 p-3.5">
+            <svg className="mt-0.5 h-4 w-4 shrink-0 text-red-500" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm-1-5a1 1 0 1 0 2 0V9a1 1 0 1 0-2 0v4zm1-7.5a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5z" clipRule="evenodd" />
+            </svg>
+            <p className="text-sm text-red-600">{error}</p>
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="flex flex-col gap-7">
+
+          {/* University */}
+          <div className="flex flex-col gap-2">
+            <label className="text-sm font-semibold text-gray-700">
+              Universidade
+            </label>
+            <UniversitySelector
+              value={universityId}
+              onChange={setUniversityId}
+              universities={universities}
+            />
+          </div>
+
+          {/* Rating */}
+          <div className="flex flex-col gap-3">
+            <label className="text-sm font-semibold text-gray-700">
+              Nota geral
+            </label>
+            <div className="flex flex-col items-center gap-1 rounded-xl border border-gray-100 bg-gray-50 py-5">
+              <StarPicker value={rating} onChange={setRating} />
             </div>
-            <span className="brand-gradient-text text-[1.4rem] font-extrabold tracking-tight">
-              classdoor
-            </span>
-          </Link>
-          <h1 className="mt-5 text-2xl font-semibold tracking-tight text-gray-900">
-            Avaliar universidade
-          </h1>
-          <p className="mt-1.5 text-sm text-gray-500">
-            Sua avaliação ajuda outros estudantes a escolherem melhor
-          </p>
-        </div>
+          </div>
 
-        {/* Card */}
-        <div className="rounded-2xl border border-gray-100 bg-white p-8 shadow-sm">
-
-          {error && (
-            <div className="mb-6 flex items-start gap-2.5 rounded-xl border border-red-100 bg-red-50 p-3.5">
-              <svg className="mt-0.5 h-4 w-4 shrink-0 text-red-500" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm-1-5a1 1 0 1 0 2 0V9a1 1 0 1 0-2 0v4zm1-7.5a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5z" clipRule="evenodd" />
-              </svg>
-              <p className="text-sm text-red-600">{error}</p>
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="flex flex-col gap-7">
-
-            {/* University */}
-            <div className="flex flex-col gap-2">
+          {/* Difficulty */}
+          <div className="flex flex-col gap-2">
+            <div className="flex items-baseline justify-between">
               <label className="text-sm font-semibold text-gray-700">
-                Universidade
+                Nível de dificuldade
               </label>
-              <UniversitySelector
-                value={universityId}
-                onChange={setUniversityId}
-                universities={universities}
+              <span className="text-xs text-gray-400">1 = mais fácil, 5 = mais difícil</span>
+            </div>
+            <DifficultyPicker value={difficultyLevel} onChange={setDifficultyLevel} />
+          </div>
+
+          {/* Comment — Prós & Contras */}
+          <div className="flex flex-col gap-4">
+            <label className="text-sm font-semibold text-gray-700">
+              Comentário{" "}
+              <span className="font-normal text-gray-400">(opcional)</span>
+            </label>
+
+            {/* Prós */}
+            <div className="flex flex-col gap-1.5">
+              <div className="flex items-center gap-1.5">
+                <span>✅</span>
+                <span className="text-sm font-semibold text-green-700">Prós</span>
+                <span className="ml-auto text-xs text-gray-400">{pros.length}/500</span>
+              </div>
+              <textarea
+                rows={3}
+                maxLength={500}
+                value={pros}
+                onChange={(e) => setPros(e.target.value)}
+                placeholder="Pontos positivos: infraestrutura, professores, oportunidades..."
+                className="w-full resize-none rounded-xl border border-green-200 bg-green-50/50 px-4 py-3 text-sm text-gray-800 outline-none transition-colors placeholder:text-gray-400 focus:border-green-300 focus:bg-white focus:ring-2 focus:ring-green-100"
               />
             </div>
 
-            {/* Rating */}
-            <div className="flex flex-col gap-3">
-              <label className="text-sm font-semibold text-gray-700">
-                Nota geral
-              </label>
-              <div className="flex flex-col items-center gap-1 rounded-xl border border-gray-100 bg-gray-50 py-5">
-                <StarPicker value={rating} onChange={setRating} />
+            {/* Contras */}
+            <div className="flex flex-col gap-1.5">
+              <div className="flex items-center gap-1.5">
+                <span>⚠️</span>
+                <span className="text-sm font-semibold text-amber-700">Contras</span>
+                <span className="ml-auto text-xs text-gray-400">{cons.length}/500</span>
               </div>
+              <textarea
+                rows={3}
+                maxLength={500}
+                value={cons}
+                onChange={(e) => setCons(e.target.value)}
+                placeholder="Pontos negativos: burocracia, infraestrutura, dificuldades..."
+                className="w-full resize-none rounded-xl border border-amber-200 bg-amber-50/50 px-4 py-3 text-sm text-gray-800 outline-none transition-colors placeholder:text-gray-400 focus:border-amber-300 focus:bg-white focus:ring-2 focus:ring-amber-100"
+              />
             </div>
+          </div>
 
-            {/* Difficulty */}
-            <div className="flex flex-col gap-2">
-              <div className="flex items-baseline justify-between">
-                <label className="text-sm font-semibold text-gray-700">
-                  Nível de dificuldade
-                </label>
-                <span className="text-xs text-gray-400">1 = mais fácil, 5 = mais difícil</span>
-              </div>
-              <DifficultyPicker value={difficultyLevel} onChange={setDifficultyLevel} />
-            </div>
-
-            {/* Comment — Prós & Contras */}
-            <div className="flex flex-col gap-4">
-              <label className="text-sm font-semibold text-gray-700">
-                Comentário{" "}
-                <span className="font-normal text-gray-400">(opcional)</span>
-              </label>
-
-              {/* Prós */}
-              <div className="flex flex-col gap-1.5">
-                <div className="flex items-center gap-1.5">
-                  <span>✅</span>
-                  <span className="text-sm font-semibold text-green-700">Prós</span>
-                  <span className="ml-auto text-xs text-gray-400">{pros.length}/500</span>
-                </div>
-                <textarea
-                  rows={3}
-                  maxLength={500}
-                  value={pros}
-                  onChange={(e) => setPros(e.target.value)}
-                  placeholder="Pontos positivos: infraestrutura, professores, oportunidades..."
-                  className="w-full resize-none rounded-xl border border-green-200 bg-green-50/50 px-4 py-3 text-sm text-gray-800 outline-none transition-colors placeholder:text-gray-400 focus:border-green-300 focus:bg-white focus:ring-2 focus:ring-green-100"
-                />
-              </div>
-
-              {/* Contras */}
-              <div className="flex flex-col gap-1.5">
-                <div className="flex items-center gap-1.5">
-                  <span>⚠️</span>
-                  <span className="text-sm font-semibold text-amber-700">Contras</span>
-                  <span className="ml-auto text-xs text-gray-400">{cons.length}/500</span>
-                </div>
-                <textarea
-                  rows={3}
-                  maxLength={500}
-                  value={cons}
-                  onChange={(e) => setCons(e.target.value)}
-                  placeholder="Pontos negativos: burocracia, infraestrutura, dificuldades..."
-                  className="w-full resize-none rounded-xl border border-amber-200 bg-amber-50/50 px-4 py-3 text-sm text-gray-800 outline-none transition-colors placeholder:text-gray-400 focus:border-amber-300 focus:bg-white focus:ring-2 focus:ring-amber-100"
-                />
-              </div>
-            </div>
-
-            {/* Submit */}
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="brand-gradient flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-60"
-            >
-              {isLoading ? (
-                <>
-                  <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 0 1 8-8v4a4 4 0 0 0-4 4H4z" />
-                  </svg>
-                  Enviando...
-                </>
-              ) : (
-                <>🎓 Publicar avaliação</>
-              )}
-            </button>
-          </form>
-        </div>
-
-        {/* Back link */}
-        <div className="mt-5 text-center">
-          <Link
-            href="/universities"
-            className="inline-flex items-center gap-1.5 text-sm text-gray-400 hover:text-indigo-600"
+          {/* Submit */}
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="brand-gradient flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-60"
           >
-            <ArrowLeft size={14} />
-            Voltar para universidades
-          </Link>
-        </div>
-
+            {isLoading ? (
+              <>
+                <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 0 1 8-8v4a4 4 0 0 0-4 4H4z" />
+                </svg>
+                Enviando...
+              </>
+            ) : (
+              <>🎓 Publicar avaliação</>
+            )}
+          </button>
+        </form>
       </div>
+
+      {/* Back link */}
+      <div className="mt-5 text-center">
+        <Link
+          href="/universities"
+          className="inline-flex items-center gap-1.5 text-sm text-gray-400 hover:text-indigo-600"
+        >
+          <ArrowLeft size={14} />
+          Voltar para universidades
+        </Link>
+      </div>
+
+    </div>
+  );
+}
+
+export default function AvaliarPage() {
+  return (
+    <main className="hero-gradient min-h-screen px-4 py-12">
+      <Suspense fallback={
+        <div className="flex h-[50vh] w-full items-center justify-center">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-indigo-200 border-t-indigo-600" />
+        </div>
+      }>
+        <AvaliarContent />
+      </Suspense>
     </main>
   );
 }

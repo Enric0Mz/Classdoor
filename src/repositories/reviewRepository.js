@@ -4,6 +4,7 @@ const AUTHOR_SELECT = {
   id: true,
   username: true,
   verified: true,
+  universityId: true,
 };
 
 export async function create(data) {

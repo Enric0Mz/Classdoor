@@ -47,7 +47,7 @@ describe("reviewService.updateReview", () => {
       "review-1",
       expect.objectContaining({ rating: 5, comment: "Updated comment" })
     );
-    expect(result).toEqual(updatedReview);
+    expect(result).toEqual({ ...updatedReview, isVerified: false });
   });
 
   it("throws 403 when requester is not the author", async () => {

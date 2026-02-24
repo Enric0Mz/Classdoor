@@ -15,8 +15,8 @@ jest.mock("next/server", () => ({
 beforeEach(() => jest.clearAllMocks());
 
 const SAMPLE_REVIEWS = [
-  { id: "review-1", rating: 4, difficultyLevel: 3, universityId: "uni-1", author: null, createdAt: new Date() },
-  { id: "review-2", rating: 5, difficultyLevel: 2, universityId: "uni-1", author: null, createdAt: new Date() },
+  { id: "review-1", rating: 4, difficultyLevel: 3, universityId: "uni-1", author: null, createdAt: new Date(), isVerified: false },
+  { id: "review-2", rating: 5, difficultyLevel: 2, universityId: "uni-1", author: null, createdAt: new Date(), isVerified: false },
 ];
 
 const PAGINATED_REVIEWS = { data: SAMPLE_REVIEWS, total: 2 };

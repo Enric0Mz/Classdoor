@@ -42,3 +42,6 @@ prisma/dev.db
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Sensitive Information
+data

@@ -13,6 +13,32 @@ function validateDifficultyLevel(difficultyLevel) {
   }
 }
 
+/**
+ * Computes the isVerified flag for a review.
+ * A review is considered verified when the author's linked university
+ * matches the university being reviewed.
+ *
+ * @param {object} review
+ * @returns {boolean}
+ */
+function computeIsVerified(review) {
+  return (
+    review.author?.universityId !== null &&
+    review.author?.universityId !== undefined &&
+    review.author?.universityId === review.universityId
+  );
+}
+
+/**
+ * Adds the computed isVerified field to a review object.
+ *
+ * @param {object} review
+ * @returns {object}
+ */
+function withIsVerified(review) {
+  return { ...review, isVerified: computeIsVerified(review) };
+}
+
 export async function createReview(body, authorId) {
   const { rating, difficultyLevel, universityId, comment } = body;
 
@@ -24,11 +50,12 @@ export async function createReview(body, authorId) {
   validateDifficultyLevel(difficultyLevel);
 
   const review = await reviewRepository.create({ rating, difficultyLevel, universityId, comment, authorId });
-  return { review };
+  return { review: withIsVerified(review) };
 }
 
 export async function listReviews({ universityId, skip, take } = {}) {
-  return reviewRepository.findAll({ universityId, skip, take });
+  const { data, total } = await reviewRepository.findAll({ universityId, skip, take });
+  return { data: data.map(withIsVerified), total };
 }
 
 export async function getReviewById(id) {
@@ -36,7 +63,7 @@ export async function getReviewById(id) {
   if (!review) {
     throw new AppError("Review not found", 404);
   }
-  return review;
+  return withIsVerified(review);
 }
 
 export async function updateReview(id, data, requesterId, requesterRole) {
@@ -67,7 +94,8 @@ export async function updateReview(id, data, requesterId, requesterRole) {
     updateData.comment = comment;
   }
 
-  return reviewRepository.update(id, updateData);
+  const updatedReview = await reviewRepository.update(id, updateData);
+  return withIsVerified(updatedReview);
 }
 
 export async function deleteReview(id, requesterId, requesterRole) {

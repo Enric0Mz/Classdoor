@@ -19,16 +19,26 @@ enum Role {
 }
 
 model University {
-  id        String         @id @default(uuid())
-  name      String         @unique
+  id        String              @id @default(uuid())
+  name      String              @unique
   location  String
   website   String?
   image     String?
   type      UniversityType
   courses   String[]
   rating    Float?
-  createdAt DateTime       @default(now())
+  createdAt DateTime            @default(now())
   reviews   Review[]
+  domains   UniversityDomain[]
+  users     User[]
+}
+
+model UniversityDomain {
+  id           String     @id @default(uuid())
+  domain       String     @unique
+  universityId String
+  university   University @relation(fields: [universityId], references: [id])
+  createdAt    DateTime   @default(now())
 }
 
 model Review {
@@ -54,6 +64,8 @@ model User {
   verified                     Boolean                       @default(false)
   active                       Boolean                       @default(true)
   emailVerified                Boolean                       @default(false)
+  universityId                 String?
+  university                   University?                   @relation(fields: [universityId], references: [id])
   createdAt                    DateTime                      @default(now())
 
   reviews                      Review[]

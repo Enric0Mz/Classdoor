@@ -23,6 +23,14 @@ jest.mock("@/lib/auth", () => ({
   requireVerifiedUser: jest.fn(),
 }));
 
+jest.mock("@/repositories/universityRepository", () => ({
+  findByEmailDomain: jest.fn(),
+}));
+
+jest.mock("@/lib/universityDomains", () => ({
+  findUniversityByDomain: jest.fn().mockReturnValue({ name: "Test University" }),
+}));
+
 jest.mock("next/server", () => ({
   NextResponse: {
     json: jest.fn((body, init) => ({ body, status: init?.status ?? 200 })),

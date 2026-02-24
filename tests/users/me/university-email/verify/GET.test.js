@@ -12,6 +12,10 @@ jest.mock("@/repositories/userRepository", () => ({
   update: jest.fn(),
 }));
 
+jest.mock("@/repositories/universityRepository", () => ({
+  findByEmailDomain: jest.fn().mockResolvedValue(null),
+}));
+
 jest.mock("next/server", () => ({
   NextResponse: {
     json: jest.fn((body, init) => ({ body, status: init?.status ?? 200 })),
@@ -47,6 +51,7 @@ describe("universityEmailVerificationService.verifyUniversityEmail", () => {
     expect(userRepository.update).toHaveBeenCalledWith("user-1", {
       universityEmail: "me@uni.br",
       verified: true,
+      universityId: null,
     });
     expect(verificationRepository.deleteByUserId).toHaveBeenCalledWith("user-1");
     expect(result).toEqual({ message: "University email verified successfully" });

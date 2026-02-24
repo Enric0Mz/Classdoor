@@ -2,7 +2,9 @@ import crypto from "crypto";
 import { AppError } from "@/errors/AppError";
 import * as verificationRepository from "@/repositories/universityEmailVerificationRepository";
 import * as userRepository from "@/repositories/userRepository";
+import * as universityRepository from "@/repositories/universityRepository";
 import { sendVerificationEmail } from "@/lib/emailService";
+import { findUniversityByDomain } from "@/lib/universityDomains";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const VERIFICATION_TOKEN_EXPIRY_HOURS = 24;
@@ -14,6 +16,13 @@ export async function submitUniversityEmail(userId, userEmail, universityEmail) 
 
   if (!EMAIL_REGEX.test(universityEmail)) {
     throw new AppError("Invalid university email format", 400);
+  }
+
+  const domain = universityEmail.split("@")[1];
+  const knownUniversity = findUniversityByDomain(domain);
+
+  if (!knownUniversity) {
+    throw new AppError("Email domain is not recognized as a university email", 400);
   }
 
   const token = crypto.randomUUID();
@@ -39,9 +48,13 @@ export async function verifyUniversityEmail(token) {
     throw new AppError("Token has expired", 400);
   }
 
+  const domain = record.universityEmail.split("@")[1].toLowerCase();
+  const linkedUniversity = await universityRepository.findByEmailDomain(domain);
+
   await userRepository.update(record.userId, {
     universityEmail: record.universityEmail,
     verified: true,
+    universityId: linkedUniversity?.id ?? null,
   });
 
   await verificationRepository.deleteByUserId(record.userId);

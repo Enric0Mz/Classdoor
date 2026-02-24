@@ -33,3 +33,18 @@ export async function findByName(name) {
 export async function create(data) {
   return prisma.university.create({ data });
 }
+
+/**
+ * Finds a university by matching an email domain via the UniversityDomain table.
+ *
+ * @param {string} domain - e.g. "usp.br"
+ * @returns {object|null} The University record or null if not found
+ */
+export async function findByEmailDomain(domain) {
+  const universityDomain = await prisma.universityDomain.findUnique({
+    where: { domain },
+    include: { university: true },
+  });
+
+  return universityDomain?.university ?? null;
+}

@@ -3,6 +3,8 @@ import { AppError } from "@/errors/AppError";
 import * as verificationService from "@/domain/universityEmailVerificationService";
 import { withErrorHandler } from "@/lib/errorHandler";
 
+export const dynamic = 'force-dynamic';
+
 export const GET = withErrorHandler(async (request) => {
   const { searchParams } = new URL(request.url);
   const token = searchParams.get("token");
