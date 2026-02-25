@@ -4,10 +4,10 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 const APP_URL = process.env.APP_URL || "http://localhost:3000";
 
 export async function sendEmailVerification(toEmail, token) {
-  const verificationUrl = `${APP_URL}/api/v1/users/me/email/verify?token=${token}`;
+  const verificationUrl = `https://infocampus.com.br/api/v1/users/me/email/verify?token=${token}`;
 
   await resend.emails.send({
-    from: "Classdoor <onboarding@resend.dev>",
+    from: "Classdoor <onboarding@infocampus.com.br>",
     to: toEmail,
     subject: "Verify your Classdoor email",
     html: `
@@ -20,10 +20,10 @@ export async function sendEmailVerification(toEmail, token) {
 }
 
 export async function sendVerificationEmail(toEmail, token) {
-  const verificationUrl = `${APP_URL}/api/v1/users/me/university-email/verify?token=${token}`;
+  const verificationUrl = `https://infocampus.com.br/api/v1/users/me/university-email/verify?token=${token}`;
 
   await resend.emails.send({
-    from: "Classdoor <onboarding@resend.dev>",
+    from: "Classdoor <onboarding@infocampus.com.br>",
     to: toEmail,
     subject: "Verify your university email on Classdoor",
     html: `
