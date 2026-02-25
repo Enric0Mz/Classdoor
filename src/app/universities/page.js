@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import UniversityCard from "@/components/UniversityCard";
-import { Search, SlidersHorizontal, MapPin, GraduationCap, TrendingUp, X } from "lucide-react";
+import { Search, SlidersHorizontal, MapPin, GraduationCap, TrendingUp, X, Zap } from "lucide-react";
 
 const STATE_FILTERS = ["Todos", "SP", "RJ", "MG", "RS", "PR", "SC", "DF", "BA", "PE"];
 const TYPE_FILTERS = [
@@ -10,13 +10,12 @@ const TYPE_FILTERS = [
   { label: "Pública", value: "PUBLIC" },
   { label: "Privada", value: "PRIVATE" },
 ];
-const HERO_CHIPS = ["Em alta", "Top rated", "Públicas", "Privadas", "Destaque"];
 
 export default function UniversitiesPage() {
   const [universities, setUniversities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  
+
   // Filters
   const [activeState, setActiveState] = useState("Todos");
   const [activeType, setActiveType] = useState(null);
@@ -54,11 +53,11 @@ export default function UniversitiesPage() {
     }
 
     if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
+      const query = searchQuery.toLowerCase();
       result = result.filter(
         (u) =>
-          u.name.toLowerCase().includes(q) ||
-          u.location.toLowerCase().includes(q)
+          u.name.toLowerCase().includes(query) ||
+          u.location.toLowerCase().includes(query)
       );
     }
 
@@ -70,90 +69,133 @@ export default function UniversitiesPage() {
   }, [universities, activeState, activeType, searchQuery, sortByRating]);
 
   const avgRating = useMemo(() => {
-    const rated = universities.filter((u) => u.rating != null);
-    if (rated.length === 0) return 0;
-    return (rated.reduce((sum, u) => sum + u.rating, 0) / rated.length).toFixed(1);
+    const ratedUniversities = universities.filter((u) => u.rating != null);
+    if (ratedUniversities.length === 0) return "—";
+    const sum = ratedUniversities.reduce((acc, u) => acc + u.rating, 0);
+    return (sum / ratedUniversities.length).toFixed(1);
   }, [universities]);
 
   const activeFiltersCount = (activeState !== "Todos" ? 1 : 0) + (activeType !== null ? 1 : 0);
 
+  function handleChipClick(chip) {
+    if (chip === "Em alta" || chip === "Top rated") {
+      setSortByRating(true);
+    } else if (chip === "Públicas") {
+      setActiveType("PUBLIC");
+    } else if (chip === "Privadas") {
+      setActiveType("PRIVATE");
+    }
+    // "Destaque" is decorative — no action
+  }
+
   return (
-    <main className="min-h-screen bg-gray-50/50">
+    <main className="min-h-screen bg-gray-50">
       {/* ── Hero Section ── */}
-      <section className="relative overflow-hidden bg-white pb-12 pt-16 text-center shadow-sm">
-        {/* Decorative background elements */}
-        <div className="absolute left-1/2 top-0 -z-10 h-[500px] w-[1000px] -translate-x-1/2 rounded-[100%] bg-gradient-to-b from-indigo-50/80 to-transparent opacity-60 blur-3xl" />
-        
-        <div className="mx-auto max-w-4xl px-4">
-          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-indigo-100 bg-white px-4 py-1.5 text-xs font-semibold text-indigo-600 shadow-sm transition-transform hover:scale-105">
-            <TrendingUp size={14} />
+      <section
+        className="relative overflow-hidden pb-16 pt-16 text-center"
+        style={{ backgroundColor: "#0f0f14" }}
+      >
+        {/* Dot grid overlay */}
+        <div className="dot-grid absolute inset-0 opacity-40" />
+
+        {/* Radial purple glow in center */}
+        <div className="absolute left-1/2 top-0 -z-0 h-[600px] w-[800px] -translate-x-1/2 rounded-full bg-gradient-radial from-violet-900/30 to-transparent blur-3xl" />
+
+        <div className="relative z-10 mx-auto max-w-4xl px-4">
+          {/* Badge chip */}
+          <div className="stagger-1 mb-6 inline-flex items-center gap-2 rounded-full border border-indigo-400/30 bg-indigo-500/20 px-4 py-1.5 text-xs font-semibold text-white backdrop-blur-sm">
+            <TrendingUp size={13} />
             <span>+{universities.length > 0 ? universities.length : "500"} universidades avaliadas</span>
           </div>
 
-          <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl md:text-6xl">
+          {/* Heading */}
+          <h1 className="stagger-2 text-5xl font-extrabold tracking-tight text-white sm:text-6xl">
             Encontre a universidade{" "}
-            <span className="relative inline-block text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-violet-600">
+            <span className="brand-gradient-text">
               perfeita pra você
-              {/* Underline decoration */}
-              <svg className="absolute -bottom-2 left-0 w-full h-3 text-indigo-200 -z-10" viewBox="0 0 100 10" preserveAspectRatio="none">
-                <path d="M0 5 Q 50 10 100 5" stroke="currentColor" strokeWidth="3" fill="none" />
-              </svg>
             </span>
           </h1>
 
-          <p className="mx-auto mt-6 max-w-2xl text-lg text-gray-500">
+          <p className="stagger-3 mx-auto mt-6 max-w-2xl text-lg text-gray-400">
             Avaliações reais, transparentes e diretas de alunos e ex-alunos.
             Descubra o que te espera antes da matrícula.
           </p>
 
           {/* Search Bar */}
           <div className="mx-auto mt-10 max-w-2xl">
-            <div className="group relative flex items-center rounded-2xl border border-gray-200 bg-white px-4 py-3 shadow-sm transition-all focus-within:border-indigo-300 focus-within:ring-4 focus-within:ring-indigo-100">
-              <Search className="mr-3 text-gray-400 group-focus-within:text-indigo-500" size={20} />
+            <div className="group relative flex items-center rounded-2xl border border-white/10 bg-white/5 px-4 py-3 backdrop-blur-sm transition-all focus-within:border-indigo-400/50 focus-within:ring-2 focus-within:ring-indigo-500/60">
+              <Search className="mr-3 shrink-0 text-gray-500 group-focus-within:text-indigo-400" size={20} />
               <input
                 type="text"
                 placeholder="Busque por universidade, cidade ou curso..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="flex-1 bg-transparent text-base outline-none placeholder:text-gray-400"
+                className="flex-1 bg-transparent text-base text-white outline-none placeholder:text-gray-500"
               />
-              <button className="ml-2 hidden rounded-xl bg-gray-900 px-6 py-2 text-sm font-semibold text-white transition-transform hover:scale-105 active:scale-95 sm:block">
+              <button className="brand-gradient ml-2 hidden rounded-xl px-6 py-2 text-sm font-semibold text-white transition-transform hover:scale-105 active:scale-95 sm:block">
                 Buscar
               </button>
             </div>
           </div>
 
+          {/* Stats Row */}
+          <div className="mt-8 flex flex-wrap justify-center gap-3">
+            <div className="flex flex-col items-center rounded-2xl border border-white/10 bg-white/5 px-5 py-3 backdrop-blur-sm">
+              <span className="text-xl font-bold text-white">
+                {loading ? "..." : universities.length}
+              </span>
+              <span className="text-xs text-gray-400">universidades</span>
+            </div>
+            <div className="flex flex-col items-center rounded-2xl border border-white/10 bg-white/5 px-5 py-3 backdrop-blur-sm">
+              <span className="text-xl font-bold text-white">
+                {loading ? "..." : avgRating}
+              </span>
+              <span className="text-xs text-gray-400">nota média</span>
+            </div>
+            <div className="flex flex-col items-center rounded-2xl border border-white/10 bg-white/5 px-5 py-3 backdrop-blur-sm">
+              <span className="flex items-center gap-1 text-xl font-bold text-white">
+                <Zap size={16} className="text-indigo-400" />
+                100%
+              </span>
+              <span className="text-xs text-gray-400">avaliações verificadas</span>
+            </div>
+          </div>
+
           {/* Quick Chips */}
           <div className="mt-6 flex flex-wrap justify-center gap-2">
-            {HERO_CHIPS.map((chip) => (
+            {["Em alta", "Top rated", "Públicas", "Privadas", "Destaque"].map((chip) => (
               <button
                 key={chip}
-                className="rounded-full border border-gray-200 bg-white px-4 py-1.5 text-sm font-medium text-gray-600 transition-colors hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-700"
+                onClick={() => handleChipClick(chip)}
+                className="rounded-full border border-white/15 bg-white/10 px-4 py-1.5 text-sm font-medium text-gray-300 transition-colors hover:border-indigo-400/30 hover:bg-indigo-500/20 hover:text-indigo-300"
               >
                 {chip}
               </button>
             ))}
           </div>
         </div>
+
+        {/* Bottom gradient fade into light content */}
+        <div className="absolute bottom-0 inset-x-0 h-24 bg-gradient-to-t from-gray-50 to-transparent" />
       </section>
 
       {/* ── Main Content ── */}
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        
+
         {/* Toolbar */}
-        <div className="mb-8 flex flex-col gap-4 rounded-2xl bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between border border-gray-100">
+        <div className="mb-8 flex flex-col gap-4 py-5 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-4 text-sm text-gray-500">
-            <span className="font-semibold text-gray-900">
+            <span className="text-sm font-semibold text-gray-700">
               {loading ? "..." : filtered.length} resultados
             </span>
             <div className="h-4 w-px bg-gray-200" />
-            <span className="hidden sm:inline">Ordenado por relevância</span>
+            <span className="hidden sm:inline text-gray-400">Ordenado por relevância</span>
           </div>
 
           <div className="flex items-center gap-2">
             <button
               onClick={() => setSortByRating((prev) => !prev)}
-              className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+              className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-colors ${
                 sortByRating
                   ? "bg-amber-50 text-amber-700 ring-1 ring-inset ring-amber-200"
                   : "bg-white text-gray-600 hover:bg-gray-50 ring-1 ring-inset ring-gray-200"
@@ -165,7 +207,7 @@ export default function UniversitiesPage() {
 
             <button
               onClick={() => setShowFilters((prev) => !prev)}
-              className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+              className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-colors ${
                 showFilters || activeFiltersCount > 0
                   ? "bg-indigo-50 text-indigo-700 ring-1 ring-inset ring-indigo-200"
                   : "bg-white text-gray-600 hover:bg-gray-50 ring-1 ring-inset ring-gray-200"
@@ -185,11 +227,11 @@ export default function UniversitiesPage() {
         {/* Expandable Filters */}
         {(showFilters || activeFiltersCount > 0) && (
           <div className="mb-8 animate-fade-in-down">
-            <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+            <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
               <div className="flex flex-col gap-6 sm:flex-row sm:gap-12">
                 {/* State Filter */}
                 <div className="flex-1">
-                  <label className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-400">
+                  <label className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-indigo-600">
                     <MapPin size={14} />
                     Localização (Estado)
                   </label>
@@ -214,32 +256,32 @@ export default function UniversitiesPage() {
 
                 {/* Type Filter */}
                 <div className="flex-1">
-                  <label className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-400">
+                  <label className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-indigo-600">
                     <GraduationCap size={14} />
                     Tipo de Instituição
                   </label>
                   <div className="flex flex-wrap gap-2">
-                    {TYPE_FILTERS.map((t) => (
+                    {TYPE_FILTERS.map((typeFilter) => (
                       <button
-                        key={t.label}
-                        onClick={() => setActiveType(t.value)}
+                        key={typeFilter.label}
+                        onClick={() => setActiveType(typeFilter.value)}
                         className={`rounded-lg px-3.5 py-1.5 text-sm font-medium transition-all ${
-                          activeType === t.value
+                          activeType === typeFilter.value
                             ? "bg-indigo-600 text-white shadow-md shadow-indigo-200"
                             : "bg-gray-50 text-gray-600 hover:bg-gray-100"
                         }`}
                       >
-                        {t.label}
+                        {typeFilter.label}
                       </button>
                     ))}
                   </div>
                 </div>
               </div>
-              
-              {/* Clear filters button if needed */}
+
+              {/* Clear filters button */}
               {activeFiltersCount > 0 && (
                 <div className="mt-5 flex justify-end border-t border-gray-50 pt-4">
-                  <button 
+                  <button
                     onClick={() => { setActiveState("Todos"); setActiveType(null); }}
                     className="flex items-center gap-1 text-sm font-medium text-red-500 hover:text-red-600"
                   >
@@ -255,14 +297,14 @@ export default function UniversitiesPage() {
         {/* Grid Results */}
         {loading ? (
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className="flex flex-col gap-3 rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
-                <div className="h-40 w-full animate-pulse rounded-xl bg-gray-100" />
-                <div className="h-4 w-3/4 animate-pulse rounded bg-gray-100" />
-                <div className="h-4 w-1/2 animate-pulse rounded bg-gray-100" />
+            {Array.from({ length: 8 }).map((_, index) => (
+              <div key={index} className="flex flex-col gap-3 rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
+                <div className="skeleton h-40 w-full rounded-xl" />
+                <div className="skeleton h-4 w-3/4 rounded" />
+                <div className="skeleton h-4 w-1/2 rounded" />
                 <div className="mt-auto flex gap-2">
-                  <div className="h-6 w-16 animate-pulse rounded bg-gray-100" />
-                  <div className="h-6 w-16 animate-pulse rounded bg-gray-100" />
+                  <div className="skeleton h-6 w-16 rounded" />
+                  <div className="skeleton h-6 w-16 rounded" />
                 </div>
               </div>
             ))}
@@ -279,7 +321,7 @@ export default function UniversitiesPage() {
           </div>
         ) : filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-24 text-center">
-            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gray-100 text-gray-400 mb-4">
+            <div className="mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-gray-100 text-gray-400">
               <Search size={32} />
             </div>
             <h3 className="text-lg font-semibold text-gray-900">Nenhuma universidade encontrada</h3>
@@ -299,8 +341,8 @@ export default function UniversitiesPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {filtered.map((uni) => (
-              <UniversityCard key={uni.id} university={uni} />
+            {filtered.map((university) => (
+              <UniversityCard key={university.id} university={university} />
             ))}
           </div>
         )}
