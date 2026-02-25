@@ -443,6 +443,234 @@ const swaggerSpec = {
         },
       },
     },
+    "/api/v1/courses": {
+      get: {
+        tags: ["Courses"],
+        summary: "List all courses",
+        parameters: [
+          { name: "page", in: "query", required: false, schema: { type: "integer", default: 1 }, description: "Page number" },
+          { name: "limit", in: "query", required: false, schema: { type: "integer", default: 10, maximum: 100 }, description: "Number of items per page" },
+          { name: "category", in: "query", required: false, schema: { type: "string" }, description: "Filter courses by category" },
+        ],
+        responses: {
+          200: {
+            description: "A paginated list of courses",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    data: { type: "array", items: { $ref: "#/components/schemas/Course" } },
+                    pagination: { $ref: "#/components/schemas/Pagination" },
+                  },
+                },
+              },
+            },
+          },
+          500: {
+            description: "Internal server error",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
+        },
+      },
+      post: {
+        tags: ["Courses"],
+        summary: "Create a course",
+        description: "Requires ADMIN role.",
+        security: [{ BearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                required: ["title", "description", "link"],
+                properties: {
+                  title: { type: "string", example: "Introduction to CS" },
+                  description: { type: "string", example: "A beginner course on computer science" },
+                  link: { type: "string", example: "https://example.com/cs101" },
+                  image: { type: "string", nullable: true, example: "https://example.com/cs101.jpg" },
+                  price: { type: "number", format: "float", nullable: true, example: 99.9 },
+                  category: { type: "string", nullable: true, example: "Technology" },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          201: {
+            description: "Course created",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Course" },
+              },
+            },
+          },
+          400: {
+            description: "Validation error",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
+          401: {
+            description: "Authentication required",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
+          403: {
+            description: "Forbidden: ADMIN role required",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
+        },
+      },
+    },
+    "/api/v1/courses/{id}": {
+      parameters: [
+        {
+          name: "id",
+          in: "path",
+          required: true,
+          schema: { type: "string", format: "uuid" },
+        },
+      ],
+      get: {
+        tags: ["Courses"],
+        summary: "Get a course by ID",
+        responses: {
+          200: {
+            description: "Course found",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Course" },
+              },
+            },
+          },
+          404: {
+            description: "Course not found",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
+        },
+      },
+      put: {
+        tags: ["Courses"],
+        summary: "Update a course",
+        description: "Requires ADMIN role.",
+        security: [{ BearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                properties: {
+                  title: { type: "string" },
+                  description: { type: "string" },
+                  link: { type: "string" },
+                  image: { type: "string", nullable: true },
+                  price: { type: "number", format: "float", nullable: true },
+                  category: { type: "string", nullable: true },
+                  active: { type: "boolean" },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: "Course updated",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Course" },
+              },
+            },
+          },
+          401: {
+            description: "Authentication required",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
+          403: {
+            description: "Forbidden: ADMIN role required",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
+          404: {
+            description: "Course not found",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
+        },
+      },
+      delete: {
+        tags: ["Courses"],
+        summary: "Delete a course",
+        description: "Requires ADMIN role.",
+        security: [{ BearerAuth: [] }],
+        responses: {
+          200: {
+            description: "Course deleted",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: { message: { type: "string" } },
+                },
+              },
+            },
+          },
+          401: {
+            description: "Authentication required",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
+          403: {
+            description: "Forbidden: ADMIN role required",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
+          404: {
+            description: "Course not found",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
+        },
+      },
+    },
     "/api/v1/users": {
       get: {
         tags: ["Users"],
@@ -1100,6 +1328,22 @@ const swaggerSpec = {
               statusCode: { type: "integer" },
             },
           },
+        },
+      },
+      Course: {
+        type: "object",
+        properties: {
+          id: { type: "string", format: "uuid" },
+          title: { type: "string" },
+          description: { type: "string" },
+          image: { type: "string", nullable: true },
+          link: { type: "string", description: "External affiliate/enrollment URL" },
+          price: { type: "number", format: "float", nullable: true },
+          category: { type: "string", nullable: true },
+          active: { type: "boolean" },
+          createdBy: { type: "string", format: "uuid", nullable: true },
+          createdAt: { type: "string", format: "date-time" },
+          updatedAt: { type: "string", format: "date-time" },
         },
       },
     },
