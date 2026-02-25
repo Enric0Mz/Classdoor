@@ -8,14 +8,14 @@ import {
   ShieldCheck, SlidersHorizontal, ChevronDown, ArrowLeft,
 } from "lucide-react";
 
-// ─── Helpers ────────────────────────────────────────────────────────────────
+// ─── Helpers ─────────────────────────────────────────────────────────────────
 
 function getUniversityInitials(name) {
   return name
     .split(" ")
-    .filter((w) => w.length > 2)
+    .filter((word) => word.length > 2)
     .slice(0, 3)
-    .map((w) => w[0])
+    .map((word) => word[0])
     .join("")
     .toUpperCase() || name.slice(0, 3).toUpperCase();
 }
@@ -48,28 +48,30 @@ function parseComment(raw) {
 
 const TABS = ["Visão geral 👀", "Avaliações ⭐", "Cursos 📖", "Salários 💸"];
 const FILTERS = ["Mais recentes", "Nota alta", "Nota baixa"];
+const DEFAULT_FILTER = "Mais recentes";
 
 // ─── Star Rating ─────────────────────────────────────────────────────────────
 
 function StarRating({ rating, size = 15 }) {
-  const full = Math.floor(rating);
-  const hasHalf = rating - full >= 0.25 && rating - full < 0.75;
-  const starClass = `shrink-0 text-yellow-400`;
+  const fullStars = Math.floor(rating);
+  const hasHalf = rating - fullStars >= 0.25 && rating - fullStars < 0.75;
   const dim = `${size}px`;
+  const yellowClass = "shrink-0 text-yellow-400";
+  const grayClass = "shrink-0 text-gray-200";
 
   return (
     <div className="flex items-center gap-0.5">
       {Array.from({ length: 5 }).map((_, i) => {
-        if (i < full) {
+        if (i < fullStars) {
           return (
-            <svg key={i} style={{ width: dim, height: dim }} className={starClass} viewBox="0 0 20 20" fill="currentColor">
+            <svg key={i} style={{ width: dim, height: dim }} className={yellowClass} viewBox="0 0 20 20" fill="currentColor">
               <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
             </svg>
           );
         }
-        if (i === full && hasHalf) {
+        if (i === fullStars && hasHalf) {
           return (
-            <svg key={i} style={{ width: dim, height: dim }} className={starClass} viewBox="0 0 20 20">
+            <svg key={i} style={{ width: dim, height: dim }} className={yellowClass} viewBox="0 0 20 20">
               <defs>
                 <linearGradient id={`h-${i}-${rating}`}>
                   <stop offset="50%" stopColor="currentColor" />
@@ -81,7 +83,7 @@ function StarRating({ rating, size = 15 }) {
           );
         }
         return (
-          <svg key={i} style={{ width: dim, height: dim }} className="shrink-0 text-gray-200" viewBox="0 0 20 20" fill="currentColor">
+          <svg key={i} style={{ width: dim, height: dim }} className={grayClass} viewBox="0 0 20 20" fill="currentColor">
             <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
           </svg>
         );
@@ -98,68 +100,75 @@ function UniversityHeader({ university, activeTab, onTabChange }) {
   const typeLabel = university.type === "PUBLIC" ? "Pública" : "Privada";
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-border bg-white shadow-sm">
-      {/* Banner */}
-      <div className="relative h-36 sm:h-44 overflow-hidden">
+    <div className="overflow-hidden rounded-2xl border border-white/10 bg-white shadow-lg">
+      {/* Banner — logo + name are both inside, white on dark = perfect readability */}
+      <div className="relative h-44 sm:h-52 overflow-hidden">
         {university.image ? (
           <img src={university.image} alt={university.name} className="h-full w-full object-cover" />
         ) : (
-          <div className="h-full w-full brand-gradient" />
+          <div className="h-full w-full bg-gradient-to-br from-slate-800 via-indigo-900 to-violet-900" />
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/10 to-transparent" />
-        <div
-          className="absolute inset-0"
-          style={{ background: "linear-gradient(135deg, rgba(99,102,241,0.55) 0%, transparent 60%)" }}
-        />
-      </div>
+        {/* Bottom-heavy gradient so logo + name are always readable */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
 
-      {/* Info area */}
-      <div className="relative -mt-10 px-5 pb-0 sm:px-6">
-        <div className="flex items-end gap-4">
-          {/* Logo */}
-          <div className="brand-gradient flex h-20 w-20 shrink-0 items-center justify-center rounded-2xl border-4 border-white text-[1.1rem] font-extrabold text-white shadow-lg">
+        {/* Logo + name anchored to banner bottom */}
+        <div className="absolute bottom-0 left-0 right-0 flex items-end gap-3 px-5 pb-5 sm:px-6">
+          {/* Initials logo */}
+          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-white/15 text-sm font-extrabold text-white shadow-inner backdrop-blur-md ring-2 ring-white/25">
             {initials.slice(0, 3)}
           </div>
-
-          {/* Name + follow */}
-          <div className="flex flex-1 flex-wrap items-start justify-between gap-3 pb-3">
-            <div>
-              <h1 className="text-lg font-semibold text-gray-900 sm:text-xl">{university.name}</h1>
-              <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-gray-500">
-                <span className="flex items-center gap-1">
-                  <MapPin size={13} className="text-gray-400" />
-                  {university.location}
-                </span>
-                <span className="text-gray-300">•</span>
-                <span className="font-medium text-indigo-600">{typeLabel}</span>
-                {university.website && (
-                  <>
-                    <span className="text-gray-300">•</span>
-                    <a href={university.website} target="_blank" rel="noopener noreferrer" className="text-indigo-500 hover:underline">
-                      Site oficial
-                    </a>
-                  </>
-                )}
-              </div>
-            </div>
-
-            <button
-              onClick={() => setFollowing((prev) => !prev)}
-              className={`flex shrink-0 cursor-pointer items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-medium transition-all ${
-                following
-                  ? "border-2 border-indigo-500 text-indigo-600 hover:bg-indigo-50"
-                  : "brand-gradient border-2 border-transparent text-white hover:opacity-90"
-              }`}
-            >
-              <Heart size={14} fill={following ? "#6366f1" : "none"} />
-              {following ? "Seguindo" : "Seguir"}
-            </button>
+          {/* Name */}
+          <div className="min-w-0 flex-1 pb-0.5">
+            <h1 className="text-xl font-bold leading-tight text-white drop-shadow-md sm:text-2xl">
+              {university.name}
+            </h1>
           </div>
+        </div>
+      </div>
+
+      {/* Info strip: meta row + follow button */}
+      <div className="px-5 sm:px-6">
+        <div className="flex items-center gap-3 py-3.5 border-b border-gray-100">
+          {/* Location + type + website */}
+          <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-2 gap-y-1 text-sm text-gray-500">
+            <span className="flex items-center gap-1">
+              <MapPin size={13} className="shrink-0 text-gray-400" />
+              <span>{university.location}</span>
+            </span>
+            <span className="text-gray-300">•</span>
+            <span className="font-medium text-indigo-600">{typeLabel}</span>
+            {university.website && (
+              <>
+                <span className="text-gray-300">•</span>
+                <a
+                  href={university.website}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-indigo-500 hover:underline"
+                >
+                  Site oficial
+                </a>
+              </>
+            )}
+          </div>
+
+          {/* Follow button */}
+          <button
+            onClick={() => setFollowing((prev) => !prev)}
+            className={`flex shrink-0 cursor-pointer items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium transition-all ${
+              following
+                ? "border border-indigo-300 bg-indigo-50 text-indigo-600 hover:bg-indigo-100"
+                : "brand-gradient border border-transparent text-white hover:opacity-90"
+            }`}
+          >
+            <Heart size={14} fill={following ? "#6366f1" : "none"} />
+            {following ? "Seguindo" : "Seguir"}
+          </button>
         </div>
 
         {/* Tabs */}
-        <div className="-mx-5 mt-3 overflow-x-auto sm:-mx-6">
-          <div className="flex min-w-max border-t border-border px-5 sm:px-6">
+        <div className="-mx-5 overflow-x-auto sm:-mx-6">
+          <div className="flex min-w-max px-5 sm:px-6">
             {TABS.map((tab) => {
               const isActive = activeTab === tab;
               return (
@@ -188,7 +197,7 @@ function UniversityHeader({ university, activeTab, onTabChange }) {
 function RatingOverview({ stats }) {
   if (!stats || stats.reviewCount === 0) {
     return (
-      <div className="rounded-2xl border border-border bg-white p-8 shadow-sm text-center">
+      <div className="rounded-2xl border border-gray-100 bg-white p-8 shadow-sm text-center">
         <p className="text-2xl mb-2">🎓</p>
         <p className="text-sm font-medium text-gray-500">Ainda não há avaliações.</p>
         <p className="mt-0.5 text-xs text-gray-400">Seja o primeiro a avaliar esta universidade!</p>
@@ -197,18 +206,16 @@ function RatingOverview({ stats }) {
   }
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-border bg-white shadow-sm">
+    <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
       <div className="p-5">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-base font-semibold text-gray-900">O que a galera acha? 🤔</h2>
-        </div>
+        <h2 className="mb-4 text-base font-semibold text-gray-900">O que a galera acha? 🤔</h2>
 
         {/* Big rating */}
         <div className="brand-gradient rounded-2xl p-5 text-white">
           <div className="flex flex-wrap items-center gap-5">
             <div>
               <span className="text-5xl font-extrabold tracking-tight">{stats.averageRating}</span>
-              <span className="ml-1 text-white/70 text-sm">de 5.0</span>
+              <span className="ml-1 text-sm text-white/70">de 5.0</span>
               <div className="mt-2">
                 <StarRating rating={stats.averageRating} size={18} />
               </div>
@@ -231,10 +238,10 @@ function RatingOverview({ stats }) {
             <div className="flex flex-1 gap-1">
               {Array.from({ length: 5 }).map((_, i) => {
                 const filled = i < Math.round(stats.averageDifficultyLevel);
-                const color = filled
+                const colorClass = filled
                   ? i < 2 ? "bg-green-400" : i < 4 ? "bg-amber-400" : "bg-red-400"
                   : "bg-gray-100";
-                return <div key={i} className={`h-2 flex-1 rounded-full transition-colors ${color}`} />;
+                return <div key={i} className={`h-2 flex-1 rounded-full transition-colors ${colorClass}`} />;
               })}
             </div>
             <span className="text-sm font-semibold text-gray-700">{stats.averageDifficultyLevel}/5</span>
@@ -243,7 +250,7 @@ function RatingOverview({ stats }) {
       </div>
 
       {/* Trust banner */}
-      <div className="flex items-center gap-2.5 border-t border-border bg-gray-50/40 px-5 py-3">
+      <div className="flex items-center gap-2.5 border-t border-gray-100 bg-gray-50/40 px-5 py-3">
         <ShieldCheck size={15} className="shrink-0 text-indigo-500" />
         <p className="text-xs text-gray-500">
           <span className="font-semibold text-indigo-600">Avaliações 100% reais 🔒</span>
@@ -256,12 +263,9 @@ function RatingOverview({ stats }) {
 
 // ─── Filter Bar ───────────────────────────────────────────────────────────────
 
-const DEFAULT_FILTER = "Mais recentes";
-
 function FilterBar({ activeFilter, onFilterChange }) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
-
   const hasActiveFilter = activeFilter !== DEFAULT_FILTER;
 
   useEffect(() => {
@@ -280,22 +284,22 @@ function FilterBar({ activeFilter, onFilterChange }) {
   }
 
   return (
-    <div className="flex items-center justify-between rounded-2xl border border-border bg-white px-4 py-3 shadow-sm">
-      <span className="text-[0.82rem] text-gray-400">
+    <div className="flex items-center justify-between py-2">
+      <span className="text-sm font-semibold text-gray-700">
         {hasActiveFilter ? (
-          <>Ordenando por: <span className="font-semibold text-indigo-600">{activeFilter}</span></>
+          <>Ordenando por: <span className="text-indigo-600">{activeFilter}</span></>
         ) : (
-          <span className="text-gray-500 font-medium">{`${activeFilter}`}</span>
+          activeFilter
         )}
       </span>
 
       <div className="relative" ref={dropdownRef}>
         <button
           onClick={() => setIsOpen((prev) => !prev)}
-          className={`flex cursor-pointer items-center gap-2 rounded-xl px-3.5 py-1.5 text-[0.8rem] font-medium transition-all ${
+          className={`flex cursor-pointer items-center gap-2 rounded-full px-4 py-2 text-[0.82rem] font-medium transition-all ${
             hasActiveFilter
-              ? "border border-indigo-200 bg-indigo-50 text-indigo-600"
-              : "border border-gray-200 bg-gray-50 text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+              ? "bg-indigo-50 text-indigo-600 ring-1 ring-inset ring-indigo-200"
+              : "bg-white text-gray-600 hover:bg-gray-50 ring-1 ring-inset ring-gray-200"
           }`}
         >
           <SlidersHorizontal size={13} />
@@ -304,7 +308,7 @@ function FilterBar({ activeFilter, onFilterChange }) {
         </button>
 
         {isOpen && (
-          <div className="absolute right-0 top-full z-20 mt-1.5 w-44 overflow-hidden rounded-xl border border-border bg-white shadow-lg">
+          <div className="absolute right-0 top-full z-20 mt-1.5 w-44 overflow-hidden rounded-xl border border-gray-100 bg-white shadow-lg">
             {FILTERS.map((filter) => {
               const isActive = activeFilter === filter;
               return (
@@ -346,7 +350,7 @@ function ReviewCard({ review }) {
   const TRUNCATE_LENGTH = 180;
 
   function handleLike() {
-    setHelpfulCount((c) => (liked ? c - 1 : c + 1));
+    setHelpfulCount((count) => (liked ? count - 1 : count + 1));
     setLiked((prev) => !prev);
   }
 
@@ -355,9 +359,9 @@ function ReviewCard({ review }) {
     : (!expanded && parsedComment?.text?.length > TRUNCATE_LENGTH);
 
   return (
-    <div className="rounded-2xl border border-border bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-px hover:shadow-md">
+    <div className="card-glow rounded-2xl border border-gray-100 bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-px hover:shadow-md">
 
-      {/* Top row: avatar + rating + verified */}
+      {/* Top row: avatar + rating + verified + difficulty */}
       <div className="flex items-start gap-3">
         <div className="brand-gradient flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-[0.85rem] font-bold text-white">
           {isAnonymous ? "👤" : authorInitials}
@@ -375,7 +379,6 @@ function ReviewCard({ review }) {
             )}
           </div>
 
-          {/* Author + date */}
           <div className="mt-1 flex flex-wrap items-center gap-2 text-[0.75rem] text-gray-400">
             <span className="font-medium text-gray-600">
               {isAnonymous ? "Anônimo" : `@${review.author.username}`}
@@ -445,24 +448,24 @@ function ReviewCard({ review }) {
       )}
 
       {/* Action row */}
-      <div className="mt-4 flex items-center gap-2 border-t border-border pt-3 pl-[52px]">
+      <div className="mt-4 flex items-center gap-2 border-t border-gray-100 pt-3 pl-[52px]">
         <button
           onClick={handleLike}
-          className={`flex cursor-pointer items-center gap-1.5 rounded-xl px-3 py-1.5 text-[0.8rem] transition-all ${
+          className={`flex cursor-pointer items-center gap-1.5 rounded-full px-3 py-1.5 text-[0.8rem] transition-all ${
             liked ? "bg-indigo-50 text-indigo-600" : "bg-gray-50 text-gray-400 hover:bg-gray-100"
           }`}
         >
           <ThumbsUp size={13} fill={liked ? "currentColor" : "none"} />
           {helpfulCount > 0 && helpfulCount}
         </button>
-        <button className="flex cursor-pointer items-center gap-1.5 rounded-xl bg-gray-50 px-3 py-1.5 text-[0.8rem] text-gray-400 transition-colors hover:bg-gray-100">
+        <button className="flex cursor-pointer items-center gap-1.5 rounded-full bg-gray-50 px-3 py-1.5 text-[0.8rem] text-gray-400 transition-colors hover:bg-gray-100">
           <ThumbsDown size={13} />
         </button>
         <div className="flex-1" />
-        <button className="cursor-pointer rounded-xl p-2 text-gray-300 transition-colors hover:bg-gray-50 hover:text-gray-500">
+        <button className="cursor-pointer rounded-full p-2 text-gray-300 transition-colors hover:bg-gray-50 hover:text-gray-500">
           <Share2 size={14} />
         </button>
-        <button className="cursor-pointer rounded-xl p-2 text-gray-300 transition-colors hover:bg-gray-50 hover:text-gray-500">
+        <button className="cursor-pointer rounded-full p-2 text-gray-300 transition-colors hover:bg-gray-50 hover:text-gray-500">
           <Flag size={14} />
         </button>
       </div>
@@ -472,14 +475,14 @@ function ReviewCard({ review }) {
 
 // ─── Skeleton ─────────────────────────────────────────────────────────────────
 
-function Skeleton() {
+function PageSkeleton() {
   return (
     <div className="space-y-4">
-      <div className="h-64 animate-pulse rounded-2xl bg-gray-100" />
-      <div className="h-40 animate-pulse rounded-2xl bg-gray-100" />
-      <div className="h-14 animate-pulse rounded-2xl bg-gray-100" />
+      <div className="skeleton h-64 rounded-2xl" />
+      <div className="skeleton h-40 rounded-2xl" />
+      <div className="skeleton h-14 rounded-2xl" />
       {[1, 2, 3].map((i) => (
-        <div key={i} className="h-40 animate-pulse rounded-2xl bg-gray-100" />
+        <div key={i} className="skeleton h-40 rounded-2xl" />
       ))}
     </div>
   );
@@ -556,8 +559,10 @@ export default function UniversityDetailPage() {
 
   if (isLoading) {
     return (
-      <main className="mx-auto max-w-3xl px-4 py-6 sm:px-6">
-        <Skeleton />
+      <main className="min-h-screen bg-gray-50">
+        <div className="mx-auto max-w-3xl px-4 py-6 sm:px-6">
+          <PageSkeleton />
+        </div>
       </main>
     );
   }
@@ -569,7 +574,7 @@ export default function UniversityDetailPage() {
           <p className="text-sm text-gray-500">{error}</p>
           <button
             onClick={() => router.push("/universities")}
-            className="brand-gradient mt-4 rounded-xl px-5 py-2.5 text-sm font-medium text-white hover:opacity-90"
+            className="brand-gradient mt-4 rounded-full px-5 py-2.5 text-sm font-medium text-white hover:opacity-90"
           >
             Voltar para universidades
           </button>
@@ -579,90 +584,113 @@ export default function UniversityDetailPage() {
   }
 
   return (
-    <main className="mx-auto max-w-3xl px-4 py-6 sm:px-6">
-      {/* Top bar: back + CTA */}
-      <div className="mb-4 flex items-center justify-between">
-        <Link
-          href="/universities"
-          className="inline-flex items-center gap-1.5 text-sm text-gray-400 transition-colors hover:text-indigo-600"
-        >
-          <ArrowLeft size={14} />
-          Todas as universidades
-        </Link>
-        <Link
-          href={`/avaliar?universityId=${id}`}
-          className="brand-gradient flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90"
-        >
-          ⭐ Avaliar
-        </Link>
-      </div>
+    <main className="min-h-screen bg-gray-50">
+      {/* ── Dark hero strip ── */}
+      <div
+        className="relative overflow-hidden pb-8 pt-6"
+        style={{ backgroundColor: "#0f0f14" }}
+      >
+        {/* Dot grid overlay */}
+        <div className="dot-grid absolute inset-0 opacity-30" />
 
-      <div className="space-y-4">
-        <UniversityHeader
-          university={university}
-          activeTab={activeTab}
-          onTabChange={setActiveTab}
+        {/* Radial purple glow */}
+        <div className="absolute left-1/2 top-0 h-[400px] w-[700px] -translate-x-1/2 rounded-full opacity-20 blur-3xl"
+          style={{ background: "radial-gradient(circle, #7c3aed 0%, transparent 70%)" }}
         />
 
-        {activeTab === "Avaliações ⭐" && (
-          <>
-            <RatingOverview stats={university.stats} />
-            <FilterBar activeFilter={activeFilter} onFilterChange={setActiveFilter} />
-
-            {sortedReviews.length === 0 ? (
-              <div className="rounded-2xl border border-border bg-white p-10 text-center shadow-sm">
-                <p className="text-2xl mb-2">🎓</p>
-                <p className="text-sm font-medium text-gray-500">Nenhuma avaliação ainda.</p>
-                <p className="mt-0.5 text-xs text-gray-400">Seja o primeiro a avaliar!</p>
-              </div>
-            ) : (
-              <>
-                <div className="space-y-3">
-                  {sortedReviews.map((review) => (
-                    <ReviewCard key={review.id} review={review} />
-                  ))}
-                </div>
-
-                {hasMoreReviews && (
-                  <button
-                    onClick={loadMoreReviews}
-                    disabled={isLoadingMore}
-                    className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-2xl border border-border bg-white py-3.5 text-sm font-medium text-gray-500 shadow-sm transition-colors hover:border-indigo-200 hover:text-indigo-600 disabled:opacity-60"
-                  >
-                    {isLoadingMore ? (
-                      <>
-                        <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 0 1 8-8v4a4 4 0 0 0-4 4H4z" />
-                        </svg>
-                        Carregando...
-                      </>
-                    ) : (
-                      <>
-                        Carregar mais avaliações
-                        <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-400">
-                          {reviewsPagination.total - reviews.length} restantes
-                        </span>
-                      </>
-                    )}
-                  </button>
-                )}
-
-                {!hasMoreReviews && reviews.length > 0 && (
-                  <p className="py-2 text-center text-xs text-gray-300">
-                    Todas as {reviews.length} avaliações carregadas
-                  </p>
-                )}
-              </>
-            )}
-          </>
-        )}
-
-        {activeTab !== "Avaliações ⭐" && (
-          <div className="rounded-2xl border border-border bg-white p-10 text-center text-sm text-gray-400 shadow-sm">
-            Em breve. 🚧
+        <div className="relative z-10 mx-auto max-w-3xl px-4 sm:px-6">
+          {/* Back + CTA */}
+          <div className="mb-5 flex items-center justify-between">
+            <Link
+              href="/universities"
+              className="inline-flex items-center gap-1.5 text-sm text-gray-400 transition-colors hover:text-indigo-400"
+            >
+              <ArrowLeft size={14} />
+              Todas as universidades
+            </Link>
+            <Link
+              href={`/avaliar?universityId=${id}`}
+              className="brand-gradient flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+            >
+              ⭐ Avaliar
+            </Link>
           </div>
-        )}
+
+          {/* University header card floats on dark bg */}
+          <UniversityHeader
+            university={university}
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+          />
+        </div>
+
+        {/* Bottom gradient fade into light content */}
+        <div className="absolute bottom-0 inset-x-0 h-16 bg-gradient-to-t from-gray-50 to-transparent" />
+      </div>
+
+      {/* ── Main content ── */}
+      <div className="mx-auto max-w-3xl px-4 pb-10 pt-4 sm:px-6">
+        <div className="space-y-4">
+          {activeTab === "Avaliações ⭐" && (
+            <>
+              <RatingOverview stats={university.stats} />
+              <FilterBar activeFilter={activeFilter} onFilterChange={setActiveFilter} />
+
+              {sortedReviews.length === 0 ? (
+                <div className="rounded-2xl border border-gray-100 bg-white p-10 text-center shadow-sm">
+                  <p className="mb-2 text-2xl">🎓</p>
+                  <p className="text-sm font-medium text-gray-500">Nenhuma avaliação ainda.</p>
+                  <p className="mt-0.5 text-xs text-gray-400">Seja o primeiro a avaliar!</p>
+                </div>
+              ) : (
+                <>
+                  <div className="space-y-3">
+                    {sortedReviews.map((review) => (
+                      <ReviewCard key={review.id} review={review} />
+                    ))}
+                  </div>
+
+                  {hasMoreReviews && (
+                    <button
+                      onClick={loadMoreReviews}
+                      disabled={isLoadingMore}
+                      className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-2xl border border-gray-100 bg-white py-3.5 text-sm font-medium text-gray-500 shadow-sm transition-colors hover:border-indigo-200 hover:text-indigo-600 disabled:opacity-60"
+                    >
+                      {isLoadingMore ? (
+                        <>
+                          <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 0 1 8-8v4a4 4 0 0 0-4 4H4z" />
+                          </svg>
+                          Carregando...
+                        </>
+                      ) : (
+                        <>
+                          Carregar mais avaliações
+                          <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-400">
+                            {reviewsPagination.total - reviews.length} restantes
+                          </span>
+                        </>
+                      )}
+                    </button>
+                  )}
+
+                  {!hasMoreReviews && reviews.length > 0 && (
+                    <p className="py-2 text-center text-xs text-gray-300">
+                      Todas as {reviews.length} avaliações carregadas
+                    </p>
+                  )}
+                </>
+              )}
+            </>
+          )}
+
+          {activeTab !== "Avaliações ⭐" && (
+            <div className="rounded-2xl border border-gray-100 bg-white p-10 text-center text-sm text-gray-400 shadow-sm">
+              Em breve. 🚧
+            </div>
+          )}
+        </div>
       </div>
     </main>
   );
