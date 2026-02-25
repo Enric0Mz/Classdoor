@@ -69,6 +69,7 @@ model User {
   createdAt                    DateTime                      @default(now())
 
   reviews                      Review[]
+  courses                      Course[]
   universityEmailVerifications UniversityEmailVerification[]
   emailVerifications           EmailVerification[]
 }
@@ -91,4 +92,19 @@ model UniversityEmailVerification {
   token           String   @unique
   expiresAt       DateTime
   createdAt       DateTime @default(now())
+}
+
+model Course {
+  id          String   @id @default(uuid())
+  title       String
+  description String
+  image       String?
+  link        String
+  price       Float?
+  category    String?
+  active      Boolean  @default(true)
+  createdBy   String?
+  creator     User?    @relation(fields: [createdBy], references: [id], onDelete: SetNull)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }

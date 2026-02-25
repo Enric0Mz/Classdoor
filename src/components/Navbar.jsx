@@ -8,7 +8,7 @@ import { Search, Bell, GraduationCap, Menu, X, Zap, UserCircle, LogOut } from "l
 const NAV_LINKS = [
   { label: "Explorar 🔍", href: "/universities" },
   { label: "Rankings 🏆", href: "#" },
-  { label: "Cursos 📚", href: "#" },
+  { label: "Cursos 📚", href: "/courses" },
   { label: "Salários 💰", href: "#" },
 ];
 
