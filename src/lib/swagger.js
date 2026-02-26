@@ -7,6 +7,31 @@ const swaggerSpec = {
   },
   servers: [{ url: "/", description: "V1 API" }],
   paths: {
+    "/api/v1/health": {
+      get: {
+        tags: ["Health"],
+        summary: "Check application health",
+        description: "Returns the overall status of the application, including server uptime and database connectivity.",
+        responses: {
+          200: {
+            description: "Application is healthy",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Health" },
+              },
+            },
+          },
+          503: {
+            description: "Application is unhealthy",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Health" },
+              },
+            },
+          },
+        },
+      },
+    },
     "/api/v1/universities": {
       get: {
         tags: ["Universities"],
@@ -1223,6 +1248,20 @@ const swaggerSpec = {
       },
     },
     schemas: {
+      Health: {
+        type: "object",
+        properties: {
+          status: { type: "string", enum: ["healthy", "unhealthy"], example: "healthy" },
+          uptime: { type: "integer", description: "Server uptime in seconds", example: 12345 },
+          database: {
+            type: "object",
+            properties: {
+              status: { type: "string", enum: ["healthy", "unhealthy"], example: "healthy" },
+              activeConnections: { type: "integer", example: 5 },
+            },
+          },
+        },
+      },
       Pagination: {
         type: "object",
         properties: {
