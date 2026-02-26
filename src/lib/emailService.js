@@ -4,7 +4,7 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 const APP_URL = process.env.APP_URL || "http://localhost:3000";
 
 export async function sendEmailVerification(toEmail, token) {
-  const verificationUrl = `https://infocampus.com.br/api/v1/users/me/email/verify?token=${token}`;
+  const verificationUrl = `${APP_URL}/api/v1/users/me/email/verify?token=${token}`;
 
   await resend.emails.send({
     from: "Classdoor <onboarding@infocampus.com.br>",
@@ -20,14 +20,14 @@ export async function sendEmailVerification(toEmail, token) {
 }
 
 export async function sendVerificationEmail(toEmail, token) {
-  const verificationUrl = `https://infocampus.com.br/api/v1/users/me/university-email/verify?token=${token}`;
+  const verificationUrl = `${APP_URL}/api/v1/users/me/university-email/verify?token=${token}`;
 
   await resend.emails.send({
-    from: "Classdoor <onboarding@infocampus.com.br>",
+    from: "InfoCampus <onboarding@infocampus.com.br>",
     to: toEmail,
-    subject: "Verify your university email on Classdoor",
+    subject: "Verify your university email on InfoCampus",
     html: `
-      <p>You requested to verify your university email on Classdoor.</p>
+      <p>You requested to verify your university email on InfoCampus.</p>
       <p>Click the link below to confirm. The link expires in 24 hours.</p>
       <a href="${verificationUrl}">${verificationUrl}</a>
       <p>If you did not request this, you can ignore this email.</p>
