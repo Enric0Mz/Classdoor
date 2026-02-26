@@ -7,7 +7,6 @@ const USER_PUBLIC_SELECT = {
   universityEmail: true,
   emailVerified: true,
   verified: true,
-  active: true,
   role: true,
   createdAt: true,
 };

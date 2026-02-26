@@ -62,7 +62,6 @@ model User {
   role                         Role                          @default(USER)
   universityEmail              String?                       @unique
   verified                     Boolean                       @default(false)
-  active                       Boolean                       @default(true)
   emailVerified                Boolean                       @default(false)
   universityId                 String?
   university                   University?                   @relation(fields: [universityId], references: [id])

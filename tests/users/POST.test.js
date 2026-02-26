@@ -243,7 +243,7 @@ describe("userService.registerUser", () => {
 
   it("throws 409 when email already exists", async () => {
     userRepository.findByUsername.mockResolvedValue(null);
-    userRepository.findByEmail.mockResolvedValue({ id: "user-1", email: "test@test.com", active: true });
+    userRepository.findByEmail.mockResolvedValue({ id: "user-1", email: "test@test.com" });
 
     await expect(
       registerUser({ username: "AgilOnca123", email: "test@test.com", password: VALID_PASSWORD })
@@ -335,7 +335,7 @@ describe("POST /api/v1/users", () => {
 
   it("returns 409 when email already exists", async () => {
     userRepository.findByUsername.mockResolvedValue(null);
-    userRepository.findByEmail.mockResolvedValue({ id: "user-1", email: "test@test.com", active: true });
+    userRepository.findByEmail.mockResolvedValue({ id: "user-1", email: "test@test.com" });
 
     const response = await POST(makeRequest({ username: "AgilOnca123", email: "test@test.com", password: VALID_PASSWORD }));
 
