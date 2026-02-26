@@ -1196,12 +1196,12 @@ const swaggerSpec = {
       },
       delete: {
         tags: ["Users"],
-        summary: "Deactivate a user by ID",
-        description: "Requires ADMIN role. Sets the user's active flag to false (soft delete). The user's data is preserved.",
+        summary: "Delete a user by ID",
+        description: "Requires ADMIN role. Permanently deletes the user account.",
         security: [{ BearerAuth: [] }],
         responses: {
           200: {
-            description: "User deactivated",
+            description: "User deleted",
             content: {
               "application/json": {
                 schema: {
@@ -1345,7 +1345,6 @@ const swaggerSpec = {
           universityEmail: { type: "string", format: "email", nullable: true },
           verified: { type: "boolean", example: false },
           emailVerified: { type: "boolean", example: false },
-          active: { type: "boolean", example: true },
           role: { type: "string", enum: ["USER", "MODERATOR", "ADMIN"] },
           createdAt: { type: "string", format: "date-time" },
         },

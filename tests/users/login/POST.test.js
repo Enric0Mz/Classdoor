@@ -25,9 +25,8 @@ jest.mock("next/server", () => ({
 
 const makeRequest = (body) => ({ json: jest.fn().mockResolvedValue(body) });
 
-const USER_IN_DB = { id: "user-1", email: "test@test.com", password: "hashed", role: "USER", active: true, createdAt: new Date() };
-const USER_NO_EMAIL = { id: "user-2", email: null, username: "AgilOnca123", password: "hashed", role: "USER", active: true, createdAt: new Date() };
-const DEACTIVATED_USER = { id: "user-3", email: "gone@test.com", password: "hashed", role: "USER", active: false, createdAt: new Date() };
+const USER_IN_DB = { id: "user-1", email: "test@test.com", password: "hashed", role: "USER", createdAt: new Date() };
+const USER_NO_EMAIL = { id: "user-2", email: null, username: "AgilOnca123", password: "hashed", role: "USER", createdAt: new Date() };
 
 beforeEach(() => jest.clearAllMocks());
 
@@ -98,14 +97,6 @@ describe("userService.loginUser", () => {
     });
   });
 
-  it("throws 401 when the account is deactivated", async () => {
-    userRepository.findByEmail.mockResolvedValue(DEACTIVATED_USER);
-
-    await expect(loginUser({ identifier: "gone@test.com", password: "secret" })).rejects.toMatchObject({
-      message: "Invalid credentials",
-      statusCode: 401,
-    });
-  });
 });
 
 describe("POST /api/v1/users/login", () => {
