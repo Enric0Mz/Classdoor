@@ -9,7 +9,7 @@ const plusJakartaSans = Plus_Jakarta_Sans({
 });
 
 export const metadata = {
-  title: "Classdoor",
+  title: "InfoCampus",
   description: "University reputation platform",
 };
 

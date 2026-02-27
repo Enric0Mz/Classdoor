@@ -51,9 +51,7 @@ export default function MePage() {
   const [resendStatus, setResendStatus] = useState(null);
 
   function handleLogout() {
-    localStorage.removeItem("token");
-    window.dispatchEvent(new Event("auth-change"));
-    router.push("/");
+    router.push("/logout");
   }
 
   useEffect(() => {
@@ -166,20 +164,26 @@ export default function MePage() {
 
   if (pageState === "not_found") {
     return (
-      <main className="flex min-h-screen items-center justify-center px-4">
-        <div className="flex w-full max-w-sm flex-col items-center gap-4 text-center">
-          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gray-100 text-gray-400">
+      <main
+        className="relative flex min-h-[calc(100vh-4rem)] items-center justify-center overflow-hidden px-4"
+        style={{ backgroundColor: "#0f0f14" }}
+      >
+        <div className="dot-grid absolute inset-0 opacity-40" />
+        <div className="absolute left-1/2 top-1/2 h-[500px] w-[500px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-radial from-violet-900/30 to-transparent blur-3xl" />
+
+        <div className="relative z-10 flex w-full max-w-sm flex-col items-center gap-4 text-center">
+          <div className="flex h-16 w-16 items-center justify-center rounded-full border border-white/10 bg-white/5 backdrop-blur-sm text-gray-400">
             <AlertTriangle size={28} />
           </div>
           <div>
-            <h2 className="text-lg font-semibold text-gray-900">Conta não encontrada</h2>
-            <p className="mt-1 text-sm text-gray-500">
+            <h2 className="text-lg font-semibold text-white">Conta não encontrada</h2>
+            <p className="mt-1 text-sm text-gray-400">
               Essa conta não existe mais. Ela pode ter sido deletada.
             </p>
           </div>
           <Link
             href="/"
-            className="brand-gradient rounded-full px-6 py-2.5 text-sm font-semibold text-white hover:opacity-90"
+            className="brand-gradient rounded-xl px-6 py-2.5 text-sm font-semibold text-white hover:opacity-90"
           >
             Ir para o início
           </Link>
@@ -196,29 +200,35 @@ export default function MePage() {
     const email = decoded?.email;
 
     return (
-      <main className="hero-gradient flex min-h-screen items-center justify-center px-4">
-        <div className="w-full max-w-sm rounded-2xl border border-amber-100 bg-white p-8 shadow-sm text-center">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-amber-50">
-            <Mail size={22} className="text-amber-500" />
+      <main
+        className="relative flex min-h-[calc(100vh-4rem)] items-center justify-center overflow-hidden px-4"
+        style={{ backgroundColor: "#0f0f14" }}
+      >
+        <div className="dot-grid absolute inset-0 opacity-40" />
+        <div className="absolute left-1/2 top-1/2 h-[500px] w-[500px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-radial from-violet-900/30 to-transparent blur-3xl" />
+
+        <div className="relative z-10 w-full max-w-sm rounded-2xl border border-white/10 bg-white/5 p-8 text-center backdrop-blur-sm">
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-amber-500/10 border border-amber-400/20">
+            <Mail size={22} className="text-amber-400" />
           </div>
 
-          <h2 className="text-lg font-semibold text-gray-900">Verifique seu email</h2>
+          <h2 className="text-lg font-semibold text-white">Verifique seu email</h2>
 
           {email ? (
-            <p className="mt-2 text-sm text-gray-500">
+            <p className="mt-2 text-sm text-gray-400">
               Enviamos um link de verificação para{" "}
-              <span className="font-medium text-gray-700">{email}</span>.
+              <span className="font-medium text-gray-200">{email}</span>.
               Confirme seu email para acessar sua conta.
             </p>
           ) : (
-            <p className="mt-2 text-sm text-gray-500">
+            <p className="mt-2 text-sm text-gray-400">
               Confirme seu email para acessar sua conta.
             </p>
           )}
 
           <div className="mt-5">
             {resendStatus === "sent" ? (
-              <p className="text-sm font-medium text-green-600">
+              <p className="text-sm font-medium text-green-400">
                 ✅ Email reenviado! Verifique sua caixa de entrada.
               </p>
             ) : (
@@ -232,7 +242,7 @@ export default function MePage() {
             )}
 
             {resendStatus === "error" && (
-              <p className="mt-2 text-xs text-red-500">
+              <p className="mt-2 text-xs text-red-400">
                 Falha ao reenviar. Tente novamente.
               </p>
             )}
@@ -240,7 +250,7 @@ export default function MePage() {
 
           <button
             onClick={handleLogout}
-            className="mt-4 text-sm text-gray-400 transition-colors hover:text-gray-600"
+            className="mt-4 text-sm text-gray-500 transition-colors hover:text-gray-300"
           >
             Sair da conta
           </button>
@@ -253,9 +263,15 @@ export default function MePage() {
 
   if (pageState === "error") {
     return (
-      <main className="hero-gradient flex min-h-screen items-center justify-center px-4">
-        <div className="flex flex-col items-center gap-4 text-center">
-          <p className="text-sm text-gray-500">{errorMessage}</p>
+      <main
+        className="relative flex min-h-[calc(100vh-4rem)] items-center justify-center overflow-hidden px-4"
+        style={{ backgroundColor: "#0f0f14" }}
+      >
+        <div className="dot-grid absolute inset-0 opacity-40" />
+        <div className="absolute left-1/2 top-1/2 h-[500px] w-[500px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-radial from-violet-900/30 to-transparent blur-3xl" />
+
+        <div className="relative z-10 flex flex-col items-center gap-4 text-center">
+          <p className="text-sm text-gray-400">{errorMessage}</p>
           <button
             onClick={() => window.location.reload()}
             className="brand-gradient rounded-xl px-5 py-2.5 text-sm font-medium text-white hover:opacity-90"
@@ -272,34 +288,49 @@ export default function MePage() {
   const initials = getInitials(user);
 
   return (
-    <main>
-      {/* Hero band */}
-      <section className="hero-gradient px-6 pb-16 pt-12">
-        <div className="mx-auto flex max-w-2xl flex-col items-center text-center">
-          <div className="brand-gradient flex h-20 w-20 items-center justify-center rounded-full text-2xl font-bold text-white shadow-lg">
+    <main className="bg-gray-50">
+
+      {/* Dark hero band */}
+      <section
+        className="relative overflow-hidden pb-20 pt-12"
+        style={{ backgroundColor: "#0f0f14" }}
+      >
+        {/* Dot grid overlay */}
+        <div className="dot-grid absolute inset-0 opacity-40" />
+
+        {/* Radial purple glow */}
+        <div className="absolute left-1/2 top-0 h-[400px] w-[600px] -translate-x-1/2 rounded-full bg-gradient-radial from-violet-900/30 to-transparent blur-3xl" />
+
+        <div className="relative z-10 mx-auto flex max-w-2xl flex-col items-center px-6 text-center">
+          {/* Avatar */}
+          <div className="brand-gradient stagger-1 flex h-20 w-20 items-center justify-center rounded-full text-2xl font-bold text-white shadow-lg">
             {initials}
           </div>
 
+          {/* Name + verified badge */}
           <div className="mt-4 flex items-center gap-2">
-            <h1 className="text-2xl font-semibold tracking-tight text-gray-900">
+            <h1 className="stagger-2 text-2xl font-semibold tracking-tight text-white">
               {user.username ?? "Usuário anônimo"}
             </h1>
             {user.verified && (
-              <span className="flex items-center gap-1 rounded-full bg-indigo-100 px-2.5 py-0.5 text-xs font-semibold text-indigo-700">
+              <span className="flex items-center gap-1 rounded-full border border-indigo-400/30 bg-indigo-500/20 px-2.5 py-0.5 text-xs font-semibold text-white backdrop-blur-sm">
                 <ShieldCheck size={12} />
                 Verificado
               </span>
             )}
           </div>
 
-          <p className="mt-1.5 flex items-center gap-1.5 text-sm text-gray-500">
+          <p className="stagger-3 mt-1.5 flex items-center gap-1.5 text-sm text-gray-400">
             <Calendar size={13} />
             Membro desde {formatDate(user.createdAt)}
           </p>
         </div>
+
+        {/* Bottom gradient fade into gray-50 content */}
+        <div className="absolute bottom-0 inset-x-0 h-16 bg-gradient-to-t from-gray-50 to-transparent" />
       </section>
 
-      {/* Content */}
+      {/* Content cards */}
       <div className="mx-auto max-w-2xl px-6 py-8">
         <div className="flex flex-col gap-4">
 
@@ -457,13 +488,18 @@ function InfoRow({ icon, label, value, badge }) {
 
 function ProfileSkeleton() {
   return (
-    <main>
-      <section className="hero-gradient px-6 pb-16 pt-12">
-        <div className="mx-auto flex max-w-2xl flex-col items-center gap-3">
+    <main className="bg-gray-50">
+      <section
+        className="relative overflow-hidden pb-20 pt-12"
+        style={{ backgroundColor: "#0f0f14" }}
+      >
+        <div className="dot-grid absolute inset-0 opacity-40" />
+        <div className="relative z-10 mx-auto flex max-w-2xl flex-col items-center gap-3 px-6">
           <div className="skeleton h-20 w-20 rounded-full" />
           <div className="skeleton h-6 w-40 rounded-lg" />
           <div className="skeleton h-4 w-32 rounded-lg" />
         </div>
+        <div className="absolute bottom-0 inset-x-0 h-16 bg-gradient-to-t from-gray-50 to-transparent" />
       </section>
       <div className="mx-auto max-w-2xl px-6 py-8">
         <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
