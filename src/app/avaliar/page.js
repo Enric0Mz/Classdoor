@@ -256,7 +256,7 @@ function AvaliarContent() {
       <div className="relative z-10 mx-auto w-full max-w-lg">
 
         {/* Header */}
-        <div className="mb-8 text-center">
+        <div className="mb-8 flex flex-col items-center gap-4 text-center">
           <Link href="/" className="inline-flex items-center gap-2.5">
             <div className="brand-gradient flex h-10 w-10 items-center justify-center rounded-xl text-white shadow-lg shadow-indigo-500/30">
               <GraduationCap size={22} />
@@ -266,18 +266,31 @@ function AvaliarContent() {
             </span>
           </Link>
 
-          <div className="stagger-1 mt-6 inline-flex items-center gap-2 rounded-full border border-indigo-400/30 bg-indigo-500/20 px-4 py-1.5 text-xs font-semibold text-white backdrop-blur-sm">
+          <div className="stagger-1 inline-flex items-center gap-2 rounded-full border border-indigo-400/30 bg-indigo-500/20 px-4 py-1.5 text-xs font-semibold text-white backdrop-blur-sm">
             <Star size={13} />
             <span>Avaliações verificadas por estudantes</span>
           </div>
 
-          <h1 className="stagger-2 mt-4 text-2xl font-semibold tracking-tight text-white">
-            Avaliar universidade
-          </h1>
-          <p className="stagger-3 mt-1.5 text-sm text-gray-400">
-            Sua avaliação ajuda outros estudantes a escolherem melhor
-          </p>
+          <div>
+            <h1 className="stagger-2 text-2xl font-semibold tracking-tight text-white">
+              Avaliar universidade
+            </h1>
+            <p className="stagger-3 mt-1.5 text-sm text-gray-400">
+              Sua avaliação ajuda outros estudantes a escolherem melhor
+            </p>
+          </div>
         </div>
+
+        {/* Card wrapper — purple glow radiates from behind the card */}
+        <div className="relative">
+          <div
+            className="absolute inset-0 -z-10"
+            style={{
+              background: "radial-gradient(ellipse at 50% 50%, rgba(139,92,246,0.45) 0%, rgba(99,102,241,0.2) 40%, transparent 70%)",
+              transform: "scale(1.6)",
+              filter: "blur(24px)",
+            }}
+          />
 
         {/* Form card */}
         <div className="rounded-2xl border border-white/10 bg-white p-8 shadow-xl shadow-black/30">
@@ -388,6 +401,8 @@ function AvaliarContent() {
             </button>
           </form>
         </div>
+
+        </div>{/* end card wrapper */}
 
         {/* Back link */}
         <div className="mt-5 text-center">
