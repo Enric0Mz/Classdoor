@@ -15,6 +15,7 @@ jest.mock("bcrypt", () => ({
 
 jest.mock("@/lib/auth", () => ({
   signToken: jest.fn(),
+  createRefreshToken: jest.fn().mockResolvedValue("mock-refresh-token"),
 }));
 
 jest.mock("next/server", () => ({
