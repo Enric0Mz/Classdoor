@@ -814,7 +814,7 @@ const swaggerSpec = {
     },
     "/api/v1/users/login": {
       post: {
-        tags: ["Users"],
+        tags: ["Sessions"],
         summary: "Log in a user",
         description: "Pass your email address or username in the `identifier` field together with `password`.",
         requestBody: {
@@ -858,6 +858,118 @@ const swaggerSpec = {
           },
           401: {
             description: "Invalid credentials",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
+        },
+      },
+    },
+    "/api/v1/users/refresh": {
+      post: {
+        tags: ["Sessions"],
+        summary: "Refresh access token",
+        description: "Exchange a valid refresh token for a new access token and a rotated refresh token.",
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                required: ["refreshToken"],
+                properties: {
+                  refreshToken: {
+                    type: "string",
+                    description: "The refresh token received from login or a previous refresh.",
+                  },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: "New tokens issued",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    token: { type: "string", description: "New short-lived access token (JWT)." },
+                    refreshToken: { type: "string", description: "New rotated refresh token." },
+                  },
+                },
+              },
+            },
+          },
+          400: {
+            description: "Refresh token not provided",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
+          401: {
+            description: "Invalid or expired refresh token",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
+        },
+      },
+    },
+    "/api/v1/users/logout": {
+      post: {
+        tags: ["Sessions"],
+        summary: "Log out a user",
+        description: "Invalidates the provided refresh token so it can no longer be used. Requires a valid access token.",
+        security: [{ BearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                required: ["refreshToken"],
+                properties: {
+                  refreshToken: {
+                    type: "string",
+                    description: "The refresh token to invalidate.",
+                  },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: "Logged out successfully",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    message: { type: "string", example: "Logged out successfully" },
+                  },
+                },
+              },
+            },
+          },
+          400: {
+            description: "Refresh token not provided",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
+          401: {
+            description: "Invalid refresh token",
             content: {
               "application/json": {
                 schema: { $ref: "#/components/schemas/Error" },
@@ -1353,7 +1465,8 @@ const swaggerSpec = {
         type: "object",
         properties: {
           user: { $ref: "#/components/schemas/User" },
-          token: { type: "string" },
+          token: { type: "string", description: "Short-lived access token (JWT, 15 min)." },
+          refreshToken: { type: "string", description: "Long-lived refresh token (7 days). Use POST /api/v1/users/refresh to renew." },
         },
       },
       Error: {

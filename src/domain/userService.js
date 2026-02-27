@@ -2,7 +2,7 @@ import bcrypt from "bcrypt";
 import { AppError } from "@/errors/AppError";
 import * as userRepository from "@/repositories/userRepository";
 import * as emailVerificationService from "@/domain/emailVerificationService";
-import { signToken } from "@/lib/auth";
+import { signToken, createRefreshToken } from "@/lib/auth";
 import { generateUsername } from "@/lib/generateUsername";
 
 const MINIMUM_PASSWORD_LENGTH = 8;
@@ -90,12 +90,13 @@ export async function registerUser({ email, password, username } = {}) {
 
   const user = await userRepository.create(userData);
   const token = signToken({ id: user.id, email: user.email || null, role: user.role });
+  const refreshToken = await createRefreshToken(user.id);
 
   if (user.email) {
     await emailVerificationService.sendEmailVerificationToUser(user.id, user.email);
   }
 
-  return { user: stripPassword(user), token };
+  return { user: stripPassword(user), token, refreshToken };
 }
 
 export async function loginUser({ identifier, password }) {
@@ -122,7 +123,8 @@ export async function loginUser({ identifier, password }) {
   }
 
   const token = signToken({ id: user.id, email: user.email || null, role: user.role });
-  return { user: stripPassword(user), token };
+  const refreshToken = await createRefreshToken(user.id);
+  return { user: stripPassword(user), token, refreshToken };
 }
 
 export async function listUsers({ skip, take } = {}) {
