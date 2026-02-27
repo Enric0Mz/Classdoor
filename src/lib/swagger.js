@@ -285,10 +285,10 @@ const swaggerSpec = {
             "application/json": {
               schema: {
                 type: "object",
-                required: ["rating", "difficultyLevel", "universityId"],
+                required: ["rating", "difficultyLevel", "universityId", "comment"],
                 properties: {
                   rating: { type: "integer", minimum: 1, maximum: 5, example: 4 },
-                  comment: { type: "string", nullable: true, example: "Great university" },
+                  comment: { type: "string", minLength: 10, maxLength: 2000, example: "Great university overall!" },
                   difficultyLevel: {
                     type: "integer",
                     minimum: 1,
@@ -1083,19 +1083,28 @@ const swaggerSpec = {
       },
     },
     "/api/v1/users/me/email/verify": {
-      get: {
+      put: {
         tags: ["Users"],
         summary: "Verify account email via token",
-        description: "Public endpoint. Follow the link sent to your email after registration. On success the account is marked as emailVerified.",
-        parameters: [
-          {
-            name: "token",
-            in: "query",
-            required: true,
-            schema: { type: "string", format: "uuid" },
-            description: "The verification token received by email",
+        description: "Public endpoint. Called automatically by the /verify-email page after a user clicks the link in their inbox. On success the account is marked as emailVerified.",
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                required: ["token"],
+                properties: {
+                  token: {
+                    type: "string",
+                    format: "uuid",
+                    description: "The verification token received by email",
+                  },
+                },
+              },
+            },
           },
-        ],
+        },
         responses: {
           200: {
             description: "Email verified successfully",
@@ -1211,20 +1220,29 @@ const swaggerSpec = {
       },
     },
     "/api/v1/users/me/university-email/verify": {
-      get: {
+      post: {
         tags: ["Users"],
         summary: "Verify a university email token",
         description:
-          "Public endpoint. Follow the link sent to the university email. On success, the user is marked as `verified`.",
-        parameters: [
-          {
-            name: "token",
-            in: "query",
-            required: true,
-            schema: { type: "string", format: "uuid" },
-            description: "The verification token received by email",
+          "Public endpoint. Called automatically by the /verify-university-email page after a user clicks the link sent to their university inbox. On success, the user is marked as `verified`.",
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                required: ["token"],
+                properties: {
+                  token: {
+                    type: "string",
+                    format: "uuid",
+                    description: "The verification token received by email",
+                  },
+                },
+              },
+            },
           },
-        ],
+        },
         responses: {
           200: {
             description: "University email verified successfully",
