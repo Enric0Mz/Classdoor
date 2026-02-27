@@ -9,9 +9,16 @@ import { findUniversityByDomain } from "@/lib/universityDomains";
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const VERIFICATION_TOKEN_EXPIRY_HOURS = 24;
 
-export async function submitUniversityEmail(userId, userEmail, universityEmail) {
+export async function submitUniversityEmail(
+  userId,
+  userEmail,
+  universityEmail,
+) {
   if (!userEmail) {
-    throw new AppError("Anonymous accounts cannot submit a university email", 403);
+    throw new AppError(
+      "Anonymous accounts cannot submit a university email",
+      403,
+    );
   }
 
   if (!EMAIL_REGEX.test(universityEmail)) {
@@ -22,16 +29,26 @@ export async function submitUniversityEmail(userId, userEmail, universityEmail) 
   const knownUniversity = findUniversityByDomain(domain);
 
   if (!knownUniversity) {
-    throw new AppError("Email domain is not recognized as a university email", 400);
+    throw new AppError(
+      "Email domain is not recognized as a university email",
+      400,
+    );
   }
 
   const token = crypto.randomUUID();
-  const expiresAt = new Date(Date.now() + VERIFICATION_TOKEN_EXPIRY_HOURS * 60 * 60 * 1000);
+  const expiresAt = new Date(
+    Date.now() + VERIFICATION_TOKEN_EXPIRY_HOURS * 60 * 60 * 1000,
+  );
 
   // Remove any existing pending verification for this user
   await verificationRepository.deleteByUserId(userId);
 
-  await verificationRepository.create({ userId, universityEmail, token, expiresAt });
+  await verificationRepository.create({
+    userId,
+    universityEmail,
+    token,
+    expiresAt,
+  });
 
   await sendVerificationEmail(universityEmail, token);
 
