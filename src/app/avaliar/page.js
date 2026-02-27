@@ -252,7 +252,7 @@ function AvaliarContent() {
             <GraduationCap size={22} />
           </div>
           <span className="brand-gradient-text text-[1.4rem] font-extrabold tracking-tight">
-            classdoor
+            InfoCampus
           </span>
         </Link>
         <h1 className="mt-5 text-2xl font-semibold tracking-tight text-gray-900">
