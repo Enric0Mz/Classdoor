@@ -71,8 +71,8 @@ export default function Navbar() {
 
   return (
     <header
-      className="sticky top-0 z-50 border-b border-indigo-500/20 backdrop-blur-xl shadow-[0_1px_30px_-4px_rgba(99,102,241,0.2)]"
-      style={{ background: "linear-gradient(135deg, #0c0c1e 0%, #180c3a 50%, #0c0c1e 100%)" }}
+      className="sticky top-0 z-50 border-b border-indigo-400/20 backdrop-blur-xl shadow-[0_1px_30px_-4px_rgba(99,102,241,0.25)]"
+      style={{ background: "linear-gradient(135deg, #1e1b4b 0%, #2e1d6e 50%, #1e1b4b 100%)" }}
     >
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
 
@@ -81,8 +81,8 @@ export default function Navbar() {
           <div className="brand-gradient flex h-9 w-9 items-center justify-center rounded-xl text-white shadow-lg shadow-indigo-500/30">
             <GraduationCap size={20} />
           </div>
-          <span className="text-[1.3rem] font-extrabold tracking-tight">
-            <span className="text-indigo-400">Info</span><span className="text-violet-300">Campus</span>
+          <span className="brand-gradient-text text-[1.3rem] font-extrabold tracking-tight">
+            InfoCampus
           </span>
         </Link>
 
@@ -122,7 +122,7 @@ export default function Navbar() {
           {/* Bell */}
           <button className="relative cursor-pointer rounded-xl p-2.5 text-gray-400 transition-colors hover:bg-white/8 hover:text-gray-200">
             <Bell size={20} />
-            <span className="absolute right-1.5 top-1.5 h-2.5 w-2.5 rounded-full border-2 border-[#0c0c1e] bg-indigo-500" />
+            <span className="absolute right-1.5 top-1.5 h-2.5 w-2.5 rounded-full border-2 border-[#1e1b4b] bg-indigo-400" />
           </button>
 
           {/* Avaliar — hidden on mobile */}
@@ -204,7 +204,7 @@ export default function Navbar() {
       {isMobileMenuOpen && (
         <div
           className="border-t border-white/10 px-4 py-3 md:hidden"
-          style={{ background: "linear-gradient(135deg, #0c0c1e, #180c3a)" }}
+          style={{ background: "linear-gradient(135deg, #1e1b4b, #2e1d6e)" }}
         >
           {/* Mobile search */}
           <div className="mb-3 flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3.5 py-2.5 sm:hidden">
