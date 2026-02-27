@@ -1,5 +1,6 @@
 import { AppError } from "@/errors/AppError";
 import * as reviewRepository from "@/repositories/reviewRepository";
+import { sanitizeString } from "@/lib/sanitize";
 
 function validateRating(rating) {
   if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
@@ -10,6 +11,21 @@ function validateRating(rating) {
 function validateDifficultyLevel(difficultyLevel) {
   if (!Number.isInteger(difficultyLevel) || difficultyLevel < 1 || difficultyLevel > 5) {
     throw new AppError("Difficulty level must be an integer between 1 and 5", 400);
+  }
+}
+
+const COMMENT_MIN_LENGTH = 10;
+const COMMENT_MAX_LENGTH = 2000;
+
+function validateComment(comment) {
+  if (!comment || typeof comment !== "string" || comment.trim().length === 0) {
+    throw new AppError("comment is required", 400);
+  }
+  if (comment.trim().length < COMMENT_MIN_LENGTH) {
+    throw new AppError(`comment must be at least ${COMMENT_MIN_LENGTH} characters`, 400);
+  }
+  if (comment.trim().length > COMMENT_MAX_LENGTH) {
+    throw new AppError(`comment must be at most ${COMMENT_MAX_LENGTH} characters`, 400);
   }
 }
 
@@ -49,7 +65,13 @@ export async function createReview(body, authorId) {
   validateRating(rating);
   validateDifficultyLevel(difficultyLevel);
 
-  const review = await reviewRepository.create({ rating, difficultyLevel, universityId, comment, authorId });
+  // Sanitize first so validation runs against the value that will actually be stored.
+  // This prevents inputs like "<script>x</script>" from passing length checks
+  // before being stripped down to an empty/short string.
+  const sanitizedComment = sanitizeString(comment);
+  validateComment(sanitizedComment);
+
+  const review = await reviewRepository.create({ rating, difficultyLevel, universityId, comment: sanitizedComment, authorId });
   return { review: withIsVerified(review) };
 }
 
@@ -91,7 +113,9 @@ export async function updateReview(id, data, requesterId, requesterRole) {
     updateData.difficultyLevel = difficultyLevel;
   }
   if (comment !== undefined) {
-    updateData.comment = comment;
+    const sanitizedComment = sanitizeString(comment);
+    validateComment(sanitizedComment);
+    updateData.comment = sanitizedComment;
   }
 
   const updatedReview = await reviewRepository.update(id, updateData);
