@@ -38,3 +38,14 @@ Configure `main` branch protection rules to:
 - Require status checks to pass before merging.
 - Mark `lint`, `tests`, `prettier`, `commitlint`, and `secretlint` as required checks.
 - Require branches to be up to date before merging.
+
+## GitHub Actions Secrets
+
+The `tests` job requires these repository secrets:
+
+- `JWT_SECRET`
+- `APP_URL`
+- `ALLOWED_ORIGIN`
+- `RESEND_API_KEY`
+
+Configure them in `Settings -> Secrets and variables -> Actions`.
