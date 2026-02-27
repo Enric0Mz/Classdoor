@@ -4,7 +4,7 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 const APP_URL = process.env.APP_URL || "http://localhost:3000";
 
 export async function sendEmailVerification(toEmail, token) {
-  const verificationUrl = `${APP_URL}/api/v1/users/me/email/verify?token=${token}`;
+  const verificationUrl = `${APP_URL}/verify-email?token=${token}`;
 
   await resend.emails.send({
     from: "Classdoor <onboarding@infocampus.com.br>",
@@ -20,7 +20,7 @@ export async function sendEmailVerification(toEmail, token) {
 }
 
 export async function sendVerificationEmail(toEmail, token) {
-  const verificationUrl = `${APP_URL}/api/v1/users/me/university-email/verify?token=${token}`;
+  const verificationUrl = `${APP_URL}/verify-university-email?token=${token}`;
 
   await resend.emails.send({
     from: "InfoCampus <onboarding@infocampus.com.br>",

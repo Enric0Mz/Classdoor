@@ -1,7 +1,7 @@
 import { verifyUniversityEmail } from "@/domain/universityEmailVerificationService";
 import * as verificationRepository from "@/repositories/universityEmailVerificationRepository";
 import * as userRepository from "@/repositories/userRepository";
-import { GET } from "@/app/api/v1/users/me/university-email/verify/route";
+import { POST } from "@/app/api/v1/users/me/university-email/verify/route";
 
 jest.mock("@/repositories/universityEmailVerificationRepository", () => ({
   findByToken: jest.fn(),
@@ -14,6 +14,10 @@ jest.mock("@/repositories/userRepository", () => ({
 
 jest.mock("@/repositories/universityRepository", () => ({
   findByEmailDomain: jest.fn().mockResolvedValue(null),
+}));
+
+jest.mock("@/lib/emailService", () => ({
+  sendVerificationEmail: jest.fn(),
 }));
 
 jest.mock("next/server", () => ({
@@ -78,35 +82,38 @@ describe("universityEmailVerificationService.verifyUniversityEmail", () => {
   });
 });
 
-function makeRequest(searchParams = "") {
-  return { url: `http://localhost/api/v1/users/me/university-email/verify${searchParams}` };
+function makeRequest(body = {}) {
+  return {
+    url: "http://localhost/api/v1/users/me/university-email/verify",
+    json: () => Promise.resolve(body),
+  };
 }
 
-describe("GET /api/v1/users/me/university-email/verify", () => {
+describe("POST /api/v1/users/me/university-email/verify", () => {
   it("returns 200 with success message on valid token", async () => {
     verificationRepository.findByToken.mockResolvedValue(VALID_RECORD);
     userRepository.update.mockResolvedValue({ id: "user-1", verified: true });
     verificationRepository.deleteByUserId.mockResolvedValue(undefined);
 
-    const response = await GET(makeRequest("?token=valid-token"));
+    const response = await POST(makeRequest({ token: "valid-token" }));
 
     expect(response.status).toBe(200);
     expect(response.body).toEqual({ message: "University email verified successfully" });
   });
 
-  it("returns 400 when token query param is missing", async () => {
-    const response = await GET(makeRequest());
+  it("returns 400 when token is missing from body", async () => {
+    const response = await POST(makeRequest({}));
 
     expect(response.status).toBe(400);
     expect(response.body).toEqual({
-      error: { message: "token query parameter is required", statusCode: 400 },
+      error: { message: "token is required", statusCode: 400 },
     });
   });
 
   it("returns 404 when token is unknown", async () => {
     verificationRepository.findByToken.mockResolvedValue(null);
 
-    const response = await GET(makeRequest("?token=unknown-token"));
+    const response = await POST(makeRequest({ token: "unknown-token" }));
 
     expect(response.status).toBe(404);
     expect(response.body).toEqual({
@@ -117,7 +124,7 @@ describe("GET /api/v1/users/me/university-email/verify", () => {
   it("returns 400 when token has expired", async () => {
     verificationRepository.findByToken.mockResolvedValue(EXPIRED_RECORD);
 
-    const response = await GET(makeRequest("?token=expired-token"));
+    const response = await POST(makeRequest({ token: "expired-token" }));
 
     expect(response.status).toBe(400);
     expect(response.body).toEqual({
