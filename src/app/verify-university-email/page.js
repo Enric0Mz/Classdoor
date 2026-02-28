@@ -1,9 +1,23 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 
 export default function VerifyUniversityEmailPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="flex min-h-screen items-center justify-center">
+          <p className="text-gray-600">Loading...</p>
+        </main>
+      }
+    >
+      <VerifyUniversityEmailContent />
+    </Suspense>
+  );
+}
+
+function VerifyUniversityEmailContent() {
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
 
@@ -19,11 +33,14 @@ export default function VerifyUniversityEmailPage() {
 
     async function submitVerification() {
       try {
-        const response = await fetch("/api/v1/users/me/university-email/verify", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ token }),
-        });
+        const response = await fetch(
+          "/api/v1/users/me/university-email/verify",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ token }),
+          },
+        );
 
         if (response.ok) {
           setStatus("success");
@@ -53,8 +70,12 @@ export default function VerifyUniversityEmailPage() {
     return (
       <main className="flex min-h-screen items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-green-600">University email verified!</h1>
-          <p className="mt-2 text-gray-600">Your university email has been successfully verified.</p>
+          <h1 className="text-2xl font-bold text-green-600">
+            University email verified!
+          </h1>
+          <p className="mt-2 text-gray-600">
+            Your university email has been successfully verified.
+          </p>
           <a href="/me" className="mt-4 inline-block text-blue-600 underline">
             Go to your profile
           </a>

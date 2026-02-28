@@ -1,7 +1,11 @@
 import { Resend } from "resend";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
-const APP_URL = process.env.APP_URL || "http://localhost:3000";
+const APP_URL =
+  process.env.APP_URL ||
+  (process.env.VERCEL_URL
+    ? `https://${process.env.VERCEL_URL}`
+    : "http://localhost:3000");
 
 export async function sendEmailVerification(toEmail, token) {
   const verificationUrl = `${APP_URL}/verify-email?token=${token}`;

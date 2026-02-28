@@ -1,9 +1,23 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 
 export default function VerifyEmailPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="flex min-h-screen items-center justify-center">
+          <p className="text-gray-600">Loading...</p>
+        </main>
+      }
+    >
+      <VerifyEmailContent />
+    </Suspense>
+  );
+}
+
+function VerifyEmailContent() {
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
 
@@ -54,8 +68,13 @@ export default function VerifyEmailPage() {
       <main className="flex min-h-screen items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-green-600">Email verified!</h1>
-          <p className="mt-2 text-gray-600">Your email address has been successfully verified.</p>
-          <a href="/login" className="mt-4 inline-block text-blue-600 underline">
+          <p className="mt-2 text-gray-600">
+            Your email address has been successfully verified.
+          </p>
+          <a
+            href="/login"
+            className="mt-4 inline-block text-blue-600 underline"
+          >
             Go to login
           </a>
         </div>
