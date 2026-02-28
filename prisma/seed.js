@@ -3,9 +3,9 @@ const bcrypt = require("bcrypt");
 
 const prisma = new PrismaClient();
 
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "admin@classdoor.com";
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "Admin123!";
-const ADMIN_USERNAME = process.env.ADMIN_USERNAME || "admin";
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
+const ADMIN_USERNAME = process.env.ADMIN_USERNAME;
 
 async function main() {
   const existingAdmin = await prisma.user.findUnique({
