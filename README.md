@@ -6,31 +6,46 @@ First, run the development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+## CI Checks
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+This repository has a GitHub Actions pipeline at `.github/workflows/ci.yml` with these required checks:
 
-## Learn More
+- `lint`
+- `tests`
+- `prettier`
+- `commitlint`
+- `secretlint`
 
-To learn more about Next.js, take a look at the following resources:
+Run the same checks locally:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+npm run lint
+npm test
+npm run format:check -- HEAD~1 HEAD
+npm run commitlint
+npm run secretlint
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Branch Protection (GitHub UI)
 
-## Deploy on Vercel
+Configure `main` branch protection rules to:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- Require pull requests before merging.
+- Require status checks to pass before merging.
+- Mark `lint`, `tests`, `prettier`, `commitlint`, and `secretlint` as required checks.
+- Require branches to be up to date before merging.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## GitHub Actions Secrets
+
+The `tests` job requires these repository secrets:
+
+- `JWT_SECRET`
+- `APP_URL`
+- `ALLOWED_ORIGIN`
+- `RESEND_API_KEY`
+
+Configure them in `Settings -> Secrets and variables -> Actions`.
