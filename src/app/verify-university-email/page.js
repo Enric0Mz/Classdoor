@@ -33,11 +33,14 @@ function VerifyUniversityEmailContent() {
 
     async function submitVerification() {
       try {
-        const response = await fetch("/api/v1/users/me/university-email/verify", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ token }),
-        });
+        const response = await fetch(
+          "/api/v1/users/me/university-email/verify",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ token }),
+          },
+        );
 
         if (response.ok) {
           setStatus("success");
@@ -67,8 +70,12 @@ function VerifyUniversityEmailContent() {
     return (
       <main className="flex min-h-screen items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-green-600">University email verified!</h1>
-          <p className="mt-2 text-gray-600">Your university email has been successfully verified.</p>
+          <h1 className="text-2xl font-bold text-green-600">
+            University email verified!
+          </h1>
+          <p className="mt-2 text-gray-600">
+            Your university email has been successfully verified.
+          </p>
           <a href="/me" className="mt-4 inline-block text-blue-600 underline">
             Go to your profile
           </a>
