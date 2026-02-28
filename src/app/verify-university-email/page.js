@@ -1,9 +1,23 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 
 export default function VerifyUniversityEmailPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="flex min-h-screen items-center justify-center">
+          <p className="text-gray-600">Loading...</p>
+        </main>
+      }
+    >
+      <VerifyUniversityEmailContent />
+    </Suspense>
+  );
+}
+
+function VerifyUniversityEmailContent() {
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
 
