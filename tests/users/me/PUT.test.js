@@ -1,6 +1,6 @@
 import { updateUser } from "@/domain/userService";
 import * as userRepository from "@/repositories/userRepository";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import { requireVerifiedUser } from "@/lib/auth";
 import { PUT } from "@/app/api/v1/users/me/route";
 
@@ -10,7 +10,7 @@ jest.mock("@/repositories/userRepository", () => ({
   update: jest.fn(),
 }));
 
-jest.mock("bcrypt", () => ({
+jest.mock("bcryptjs", () => ({
   hash: jest.fn(),
 }));
 

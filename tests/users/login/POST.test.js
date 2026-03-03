@@ -1,6 +1,6 @@
 import { loginUser } from "@/domain/userService";
 import * as userRepository from "@/repositories/userRepository";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import { signToken } from "@/lib/auth";
 import { POST } from "@/app/api/v1/users/login/route";
 
@@ -9,7 +9,7 @@ jest.mock("@/repositories/userRepository", () => ({
   findByUsername: jest.fn(),
 }));
 
-jest.mock("bcrypt", () => ({
+jest.mock("bcryptjs", () => ({
   compare: jest.fn(),
 }));
 
