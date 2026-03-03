@@ -79,6 +79,27 @@ describe("requireVerifiedUser", () => {
     ).rejects.toMatchObject({ message: "User not found", statusCode: 404 });
   });
 
+  it("allows ADMIN users even without email verification", async () => {
+    jwt.verify.mockReturnValue({
+      id: "admin-1",
+      email: "admin@test.com",
+      role: "ADMIN",
+    });
+    userRepository.findById.mockResolvedValue({
+      id: "admin-1",
+      role: "ADMIN",
+      emailVerified: false,
+    });
+
+    const result = await requireVerifiedUser(makeRequest("valid-token"));
+
+    expect(result).toEqual({
+      id: "admin-1",
+      email: "admin@test.com",
+      role: "ADMIN",
+    });
+  });
+
   it("throws 401 when no auth header is provided", async () => {
     await expect(requireVerifiedUser(makeRequest(null))).rejects.toMatchObject({
       message: "Authentication required",
