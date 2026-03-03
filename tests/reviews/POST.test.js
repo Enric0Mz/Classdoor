@@ -28,22 +28,34 @@ const VALID_REVIEW_BODY = {
 
 describe("reviewService.createReview", () => {
   it("creates a review linked to the authenticated author", async () => {
-    const created = { id: "review-1", ...VALID_REVIEW_BODY, authorId: "user-1", author: { id: "user-1", username: "AgilOnca123", verified: false } };
+    const created = {
+      id: "review-1",
+      ...VALID_REVIEW_BODY,
+      authorId: "user-1",
+      author: { id: "user-1", username: "AgilOnca123", verified: false },
+    };
     reviewRepository.create.mockResolvedValue(created);
 
     const result = await createReview(VALID_REVIEW_BODY, "user-1");
 
     expect(reviewRepository.create).toHaveBeenCalledWith(
-      expect.objectContaining({ authorId: "user-1", universityId: "uni-1", rating: 4 })
+      expect.objectContaining({
+        authorId: "user-1",
+        universityId: "uni-1",
+        rating: 4,
+      }),
     );
     expect(result).toEqual({ review: { ...created, isVerified: false } });
     expect(result).not.toHaveProperty("editToken");
   });
 
   it("throws 400 when universityId is missing", async () => {
-    const { universityId: _removed, ...bodyWithoutUniversityId } = VALID_REVIEW_BODY;
+    const { universityId: _removed, ...bodyWithoutUniversityId } =
+      VALID_REVIEW_BODY;
 
-    await expect(createReview(bodyWithoutUniversityId, "user-1")).rejects.toMatchObject({
+    await expect(
+      createReview(bodyWithoutUniversityId, "user-1"),
+    ).rejects.toMatchObject({
       message: "universityId is required",
       statusCode: 400,
     });
@@ -51,14 +63,18 @@ describe("reviewService.createReview", () => {
   });
 
   it("throws 400 when rating is out of range", async () => {
-    await expect(createReview({ ...VALID_REVIEW_BODY, rating: 6 }, "user-1")).rejects.toMatchObject({
+    await expect(
+      createReview({ ...VALID_REVIEW_BODY, rating: 6 }, "user-1"),
+    ).rejects.toMatchObject({
       message: "Rating must be an integer between 1 and 5",
       statusCode: 400,
     });
   });
 
   it("throws 400 when difficultyLevel is out of range", async () => {
-    await expect(createReview({ ...VALID_REVIEW_BODY, difficultyLevel: 0 }, "user-1")).rejects.toMatchObject({
+    await expect(
+      createReview({ ...VALID_REVIEW_BODY, difficultyLevel: 0 }, "user-1"),
+    ).rejects.toMatchObject({
       message: "Difficulty level must be an integer between 1 and 5",
       statusCode: 400,
     });
@@ -74,14 +90,24 @@ function makeRequest(body) {
 
 describe("POST /api/v1/reviews", () => {
   it("returns 201 with the created review when authenticated", async () => {
-    requireVerifiedUser.mockReturnValue({ id: "user-1", email: "user@test.com", role: "USER" });
-    const created = { id: "review-1", ...VALID_REVIEW_BODY, authorId: "user-1" };
+    requireVerifiedUser.mockReturnValue({
+      id: "user-1",
+      email: "user@test.com",
+      role: "USER",
+    });
+    const created = {
+      id: "review-1",
+      ...VALID_REVIEW_BODY,
+      authorId: "user-1",
+    };
     reviewRepository.create.mockResolvedValue(created);
 
     const response = await POST(makeRequest(VALID_REVIEW_BODY));
 
     expect(response.status).toBe(201);
-    expect(response.body).toEqual({ review: { ...created, isVerified: false } });
+    expect(response.body).toEqual({
+      review: { ...created, isVerified: false },
+    });
     expect(response.body).not.toHaveProperty("editToken");
   });
 
@@ -100,7 +126,11 @@ describe("POST /api/v1/reviews", () => {
   });
 
   it("returns 400 when required fields are missing", async () => {
-    requireVerifiedUser.mockReturnValue({ id: "user-1", email: "user@test.com", role: "USER" });
+    requireVerifiedUser.mockReturnValue({
+      id: "user-1",
+      email: "user@test.com",
+      role: "USER",
+    });
 
     const response = await POST(makeRequest({ rating: 4, difficultyLevel: 3 }));
 

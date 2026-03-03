@@ -9,7 +9,11 @@ export const GET = withErrorHandler(async (request) => {
   const { searchParams } = new URL(request.url);
   const category = searchParams.get("category");
   const { page, limit, skip } = parsePagination(searchParams);
-  const { data, total } = await courseService.listCourses({ skip, take: limit, category });
+  const { data, total } = await courseService.listCourses({
+    skip,
+    take: limit,
+    category,
+  });
   return NextResponse.json(paginatedResponse(data, total, page, limit));
 });
 

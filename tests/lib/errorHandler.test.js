@@ -28,17 +28,23 @@ describe("withErrorHandler", () => {
     const result = await wrappedHandler();
 
     expect(result.status).toBe(404);
-    expect(result.body).toEqual({ error: { message: "Not found", statusCode: 404 } });
+    expect(result.body).toEqual({
+      error: { message: "Not found", statusCode: 404 },
+    });
   });
 
   it("returns a 400 response when a SyntaxError is thrown (malformed JSON)", async () => {
-    const handler = jest.fn().mockRejectedValue(new SyntaxError("Unexpected token"));
+    const handler = jest
+      .fn()
+      .mockRejectedValue(new SyntaxError("Unexpected token"));
     const wrappedHandler = withErrorHandler(handler);
 
     const result = await wrappedHandler();
 
     expect(result.status).toBe(400);
-    expect(result.body).toEqual({ error: { message: "Invalid JSON", statusCode: 400 } });
+    expect(result.body).toEqual({
+      error: { message: "Invalid JSON", statusCode: 400 },
+    });
   });
 
   it("returns a 500 response when a generic Error is thrown", async () => {
@@ -48,18 +54,25 @@ describe("withErrorHandler", () => {
     const result = await wrappedHandler();
 
     expect(result.status).toBe(500);
-    expect(result.body).toEqual({ error: { message: "Internal server error", statusCode: 500 } });
+    expect(result.body).toEqual({
+      error: { message: "Internal server error", statusCode: 500 },
+    });
   });
 
   it("logs unexpected errors to console.error", async () => {
-    const consoleSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+    const consoleSpy = jest
+      .spyOn(console, "error")
+      .mockImplementation(() => {});
     const unexpectedError = new Error("Something broke");
     const handler = jest.fn().mockRejectedValue(unexpectedError);
     const wrappedHandler = withErrorHandler(handler);
 
     await wrappedHandler();
 
-    expect(consoleSpy).toHaveBeenCalledWith("Unexpected error:", unexpectedError);
+    expect(consoleSpy).toHaveBeenCalledWith(
+      "Unexpected error:",
+      unexpectedError,
+    );
     consoleSpy.mockRestore();
   });
 });

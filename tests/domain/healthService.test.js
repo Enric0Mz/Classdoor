@@ -27,7 +27,7 @@ describe("healthService.getHealthStatus", () => {
 
   it("returns unhealthy status when database connection fails", async () => {
     healthRepository.checkDatabaseConnection.mockRejectedValue(
-      new Error("Connection refused")
+      new Error("Connection refused"),
     );
 
     const result = await getHealthStatus();
@@ -43,7 +43,7 @@ describe("healthService.getHealthStatus", () => {
   it("returns unhealthy status when fetching active connections fails", async () => {
     healthRepository.checkDatabaseConnection.mockResolvedValue(undefined);
     healthRepository.getActiveConnections.mockRejectedValue(
-      new Error("Query failed")
+      new Error("Query failed"),
     );
 
     const result = await getHealthStatus();

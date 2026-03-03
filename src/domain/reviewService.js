@@ -9,8 +9,15 @@ function validateRating(rating) {
 }
 
 function validateDifficultyLevel(difficultyLevel) {
-  if (!Number.isInteger(difficultyLevel) || difficultyLevel < 1 || difficultyLevel > 5) {
-    throw new AppError("Difficulty level must be an integer between 1 and 5", 400);
+  if (
+    !Number.isInteger(difficultyLevel) ||
+    difficultyLevel < 1 ||
+    difficultyLevel > 5
+  ) {
+    throw new AppError(
+      "Difficulty level must be an integer between 1 and 5",
+      400,
+    );
   }
 }
 
@@ -22,10 +29,16 @@ function validateComment(comment) {
     throw new AppError("comment is required", 400);
   }
   if (comment.trim().length < COMMENT_MIN_LENGTH) {
-    throw new AppError(`comment must be at least ${COMMENT_MIN_LENGTH} characters`, 400);
+    throw new AppError(
+      `comment must be at least ${COMMENT_MIN_LENGTH} characters`,
+      400,
+    );
   }
   if (comment.trim().length > COMMENT_MAX_LENGTH) {
-    throw new AppError(`comment must be at most ${COMMENT_MAX_LENGTH} characters`, 400);
+    throw new AppError(
+      `comment must be at most ${COMMENT_MAX_LENGTH} characters`,
+      400,
+    );
   }
 }
 
@@ -71,12 +84,22 @@ export async function createReview(body, authorId) {
   const sanitizedComment = sanitizeString(comment);
   validateComment(sanitizedComment);
 
-  const review = await reviewRepository.create({ rating, difficultyLevel, universityId, comment: sanitizedComment, authorId });
+  const review = await reviewRepository.create({
+    rating,
+    difficultyLevel,
+    universityId,
+    comment: sanitizedComment,
+    authorId,
+  });
   return { review: withIsVerified(review) };
 }
 
 export async function listReviews({ universityId, skip, take } = {}) {
-  const { data, total } = await reviewRepository.findAll({ universityId, skip, take });
+  const { data, total } = await reviewRepository.findAll({
+    universityId,
+    skip,
+    take,
+  });
   return { data: data.map(withIsVerified), total };
 }
 

@@ -15,8 +15,24 @@ jest.mock("next/server", () => ({
 beforeEach(() => jest.clearAllMocks());
 
 const SAMPLE_REVIEWS = [
-  { id: "review-1", rating: 4, difficultyLevel: 3, universityId: "uni-1", author: null, createdAt: new Date(), isVerified: false },
-  { id: "review-2", rating: 5, difficultyLevel: 2, universityId: "uni-1", author: null, createdAt: new Date(), isVerified: false },
+  {
+    id: "review-1",
+    rating: 4,
+    difficultyLevel: 3,
+    universityId: "uni-1",
+    author: null,
+    createdAt: new Date(),
+    isVerified: false,
+  },
+  {
+    id: "review-2",
+    rating: 5,
+    difficultyLevel: 2,
+    universityId: "uni-1",
+    author: null,
+    createdAt: new Date(),
+    isVerified: false,
+  },
 ];
 
 const PAGINATED_REVIEWS = { data: SAMPLE_REVIEWS, total: 2 };
@@ -31,7 +47,11 @@ describe("reviewService.listReviews", () => {
 
     const result = await listReviews();
 
-    expect(reviewRepository.findAll).toHaveBeenCalledWith({ universityId: undefined, skip: undefined, take: undefined });
+    expect(reviewRepository.findAll).toHaveBeenCalledWith({
+      universityId: undefined,
+      skip: undefined,
+      take: undefined,
+    });
     expect(result).toEqual(PAGINATED_REVIEWS);
   });
 
@@ -41,7 +61,11 @@ describe("reviewService.listReviews", () => {
 
     const result = await listReviews({ universityId: "uni-1" });
 
-    expect(reviewRepository.findAll).toHaveBeenCalledWith({ universityId: "uni-1", skip: undefined, take: undefined });
+    expect(reviewRepository.findAll).toHaveBeenCalledWith({
+      universityId: "uni-1",
+      skip: undefined,
+      take: undefined,
+    });
     expect(result).toEqual(filtered);
   });
 });
@@ -64,9 +88,18 @@ describe("GET /api/v1/reviews", () => {
 
     const response = await GET(makeGetRequest("?page=2&limit=5"));
 
-    expect(reviewRepository.findAll).toHaveBeenCalledWith({ universityId: null, skip: 5, take: 5 });
+    expect(reviewRepository.findAll).toHaveBeenCalledWith({
+      universityId: null,
+      skip: 5,
+      take: 5,
+    });
     expect(response.status).toBe(200);
-    expect(response.body.pagination).toEqual({ page: 2, limit: 5, total: 2, totalPages: 1 });
+    expect(response.body.pagination).toEqual({
+      page: 2,
+      limit: 5,
+      total: 2,
+      totalPages: 1,
+    });
   });
 
   it("returns 200 with filtered reviews when universityId is provided", async () => {
@@ -75,7 +108,11 @@ describe("GET /api/v1/reviews", () => {
 
     const response = await GET(makeGetRequest("?universityId=uni-1"));
 
-    expect(reviewRepository.findAll).toHaveBeenCalledWith({ universityId: "uni-1", skip: 0, take: 10 });
+    expect(reviewRepository.findAll).toHaveBeenCalledWith({
+      universityId: "uni-1",
+      skip: 0,
+      take: 10,
+    });
     expect(response.status).toBe(200);
     expect(response.body.data).toEqual([SAMPLE_REVIEWS[0]]);
   });

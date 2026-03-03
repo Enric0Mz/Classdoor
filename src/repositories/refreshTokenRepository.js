@@ -29,4 +29,3 @@ export async function deleteOldestByUserId(userId, keepCount) {
     where: { id: { in: idsToDelete } },
   });
 }
-

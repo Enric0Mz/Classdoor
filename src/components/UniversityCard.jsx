@@ -19,7 +19,11 @@ function StarRating({ rating }) {
   return (
     <div className="flex items-center gap-0.5">
       {[...Array(fullStars)].map((_, i) => (
-        <Star key={`full-${i}`} size={13} className="fill-yellow-400 text-yellow-400" />
+        <Star
+          key={`full-${i}`}
+          size={13}
+          className="fill-yellow-400 text-yellow-400"
+        />
       ))}
       {hasHalfStar && (
         <div className="relative">
@@ -30,7 +34,11 @@ function StarRating({ rating }) {
         </div>
       )}
       {[...Array(emptyStars)].map((_, i) => (
-        <Star key={`empty-${i}`} size={13} className="fill-gray-200 text-gray-200" />
+        <Star
+          key={`empty-${i}`}
+          size={13}
+          className="fill-gray-200 text-gray-200"
+        />
       ))}
     </div>
   );
@@ -69,7 +77,9 @@ export default function UniversityCard({ university }) {
         {university.rating != null && (
           <div className="absolute top-3 right-3 flex items-center gap-1.5 rounded-full border border-white/20 bg-black/40 px-2.5 py-1 backdrop-blur-sm">
             <span className="text-xs">⭐</span>
-            <span className="text-xs font-bold text-white">{university.rating.toFixed(1)}</span>
+            <span className="text-xs font-bold text-white">
+              {university.rating.toFixed(1)}
+            </span>
           </div>
         )}
 
@@ -121,7 +131,9 @@ export default function UniversityCard({ university }) {
 
         {/* Tags Footer */}
         <div className="flex flex-wrap items-center gap-1.5">
-          <span className={`rounded-full border px-2 py-0.5 text-[0.65rem] font-semibold uppercase tracking-wider ${typeStyles}`}>
+          <span
+            className={`rounded-full border px-2 py-0.5 text-[0.65rem] font-semibold uppercase tracking-wider ${typeStyles}`}
+          >
             {typeLabel}
           </span>
           {university.courses?.slice(0, 2).map((course) => (

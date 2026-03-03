@@ -22,7 +22,9 @@ describe("POST /api/v1/users/refresh", () => {
       refreshToken: "new-refresh-token",
     });
 
-    const response = await POST(makeRequest({ refreshToken: "old-refresh-token" }));
+    const response = await POST(
+      makeRequest({ refreshToken: "old-refresh-token" }),
+    );
 
     expect(response.status).toBe(200);
     expect(response.body.token).toBe("new-access-token");
@@ -41,7 +43,10 @@ describe("POST /api/v1/users/refresh", () => {
 
   it("returns 401 when refresh token is invalid", async () => {
     rotateRefreshToken.mockRejectedValue(
-      Object.assign(new Error("Invalid refresh token"), { name: "AppError", statusCode: 401 })
+      Object.assign(new Error("Invalid refresh token"), {
+        name: "AppError",
+        statusCode: 401,
+      }),
     );
 
     const response = await POST(makeRequest({ refreshToken: "bad-token" }));
@@ -54,7 +59,10 @@ describe("POST /api/v1/users/refresh", () => {
 
   it("returns 401 when refresh token is expired", async () => {
     rotateRefreshToken.mockRejectedValue(
-      Object.assign(new Error("Refresh token expired"), { name: "AppError", statusCode: 401 })
+      Object.assign(new Error("Refresh token expired"), {
+        name: "AppError",
+        statusCode: 401,
+      }),
     );
 
     const response = await POST(makeRequest({ refreshToken: "expired-token" }));

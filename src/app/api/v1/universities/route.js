@@ -8,7 +8,10 @@ import { withErrorHandler } from "@/lib/errorHandler";
 export const GET = withErrorHandler(async (request) => {
   const { searchParams } = new URL(request.url);
   const { page, limit, skip } = parsePagination(searchParams);
-  const { data, total } = await universityService.listUniversities({ skip, take: limit });
+  const { data, total } = await universityService.listUniversities({
+    skip,
+    take: limit,
+  });
   return NextResponse.json(paginatedResponse(data, total, page, limit));
 });
 

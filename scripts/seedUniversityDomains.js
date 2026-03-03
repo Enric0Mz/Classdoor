@@ -12,17 +12,24 @@ const { readFileSync } = require("fs");
 const { join } = require("path");
 
 const prisma = new PrismaClient();
-const DOMAINS_FILE_PATH = join(__dirname, "..", "data", "university-domains.json");
+const DOMAINS_FILE_PATH = join(
+  __dirname,
+  "..",
+  "data",
+  "university-domains.json",
+);
 
 async function main() {
   const fileContents = readFileSync(DOMAINS_FILE_PATH, "utf-8");
   const universityEntries = JSON.parse(fileContents);
 
   const brazilianUniversities = universityEntries.filter(
-    (entry) => entry.country === "Brazil"
+    (entry) => entry.country === "Brazil",
   );
 
-  console.log(`Found ${brazilianUniversities.length} Brazilian universities in JSON file.`);
+  console.log(
+    `Found ${brazilianUniversities.length} Brazilian universities in JSON file.`,
+  );
 
   let insertedCount = 0;
   let skippedCount = 0;
@@ -45,12 +52,16 @@ async function main() {
         create: { domain, universityId: universityInDatabase.id },
       });
 
-      console.log(`  [OK] Linked domain "${domain}" to "${universityInDatabase.name}"`);
+      console.log(
+        `  [OK] Linked domain "${domain}" to "${universityInDatabase.name}"`,
+      );
       insertedCount++;
     }
   }
 
-  console.log(`\nDone. Inserted/updated: ${insertedCount}, skipped (not in DB): ${skippedCount}`);
+  console.log(
+    `\nDone. Inserted/updated: ${insertedCount}, skipped (not in DB): ${skippedCount}`,
+  );
 }
 
 main()

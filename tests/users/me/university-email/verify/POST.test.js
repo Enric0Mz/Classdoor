@@ -57,8 +57,12 @@ describe("universityEmailVerificationService.verifyUniversityEmail", () => {
       verified: true,
       universityId: null,
     });
-    expect(verificationRepository.deleteByUserId).toHaveBeenCalledWith("user-1");
-    expect(result).toEqual({ message: "University email verified successfully" });
+    expect(verificationRepository.deleteByUserId).toHaveBeenCalledWith(
+      "user-1",
+    );
+    expect(result).toEqual({
+      message: "University email verified successfully",
+    });
   });
 
   it("throws 404 when token is not found", async () => {
@@ -98,7 +102,9 @@ describe("POST /api/v1/users/me/university-email/verify", () => {
     const response = await POST(makeRequest({ token: "valid-token" }));
 
     expect(response.status).toBe(200);
-    expect(response.body).toEqual({ message: "University email verified successfully" });
+    expect(response.body).toEqual({
+      message: "University email verified successfully",
+    });
   });
 
   it("returns 400 when token is missing from body", async () => {

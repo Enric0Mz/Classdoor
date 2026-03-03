@@ -3,7 +3,16 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Search, Bell, GraduationCap, Menu, X, Zap, UserCircle, LogOut } from "lucide-react";
+import {
+  Search,
+  Bell,
+  GraduationCap,
+  Menu,
+  X,
+  Zap,
+  UserCircle,
+  LogOut,
+} from "lucide-react";
 
 const NAV_LINKS = [
   { label: "Explorar 🔍", href: "/universities" },
@@ -72,10 +81,12 @@ export default function Navbar() {
   return (
     <header
       className="sticky top-0 z-50 border-b border-indigo-400/20 backdrop-blur-xl shadow-[0_1px_30px_-4px_rgba(99,102,241,0.25)]"
-      style={{ background: "linear-gradient(135deg, #1e1b4b 0%, #2e1d6e 50%, #1e1b4b 100%)" }}
+      style={{
+        background:
+          "linear-gradient(135deg, #1e1b4b 0%, #2e1d6e 50%, #1e1b4b 100%)",
+      }}
     >
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-
         {/* Logo */}
         <Link href="/" className="flex shrink-0 items-center gap-2.5">
           <div className="brand-gradient flex h-9 w-9 items-center justify-center rounded-xl text-white shadow-lg shadow-indigo-500/30">
@@ -108,7 +119,6 @@ export default function Navbar() {
 
         {/* Right side */}
         <div className="flex items-center gap-2">
-
           {/* Search — hidden on mobile */}
           <div className="hidden items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3.5 py-2 sm:flex">
             <Search size={16} className="text-gray-500" />
@@ -148,10 +158,14 @@ export default function Navbar() {
               {isDropdownOpen && (
                 <div
                   className="absolute right-0 top-11 w-52 rounded-xl border border-white/10 shadow-xl shadow-black/40 backdrop-blur-xl"
-                  style={{ background: "linear-gradient(135deg, #12102a, #1a1040)" }}
+                  style={{
+                    background: "linear-gradient(135deg, #12102a, #1a1040)",
+                  }}
                 >
                   <div className="border-b border-white/10 px-4 py-3">
-                    <p className="truncate text-sm text-gray-400">{userEmail}</p>
+                    <p className="truncate text-sm text-gray-400">
+                      {userEmail}
+                    </p>
                   </div>
                   <div className="p-1">
                     <Link

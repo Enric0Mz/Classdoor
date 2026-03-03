@@ -35,7 +35,10 @@ const makeRequest = () => ({ headers: { get: jest.fn() } });
 describe("POST /api/v1/users/me/email/verify", () => {
   it("returns 200 and resends the verification email", async () => {
     verifyToken.mockReturnValue({ id: "user-1", email: "user@test.com" });
-    userRepository.findById.mockResolvedValue({ id: "user-1", emailVerified: false });
+    userRepository.findById.mockResolvedValue({
+      id: "user-1",
+      emailVerified: false,
+    });
     emailVerificationRepository.deleteByUserId.mockResolvedValue(undefined);
     emailVerificationRepository.create.mockResolvedValue({ id: "verif-1" });
     sendEmailVerification.mockResolvedValue(undefined);
@@ -44,7 +47,10 @@ describe("POST /api/v1/users/me/email/verify", () => {
 
     expect(response.status).toBe(200);
     expect(response.body).toEqual({ message: "Verification email sent" });
-    expect(sendEmailVerification).toHaveBeenCalledWith("user@test.com", expect.any(String));
+    expect(sendEmailVerification).toHaveBeenCalledWith(
+      "user@test.com",
+      expect.any(String),
+    );
   });
 
   it("returns 400 when the account has no email address", async () => {
@@ -54,14 +60,20 @@ describe("POST /api/v1/users/me/email/verify", () => {
 
     expect(response.status).toBe(400);
     expect(response.body).toEqual({
-      error: { message: "Account has no email address to verify", statusCode: 400 },
+      error: {
+        message: "Account has no email address to verify",
+        statusCode: 400,
+      },
     });
     expect(sendEmailVerification).not.toHaveBeenCalled();
   });
 
   it("returns 400 when email is already verified", async () => {
     verifyToken.mockReturnValue({ id: "user-1", email: "user@test.com" });
-    userRepository.findById.mockResolvedValue({ id: "user-1", emailVerified: true });
+    userRepository.findById.mockResolvedValue({
+      id: "user-1",
+      emailVerified: true,
+    });
 
     const response = await POST(makeRequest());
 

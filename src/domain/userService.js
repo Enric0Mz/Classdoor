@@ -25,20 +25,26 @@ function validatePassword(password) {
   if (password.length < MINIMUM_PASSWORD_LENGTH) {
     throw new AppError(
       `Password must be at least ${MINIMUM_PASSWORD_LENGTH} characters long`,
-      400
+      400,
     );
   }
   if (password.length > MAXIMUM_PASSWORD_LENGTH) {
     throw new AppError(
       `Password must be at most ${MAXIMUM_PASSWORD_LENGTH} characters long`,
-      400
+      400,
     );
   }
   if (!/[A-Z]/.test(password)) {
-    throw new AppError("Password must contain at least one uppercase letter", 400);
+    throw new AppError(
+      "Password must contain at least one uppercase letter",
+      400,
+    );
   }
   if (!/[a-z]/.test(password)) {
-    throw new AppError("Password must contain at least one lowercase letter", 400);
+    throw new AppError(
+      "Password must contain at least one lowercase letter",
+      400,
+    );
   }
   if (!/[0-9]/.test(password)) {
     throw new AppError("Password must contain at least one number", 400);
@@ -52,7 +58,7 @@ function validateUsername(username) {
   if (!USERNAME_REGEX.test(username)) {
     throw new AppError(
       "Username must be 3-20 characters and contain only letters, numbers, and underscores",
-      400
+      400,
     );
   }
 }
@@ -78,7 +84,8 @@ export async function registerUser({ email, password, username } = {}) {
   const resolvedUsername = username || generateUsername();
   validateUsername(resolvedUsername);
 
-  const existingUsername = await userRepository.findByUsername(resolvedUsername);
+  const existingUsername =
+    await userRepository.findByUsername(resolvedUsername);
   if (existingUsername) {
     throw new AppError("A user with this username already exists", 409);
   }
@@ -89,11 +96,18 @@ export async function registerUser({ email, password, username } = {}) {
   }
 
   const user = await userRepository.create(userData);
-  const token = signToken({ id: user.id, email: user.email || null, role: user.role });
+  const token = signToken({
+    id: user.id,
+    email: user.email || null,
+    role: user.role,
+  });
   const refreshToken = await createRefreshToken(user.id);
 
   if (user.email) {
-    await emailVerificationService.sendEmailVerificationToUser(user.id, user.email);
+    await emailVerificationService.sendEmailVerificationToUser(
+      user.id,
+      user.email,
+    );
   }
 
   return { user: stripPassword(user), token, refreshToken };
@@ -122,7 +136,11 @@ export async function loginUser({ identifier, password }) {
     throw new AppError("Invalid credentials", 401);
   }
 
-  const token = signToken({ id: user.id, email: user.email || null, role: user.role });
+  const token = signToken({
+    id: user.id,
+    email: user.email || null,
+    role: user.role,
+  });
   const refreshToken = await createRefreshToken(user.id);
   return { user: stripPassword(user), token, refreshToken };
 }

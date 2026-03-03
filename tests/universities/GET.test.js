@@ -13,8 +13,22 @@ jest.mock("next/server", () => ({
 }));
 
 const UNIVERSITIES = [
-  { id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890", name: "MIT", location: "Cambridge", type: "PRIVATE", courses: ["Business"], rating: 4.5 },
-  { id: "b2c3d4e5-f6a7-8901-bcde-f12345678901", name: "USP", location: "São Paulo", type: "PUBLIC", courses: ["Research"], rating: 4.3 },
+  {
+    id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    name: "MIT",
+    location: "Cambridge",
+    type: "PRIVATE",
+    courses: ["Business"],
+    rating: 4.5,
+  },
+  {
+    id: "b2c3d4e5-f6a7-8901-bcde-f12345678901",
+    name: "USP",
+    location: "São Paulo",
+    type: "PUBLIC",
+    courses: ["Research"],
+    rating: 4.3,
+  },
 ];
 
 const PAGINATED_UNIVERSITIES = { data: UNIVERSITIES, total: 2 };
@@ -62,9 +76,17 @@ describe("GET /api/v1/universities", () => {
 
     const response = await GET(makeGetRequest("?page=2&limit=1"));
 
-    expect(universityRepository.findAll).toHaveBeenCalledWith({ skip: 1, take: 1 });
+    expect(universityRepository.findAll).toHaveBeenCalledWith({
+      skip: 1,
+      take: 1,
+    });
     expect(response.status).toBe(200);
-    expect(response.body.pagination).toEqual({ page: 2, limit: 1, total: 2, totalPages: 2 });
+    expect(response.body.pagination).toEqual({
+      page: 2,
+      limit: 1,
+      total: 2,
+      totalPages: 2,
+    });
   });
 
   it("returns 200 with empty data when no universities exist", async () => {

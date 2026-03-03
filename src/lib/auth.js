@@ -18,7 +18,9 @@ const ACCESS_TOKEN_EXPIRY = "15m";
 const REFRESH_TOKEN_EXPIRY_DAYS = 7;
 
 export function signToken({ id, email, role }) {
-  return jwt.sign({ id, email, role }, JWT_SECRET, { expiresIn: ACCESS_TOKEN_EXPIRY });
+  return jwt.sign({ id, email, role }, JWT_SECRET, {
+    expiresIn: ACCESS_TOKEN_EXPIRY,
+  });
 }
 
 export function verifyToken(request) {
@@ -59,7 +61,10 @@ export async function createRefreshToken(userId) {
   expiresAt.setDate(expiresAt.getDate() + REFRESH_TOKEN_EXPIRY_DAYS);
 
   await refreshTokenRepository.create({ token, userId, expiresAt });
-  await refreshTokenRepository.deleteOldestByUserId(userId, MAX_REFRESH_TOKENS_PER_USER);
+  await refreshTokenRepository.deleteOldestByUserId(
+    userId,
+    MAX_REFRESH_TOKENS_PER_USER,
+  );
 
   return token;
 }
@@ -83,7 +88,11 @@ export async function rotateRefreshToken(oldToken) {
     throw new AppError("User not found", 401);
   }
 
-  const accessToken = signToken({ id: user.id, email: user.email || null, role: user.role });
+  const accessToken = signToken({
+    id: user.id,
+    email: user.email || null,
+    role: user.role,
+  });
   const newRefreshToken = await createRefreshToken(user.id);
 
   return { accessToken, refreshToken: newRefreshToken };

@@ -45,7 +45,7 @@ describe("reviewService.updateReview", () => {
 
     expect(reviewRepository.update).toHaveBeenCalledWith(
       "review-1",
-      expect.objectContaining({ rating: 5, comment: "Updated comment" })
+      expect.objectContaining({ rating: 5, comment: "Updated comment" }),
     );
     expect(result).toEqual({ ...updatedReview, isVerified: false });
   });
@@ -53,7 +53,9 @@ describe("reviewService.updateReview", () => {
   it("throws 403 when requester is not the author", async () => {
     reviewRepository.findById.mockResolvedValue(REVIEW);
 
-    await expect(updateReview("review-1", UPDATE_DATA, "other-user")).rejects.toMatchObject({
+    await expect(
+      updateReview("review-1", UPDATE_DATA, "other-user"),
+    ).rejects.toMatchObject({
       message: "Forbidden",
       statusCode: 403,
     });
@@ -63,7 +65,9 @@ describe("reviewService.updateReview", () => {
   it("throws 404 when review does not exist", async () => {
     reviewRepository.findById.mockResolvedValue(null);
 
-    await expect(updateReview("missing", UPDATE_DATA, "user-1")).rejects.toMatchObject({
+    await expect(
+      updateReview("missing", UPDATE_DATA, "user-1"),
+    ).rejects.toMatchObject({
       message: "Review not found",
       statusCode: 404,
     });
@@ -72,7 +76,11 @@ describe("reviewService.updateReview", () => {
 
 describe("PUT /api/v1/reviews/:id", () => {
   it("returns 200 when the authenticated user is the author", async () => {
-    requireVerifiedUser.mockReturnValue({ id: "user-1", email: "user@test.com", role: "USER" });
+    requireVerifiedUser.mockReturnValue({
+      id: "user-1",
+      email: "user@test.com",
+      role: "USER",
+    });
     const updatedReview = { ...REVIEW, rating: 5 };
     reviewRepository.findById.mockResolvedValue(REVIEW);
     reviewRepository.update.mockResolvedValue(updatedReview);
@@ -100,7 +108,11 @@ describe("PUT /api/v1/reviews/:id", () => {
   });
 
   it("returns 403 when authenticated user is not the author", async () => {
-    requireVerifiedUser.mockReturnValue({ id: "other-user", email: "other@test.com", role: "USER" });
+    requireVerifiedUser.mockReturnValue({
+      id: "other-user",
+      email: "other@test.com",
+      role: "USER",
+    });
     reviewRepository.findById.mockResolvedValue(REVIEW);
 
     const request = { json: jest.fn().mockResolvedValue(UPDATE_DATA) };

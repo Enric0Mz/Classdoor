@@ -19,7 +19,9 @@ export async function sendEmailVerificationToUser(userId, email) {
   }
 
   const token = crypto.randomUUID();
-  const expiresAt = new Date(Date.now() + VERIFICATION_TOKEN_EXPIRY_HOURS * 60 * 60 * 1000);
+  const expiresAt = new Date(
+    Date.now() + VERIFICATION_TOKEN_EXPIRY_HOURS * 60 * 60 * 1000,
+  );
 
   await emailVerificationRepository.deleteByUserId(userId);
   await emailVerificationRepository.create({ userId, email, token, expiresAt });
@@ -44,7 +46,8 @@ export async function verifyEmail(token) {
   const updateData = { emailVerified: true };
 
   if (isUniversityEmail) {
-    const linkedUniversity = await universityRepository.findByEmailDomain(domain);
+    const linkedUniversity =
+      await universityRepository.findByEmailDomain(domain);
     updateData.universityEmail = record.email;
     updateData.verified = true;
     updateData.universityId = linkedUniversity?.id ?? null;

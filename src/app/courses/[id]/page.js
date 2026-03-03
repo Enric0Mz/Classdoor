@@ -3,7 +3,13 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { ArrowLeft, BookOpen, ExternalLink, Tag, DollarSign } from "lucide-react";
+import {
+  ArrowLeft,
+  BookOpen,
+  ExternalLink,
+  Tag,
+  DollarSign,
+} from "lucide-react";
 
 export default function CourseDetailPage() {
   const { id } = useParams();
@@ -48,7 +54,10 @@ export default function CourseDetailPage() {
       <main className="min-h-screen bg-gray-50 py-10">
         <div className="mx-auto max-w-lg rounded-2xl border border-red-100 bg-red-50 p-8 text-center">
           <p className="mb-4 text-red-600">{error}</p>
-          <Link href="/courses" className="rounded-xl bg-white px-6 py-2 text-sm font-bold text-red-600 shadow-sm">
+          <Link
+            href="/courses"
+            className="rounded-xl bg-white px-6 py-2 text-sm font-bold text-red-600 shadow-sm"
+          >
             Voltar ao catálogo
           </Link>
         </div>
@@ -85,7 +94,9 @@ export default function CourseDetailPage() {
             className="mb-6 h-64 w-full rounded-2xl object-cover shadow-md"
           />
         ) : (
-          <div className={`mb-6 flex h-64 w-full items-center justify-center rounded-2xl bg-gradient-to-br ${gradients[gradientIndex]} shadow-md`}>
+          <div
+            className={`mb-6 flex h-64 w-full items-center justify-center rounded-2xl bg-gradient-to-br ${gradients[gradientIndex]} shadow-md`}
+          >
             <BookOpen size={64} className="text-white/80" />
           </div>
         )}
@@ -107,7 +118,9 @@ export default function CourseDetailPage() {
           </h1>
 
           {/* Description */}
-          <p className="mb-6 leading-relaxed text-gray-600">{course.description}</p>
+          <p className="mb-6 leading-relaxed text-gray-600">
+            {course.description}
+          </p>
 
           {/* Price & CTA */}
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-t border-gray-100 pt-6">
@@ -118,7 +131,9 @@ export default function CourseDetailPage() {
                   R$ {course.price.toFixed(2)}
                 </span>
               ) : (
-                <span className="text-2xl font-bold text-emerald-600">Gratuito</span>
+                <span className="text-2xl font-bold text-emerald-600">
+                  Gratuito
+                </span>
               )}
             </div>
 

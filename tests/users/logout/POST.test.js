@@ -2,7 +2,9 @@ import { verifyToken, invalidateRefreshToken } from "@/lib/auth";
 import { POST } from "@/app/api/v1/users/logout/route";
 
 jest.mock("@/lib/auth", () => ({
-  verifyToken: jest.fn().mockReturnValue({ id: "user-1", email: "test@test.com", role: "USER" }),
+  verifyToken: jest
+    .fn()
+    .mockReturnValue({ id: "user-1", email: "test@test.com", role: "USER" }),
   invalidateRefreshToken: jest.fn(),
 }));
 
@@ -23,7 +25,9 @@ describe("POST /api/v1/users/logout", () => {
   it("returns 200 when logout is successful", async () => {
     invalidateRefreshToken.mockResolvedValue(undefined);
 
-    const response = await POST(makeRequest({ refreshToken: "valid-refresh-token" }));
+    const response = await POST(
+      makeRequest({ refreshToken: "valid-refresh-token" }),
+    );
 
     expect(response.status).toBe(200);
     expect(response.body).toEqual({ message: "Logged out successfully" });
@@ -42,10 +46,15 @@ describe("POST /api/v1/users/logout", () => {
 
   it("returns 401 when access token is missing", async () => {
     verifyToken.mockImplementationOnce(() => {
-      throw Object.assign(new Error("Authentication required"), { name: "AppError", statusCode: 401 });
+      throw Object.assign(new Error("Authentication required"), {
+        name: "AppError",
+        statusCode: 401,
+      });
     });
 
-    const response = await POST(makeRequest({ refreshToken: "valid-refresh-token" }, null));
+    const response = await POST(
+      makeRequest({ refreshToken: "valid-refresh-token" }, null),
+    );
 
     expect(response.status).toBe(401);
     expect(response.body).toEqual({
@@ -55,7 +64,10 @@ describe("POST /api/v1/users/logout", () => {
 
   it("returns 401 when refresh token is invalid", async () => {
     invalidateRefreshToken.mockRejectedValue(
-      Object.assign(new Error("Invalid refresh token"), { name: "AppError", statusCode: 401 })
+      Object.assign(new Error("Invalid refresh token"), {
+        name: "AppError",
+        statusCode: 401,
+      }),
     );
 
     const response = await POST(makeRequest({ refreshToken: "bad-token" }));

@@ -23,8 +23,16 @@ jest.mock("next/server", () => ({
 }));
 
 const USERS = [
-  { id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890", email: "a@test.com", createdAt: "2024-01-01T00:00:00.000Z" },
-  { id: "b2c3d4e5-f6a7-8901-bcde-f12345678901", email: "b@test.com", createdAt: "2024-01-01T00:00:00.000Z" },
+  {
+    id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    email: "a@test.com",
+    createdAt: "2024-01-01T00:00:00.000Z",
+  },
+  {
+    id: "b2c3d4e5-f6a7-8901-bcde-f12345678901",
+    email: "b@test.com",
+    createdAt: "2024-01-01T00:00:00.000Z",
+  },
 ];
 
 const PAGINATED_USERS = { data: USERS, total: 2 };
@@ -57,14 +65,21 @@ describe("userService.listUsers", () => {
 
 describe("GET /api/v1/users", () => {
   it("returns 200 with paginated users when authenticated as ADMIN", async () => {
-    requireVerifiedUser.mockReturnValue({ id: "user-1", email: "a@test.com", role: "ADMIN" });
+    requireVerifiedUser.mockReturnValue({
+      id: "user-1",
+      email: "a@test.com",
+      role: "ADMIN",
+    });
     requireRole.mockReturnValue(undefined);
     userRepository.findAll.mockResolvedValue(PAGINATED_USERS);
 
     const response = await GET(makeRequest());
 
     expect(requireVerifiedUser).toHaveBeenCalled();
-    expect(requireRole).toHaveBeenCalledWith({ id: "user-1", email: "a@test.com", role: "ADMIN" }, ["ADMIN", "MODERATOR"]);
+    expect(requireRole).toHaveBeenCalledWith(
+      { id: "user-1", email: "a@test.com", role: "ADMIN" },
+      ["ADMIN", "MODERATOR"],
+    );
     expect(response.status).toBe(200);
     expect(response.body).toEqual({
       data: USERS,
@@ -73,7 +88,11 @@ describe("GET /api/v1/users", () => {
   });
 
   it("returns 200 with correct pagination when page and limit are provided", async () => {
-    requireVerifiedUser.mockReturnValue({ id: "user-1", email: "a@test.com", role: "ADMIN" });
+    requireVerifiedUser.mockReturnValue({
+      id: "user-1",
+      email: "a@test.com",
+      role: "ADMIN",
+    });
     requireRole.mockReturnValue(undefined);
     userRepository.findAll.mockResolvedValue(PAGINATED_USERS);
 
@@ -81,7 +100,12 @@ describe("GET /api/v1/users", () => {
 
     expect(userRepository.findAll).toHaveBeenCalledWith({ skip: 5, take: 5 });
     expect(response.status).toBe(200);
-    expect(response.body.pagination).toEqual({ page: 2, limit: 5, total: 2, totalPages: 1 });
+    expect(response.body.pagination).toEqual({
+      page: 2,
+      limit: 5,
+      total: 2,
+      totalPages: 1,
+    });
   });
 
   it("returns 401 when no token provided", async () => {
@@ -100,7 +124,11 @@ describe("GET /api/v1/users", () => {
 
   it("returns 403 when authenticated user has USER role", async () => {
     const { AppError } = require("@/errors/AppError");
-    requireVerifiedUser.mockReturnValue({ id: "user-1", email: "a@test.com", role: "USER" });
+    requireVerifiedUser.mockReturnValue({
+      id: "user-1",
+      email: "a@test.com",
+      role: "USER",
+    });
     requireRole.mockImplementation(() => {
       throw new AppError("Forbidden: insufficient permissions", 403);
     });
@@ -109,12 +137,19 @@ describe("GET /api/v1/users", () => {
 
     expect(response.status).toBe(403);
     expect(response.body).toEqual({
-      error: { message: "Forbidden: insufficient permissions", statusCode: 403 },
+      error: {
+        message: "Forbidden: insufficient permissions",
+        statusCode: 403,
+      },
     });
   });
 
   it("returns 500 on unexpected repository error", async () => {
-    requireVerifiedUser.mockReturnValue({ id: "user-1", email: "a@test.com", role: "ADMIN" });
+    requireVerifiedUser.mockReturnValue({
+      id: "user-1",
+      email: "a@test.com",
+      role: "ADMIN",
+    });
     requireRole.mockReturnValue(undefined);
     userRepository.findAll.mockRejectedValue(new Error("DB down"));
 

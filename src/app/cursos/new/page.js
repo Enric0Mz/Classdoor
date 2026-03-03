@@ -120,7 +120,9 @@ export default function NewCoursePage() {
             </div>
             <div>
               <h1 className="text-xl font-bold text-gray-900">Novo Curso</h1>
-              <p className="text-sm text-gray-500">Adicione um curso ao catálogo</p>
+              <p className="text-sm text-gray-500">
+                Adicione um curso ao catálogo
+              </p>
             </div>
           </div>
 

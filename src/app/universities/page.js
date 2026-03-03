@@ -2,9 +2,28 @@
 
 import { useState, useEffect, useMemo } from "react";
 import UniversityCard from "@/components/UniversityCard";
-import { Search, SlidersHorizontal, MapPin, GraduationCap, TrendingUp, X, Zap } from "lucide-react";
+import {
+  Search,
+  SlidersHorizontal,
+  MapPin,
+  GraduationCap,
+  TrendingUp,
+  X,
+  Zap,
+} from "lucide-react";
 
-const STATE_FILTERS = ["Todos", "SP", "RJ", "MG", "RS", "PR", "SC", "DF", "BA", "PE"];
+const STATE_FILTERS = [
+  "Todos",
+  "SP",
+  "RJ",
+  "MG",
+  "RS",
+  "PR",
+  "SC",
+  "DF",
+  "BA",
+  "PE",
+];
 const TYPE_FILTERS = [
   { label: "Todas", value: null },
   { label: "Pública", value: "PUBLIC" },
@@ -44,7 +63,7 @@ export default function UniversitiesPage() {
 
     if (activeState !== "Todos") {
       result = result.filter((u) =>
-        u.location.toUpperCase().includes(activeState.toUpperCase())
+        u.location.toUpperCase().includes(activeState.toUpperCase()),
       );
     }
 
@@ -57,7 +76,7 @@ export default function UniversitiesPage() {
       result = result.filter(
         (u) =>
           u.name.toLowerCase().includes(query) ||
-          u.location.toLowerCase().includes(query)
+          u.location.toLowerCase().includes(query),
       );
     }
 
@@ -75,7 +94,8 @@ export default function UniversitiesPage() {
     return (sum / ratedUniversities.length).toFixed(1);
   }, [universities]);
 
-  const activeFiltersCount = (activeState !== "Todos" ? 1 : 0) + (activeType !== null ? 1 : 0);
+  const activeFiltersCount =
+    (activeState !== "Todos" ? 1 : 0) + (activeType !== null ? 1 : 0);
 
   function handleChipClick(chip) {
     if (chip === "Em alta" || chip === "Top rated") {
@@ -105,15 +125,16 @@ export default function UniversitiesPage() {
           {/* Badge chip */}
           <div className="stagger-1 mb-6 inline-flex items-center gap-2 rounded-full border border-indigo-400/30 bg-indigo-500/20 px-4 py-1.5 text-xs font-semibold text-white backdrop-blur-sm">
             <TrendingUp size={13} />
-            <span>+{universities.length > 0 ? universities.length : "500"} universidades avaliadas</span>
+            <span>
+              +{universities.length > 0 ? universities.length : "500"}{" "}
+              universidades avaliadas
+            </span>
           </div>
 
           {/* Heading */}
           <h1 className="stagger-2 text-5xl font-extrabold tracking-tight text-white sm:text-6xl">
             Encontre a universidade{" "}
-            <span className="brand-gradient-text">
-              perfeita pra você
-            </span>
+            <span className="brand-gradient-text">perfeita pra você</span>
           </h1>
 
           <p className="stagger-3 mx-auto mt-6 max-w-2xl text-lg text-gray-400">
@@ -124,7 +145,10 @@ export default function UniversitiesPage() {
           {/* Search Bar */}
           <div className="mx-auto mt-10 max-w-2xl">
             <div className="group relative flex items-center rounded-2xl border border-white/10 bg-white/5 px-4 py-3 backdrop-blur-sm transition-all focus-within:border-indigo-400/50 focus-within:ring-2 focus-within:ring-indigo-500/60">
-              <Search className="mr-3 shrink-0 text-gray-500 group-focus-within:text-indigo-400" size={20} />
+              <Search
+                className="mr-3 shrink-0 text-gray-500 group-focus-within:text-indigo-400"
+                size={20}
+              />
               <input
                 type="text"
                 placeholder="Busque por universidade, cidade ou curso..."
@@ -157,21 +181,25 @@ export default function UniversitiesPage() {
                 <Zap size={16} className="text-indigo-400" />
                 100%
               </span>
-              <span className="text-xs text-gray-400">avaliações verificadas</span>
+              <span className="text-xs text-gray-400">
+                avaliações verificadas
+              </span>
             </div>
           </div>
 
           {/* Quick Chips */}
           <div className="mt-6 flex flex-wrap justify-center gap-2">
-            {["Em alta", "Top rated", "Públicas", "Privadas", "Destaque"].map((chip) => (
-              <button
-                key={chip}
-                onClick={() => handleChipClick(chip)}
-                className="rounded-full border border-white/15 bg-white/10 px-4 py-1.5 text-sm font-medium text-gray-300 transition-colors hover:border-indigo-400/30 hover:bg-indigo-500/20 hover:text-indigo-300"
-              >
-                {chip}
-              </button>
-            ))}
+            {["Em alta", "Top rated", "Públicas", "Privadas", "Destaque"].map(
+              (chip) => (
+                <button
+                  key={chip}
+                  onClick={() => handleChipClick(chip)}
+                  className="rounded-full border border-white/15 bg-white/10 px-4 py-1.5 text-sm font-medium text-gray-300 transition-colors hover:border-indigo-400/30 hover:bg-indigo-500/20 hover:text-indigo-300"
+                >
+                  {chip}
+                </button>
+              ),
+            )}
           </div>
         </div>
 
@@ -181,7 +209,6 @@ export default function UniversitiesPage() {
 
       {/* ── Main Content ── */}
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-
         {/* Toolbar */}
         <div className="mb-8 flex flex-col gap-4 py-5 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-4 text-sm text-gray-500">
@@ -189,7 +216,9 @@ export default function UniversitiesPage() {
               {loading ? "..." : filtered.length} resultados
             </span>
             <div className="h-4 w-px bg-gray-200" />
-            <span className="hidden sm:inline text-gray-400">Ordenado por relevância</span>
+            <span className="hidden sm:inline text-gray-400">
+              Ordenado por relevância
+            </span>
           </div>
 
           <div className="flex items-center gap-2">
@@ -201,7 +230,11 @@ export default function UniversitiesPage() {
                   : "bg-white text-gray-600 hover:bg-gray-50 ring-1 ring-inset ring-gray-200"
               }`}
             >
-              <span className={sortByRating ? "text-amber-500" : "text-gray-400"}>★</span>
+              <span
+                className={sortByRating ? "text-amber-500" : "text-gray-400"}
+              >
+                ★
+              </span>
               Melhor avaliadas
             </button>
 
@@ -282,7 +315,10 @@ export default function UniversitiesPage() {
               {activeFiltersCount > 0 && (
                 <div className="mt-5 flex justify-end border-t border-gray-50 pt-4">
                   <button
-                    onClick={() => { setActiveState("Todos"); setActiveType(null); }}
+                    onClick={() => {
+                      setActiveState("Todos");
+                      setActiveType(null);
+                    }}
                     className="flex items-center gap-1 text-sm font-medium text-red-500 hover:text-red-600"
                   >
                     <X size={14} />
@@ -298,7 +334,10 @@ export default function UniversitiesPage() {
         {loading ? (
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {Array.from({ length: 8 }).map((_, index) => (
-              <div key={index} className="flex flex-col gap-3 rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
+              <div
+                key={index}
+                className="flex flex-col gap-3 rounded-2xl border border-gray-100 bg-white p-4 shadow-sm"
+              >
                 <div className="skeleton h-40 w-full rounded-xl" />
                 <div className="skeleton h-4 w-3/4 rounded" />
                 <div className="skeleton h-4 w-1/2 rounded" />
@@ -324,7 +363,9 @@ export default function UniversitiesPage() {
             <div className="mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-gray-100 text-gray-400">
               <Search size={32} />
             </div>
-            <h3 className="text-lg font-semibold text-gray-900">Nenhuma universidade encontrada</h3>
+            <h3 className="text-lg font-semibold text-gray-900">
+              Nenhuma universidade encontrada
+            </h3>
             <p className="max-w-xs text-gray-500">
               Tente ajustar seus filtros ou buscar por outro termo.
             </p>

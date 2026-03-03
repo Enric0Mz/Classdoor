@@ -4,20 +4,30 @@ import { useState, useEffect, useMemo, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import {
-  MapPin, Heart, ThumbsUp, ThumbsDown, Share2, Flag,
-  ShieldCheck, SlidersHorizontal, ChevronDown, ArrowLeft,
+  MapPin,
+  Heart,
+  ThumbsUp,
+  ThumbsDown,
+  Share2,
+  Flag,
+  ShieldCheck,
+  SlidersHorizontal,
+  ChevronDown,
+  ArrowLeft,
 } from "lucide-react";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 function getUniversityInitials(name) {
-  return name
-    .split(" ")
-    .filter((word) => word.length > 2)
-    .slice(0, 3)
-    .map((word) => word[0])
-    .join("")
-    .toUpperCase() || name.slice(0, 3).toUpperCase();
+  return (
+    name
+      .split(" ")
+      .filter((word) => word.length > 2)
+      .slice(0, 3)
+      .map((word) => word[0])
+      .join("")
+      .toUpperCase() || name.slice(0, 3).toUpperCase()
+  );
 }
 
 function getAuthorInitials(author) {
@@ -38,7 +48,11 @@ function parseComment(raw) {
   try {
     const parsed = JSON.parse(raw);
     if (parsed && (parsed.pros || parsed.cons)) {
-      return { structured: true, pros: parsed.pros || "", cons: parsed.cons || "" };
+      return {
+        structured: true,
+        pros: parsed.pros || "",
+        cons: parsed.cons || "",
+      };
     }
   } catch {
     // not JSON — fall through to plain text
@@ -64,26 +78,46 @@ function StarRating({ rating, size = 15 }) {
       {Array.from({ length: 5 }).map((_, i) => {
         if (i < fullStars) {
           return (
-            <svg key={i} style={{ width: dim, height: dim }} className={yellowClass} viewBox="0 0 20 20" fill="currentColor">
+            <svg
+              key={i}
+              style={{ width: dim, height: dim }}
+              className={yellowClass}
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
               <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
             </svg>
           );
         }
         if (i === fullStars && hasHalf) {
           return (
-            <svg key={i} style={{ width: dim, height: dim }} className={yellowClass} viewBox="0 0 20 20">
+            <svg
+              key={i}
+              style={{ width: dim, height: dim }}
+              className={yellowClass}
+              viewBox="0 0 20 20"
+            >
               <defs>
                 <linearGradient id={`h-${i}-${rating}`}>
                   <stop offset="50%" stopColor="currentColor" />
                   <stop offset="50%" stopColor="#d1d5db" />
                 </linearGradient>
               </defs>
-              <path fill={`url(#h-${i}-${rating})`} d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+              <path
+                fill={`url(#h-${i}-${rating})`}
+                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+              />
             </svg>
           );
         }
         return (
-          <svg key={i} style={{ width: dim, height: dim }} className={grayClass} viewBox="0 0 20 20" fill="currentColor">
+          <svg
+            key={i}
+            style={{ width: dim, height: dim }}
+            className={grayClass}
+            viewBox="0 0 20 20"
+            fill="currentColor"
+          >
             <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
           </svg>
         );
@@ -104,7 +138,11 @@ function UniversityHeader({ university, activeTab, onTabChange }) {
       {/* Banner — logo + name are both inside, white on dark = perfect readability */}
       <div className="relative h-44 sm:h-52 overflow-hidden">
         {university.image ? (
-          <img src={university.image} alt={university.name} className="h-full w-full object-cover" />
+          <img
+            src={university.image}
+            alt={university.name}
+            className="h-full w-full object-cover"
+          />
         ) : (
           <div className="h-full w-full bg-gradient-to-br from-slate-800 via-indigo-900 to-violet-900" />
         )}
@@ -199,8 +237,12 @@ function RatingOverview({ stats }) {
     return (
       <div className="rounded-2xl border border-gray-100 bg-white p-8 shadow-sm text-center">
         <p className="text-2xl mb-2">🎓</p>
-        <p className="text-sm font-medium text-gray-500">Ainda não há avaliações.</p>
-        <p className="mt-0.5 text-xs text-gray-400">Seja o primeiro a avaliar esta universidade!</p>
+        <p className="text-sm font-medium text-gray-500">
+          Ainda não há avaliações.
+        </p>
+        <p className="mt-0.5 text-xs text-gray-400">
+          Seja o primeiro a avaliar esta universidade!
+        </p>
       </div>
     );
   }
@@ -208,13 +250,17 @@ function RatingOverview({ stats }) {
   return (
     <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
       <div className="p-5">
-        <h2 className="mb-4 text-base font-semibold text-gray-900">O que a galera acha? 🤔</h2>
+        <h2 className="mb-4 text-base font-semibold text-gray-900">
+          O que a galera acha? 🤔
+        </h2>
 
         {/* Big rating */}
         <div className="brand-gradient rounded-2xl p-5 text-white">
           <div className="flex flex-wrap items-center gap-5">
             <div>
-              <span className="text-5xl font-extrabold tracking-tight">{stats.averageRating}</span>
+              <span className="text-5xl font-extrabold tracking-tight">
+                {stats.averageRating}
+              </span>
               <span className="ml-1 text-sm text-white/70">de 5.0</span>
               <div className="mt-2">
                 <StarRating rating={stats.averageRating} size={18} />
@@ -225,7 +271,8 @@ function RatingOverview({ stats }) {
                 📈 {stats.recommendationPercentage}% recomendam
               </span>
               <span className="flex items-center gap-1.5 rounded-full bg-white/20 px-3.5 py-1.5 text-sm font-medium backdrop-blur-sm">
-                👥 {stats.reviewCount} {stats.reviewCount === 1 ? "avaliação" : "avaliações"}
+                👥 {stats.reviewCount}{" "}
+                {stats.reviewCount === 1 ? "avaliação" : "avaliações"}
               </span>
             </div>
           </div>
@@ -234,17 +281,30 @@ function RatingOverview({ stats }) {
         {/* Difficulty */}
         {stats.averageDifficultyLevel && (
           <div className="mt-4 flex items-center gap-3">
-            <span className="shrink-0 text-sm text-gray-500">Dificuldade média</span>
+            <span className="shrink-0 text-sm text-gray-500">
+              Dificuldade média
+            </span>
             <div className="flex flex-1 gap-1">
               {Array.from({ length: 5 }).map((_, i) => {
                 const filled = i < Math.round(stats.averageDifficultyLevel);
                 const colorClass = filled
-                  ? i < 2 ? "bg-green-400" : i < 4 ? "bg-amber-400" : "bg-red-400"
+                  ? i < 2
+                    ? "bg-green-400"
+                    : i < 4
+                      ? "bg-amber-400"
+                      : "bg-red-400"
                   : "bg-gray-100";
-                return <div key={i} className={`h-2 flex-1 rounded-full transition-colors ${colorClass}`} />;
+                return (
+                  <div
+                    key={i}
+                    className={`h-2 flex-1 rounded-full transition-colors ${colorClass}`}
+                  />
+                );
               })}
             </div>
-            <span className="text-sm font-semibold text-gray-700">{stats.averageDifficultyLevel}/5</span>
+            <span className="text-sm font-semibold text-gray-700">
+              {stats.averageDifficultyLevel}/5
+            </span>
           </div>
         )}
       </div>
@@ -253,8 +313,11 @@ function RatingOverview({ stats }) {
       <div className="flex items-center gap-2.5 border-t border-gray-100 bg-gray-50/40 px-5 py-3">
         <ShieldCheck size={15} className="shrink-0 text-indigo-500" />
         <p className="text-xs text-gray-500">
-          <span className="font-semibold text-indigo-600">Avaliações 100% reais 🔒</span>
-          {" "}Universidades não podem alterar ou remover avaliações. Confiança é tudo!
+          <span className="font-semibold text-indigo-600">
+            Avaliações 100% reais 🔒
+          </span>{" "}
+          Universidades não podem alterar ou remover avaliações. Confiança é
+          tudo!
         </p>
       </div>
     </div>
@@ -287,7 +350,10 @@ function FilterBar({ activeFilter, onFilterChange }) {
     <div className="flex items-center justify-between py-2">
       <span className="text-sm font-semibold text-gray-700">
         {hasActiveFilter ? (
-          <>Ordenando por: <span className="text-indigo-600">{activeFilter}</span></>
+          <>
+            Ordenando por:{" "}
+            <span className="text-indigo-600">{activeFilter}</span>
+          </>
         ) : (
           activeFilter
         )}
@@ -304,7 +370,10 @@ function FilterBar({ activeFilter, onFilterChange }) {
         >
           <SlidersHorizontal size={13} />
           Ordenar
-          <ChevronDown size={13} className={`transition-transform ${isOpen ? "rotate-180" : ""}`} />
+          <ChevronDown
+            size={13}
+            className={`transition-transform ${isOpen ? "rotate-180" : ""}`}
+          />
         </button>
 
         {isOpen && (
@@ -323,8 +392,16 @@ function FilterBar({ activeFilter, onFilterChange }) {
                 >
                   {filter}
                   {isActive && (
-                    <svg className="h-3.5 w-3.5 text-indigo-500" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 00-1.414 0L8 12.586 4.707 9.293a1 1 0 00-1.414 1.414l4 4a1 1 0 001.414 0l8-8a1 1 0 000-1.414z" clipRule="evenodd" />
+                    <svg
+                      className="h-3.5 w-3.5 text-indigo-500"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M16.707 5.293a1 1 0 00-1.414 0L8 12.586 4.707 9.293a1 1 0 00-1.414 1.414l4 4a1 1 0 001.414 0l8-8a1 1 0 000-1.414z"
+                        clipRule="evenodd"
+                      />
                     </svg>
                   )}
                 </button>
@@ -355,12 +432,13 @@ function ReviewCard({ review }) {
   }
 
   const needsExpand = parsedComment?.structured
-    ? (!expanded && (parsedComment.pros.length > TRUNCATE_LENGTH || parsedComment.cons.length > TRUNCATE_LENGTH))
-    : (!expanded && parsedComment?.text?.length > TRUNCATE_LENGTH);
+    ? !expanded &&
+      (parsedComment.pros.length > TRUNCATE_LENGTH ||
+        parsedComment.cons.length > TRUNCATE_LENGTH)
+    : !expanded && parsedComment?.text?.length > TRUNCATE_LENGTH;
 
   return (
     <div className="card-glow rounded-2xl border border-gray-100 bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-px hover:shadow-md">
-
       {/* Top row: avatar + rating + verified + difficulty */}
       <div className="flex items-start gap-3">
         <div className="brand-gradient flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-[0.85rem] font-bold text-white">
@@ -370,7 +448,9 @@ function ReviewCard({ review }) {
         <div className="flex-1 min-w-0">
           <div className="flex flex-wrap items-center gap-2">
             <StarRating rating={review.rating} size={14} />
-            <span className="text-[0.82rem] font-semibold text-gray-700">{review.rating.toFixed(1)}</span>
+            <span className="text-[0.82rem] font-semibold text-gray-700">
+              {review.rating.toFixed(1)}
+            </span>
             {review.author?.verified && (
               <span className="flex items-center gap-1 rounded-full bg-indigo-50 px-2 py-0.5 text-[0.7rem] font-medium text-indigo-600">
                 <ShieldCheck size={10} />
@@ -403,7 +483,9 @@ function ReviewCard({ review }) {
                 <div className="rounded-xl border border-green-100 bg-green-50/60 px-3.5 py-2.5">
                   <div className="mb-1.5 flex items-center gap-1.5">
                     <span className="text-xs">✅</span>
-                    <span className="text-[0.7rem] font-semibold uppercase tracking-wide text-green-700">Prós</span>
+                    <span className="text-[0.7rem] font-semibold uppercase tracking-wide text-green-700">
+                      Prós
+                    </span>
                   </div>
                   <p className="text-[0.85rem] leading-relaxed text-gray-700">
                     {expanded || parsedComment.pros.length <= TRUNCATE_LENGTH
@@ -416,7 +498,9 @@ function ReviewCard({ review }) {
                 <div className="rounded-xl border border-amber-100 bg-amber-50/60 px-3.5 py-2.5">
                   <div className="mb-1.5 flex items-center gap-1.5">
                     <span className="text-xs">⚠️</span>
-                    <span className="text-[0.7rem] font-semibold uppercase tracking-wide text-amber-700">Contras</span>
+                    <span className="text-[0.7rem] font-semibold uppercase tracking-wide text-amber-700">
+                      Contras
+                    </span>
                   </div>
                   <p className="text-[0.85rem] leading-relaxed text-gray-700">
                     {expanded || parsedComment.cons.length <= TRUNCATE_LENGTH
@@ -444,7 +528,9 @@ function ReviewCard({ review }) {
           )}
         </div>
       ) : (
-        <p className="mt-4 pl-[52px] text-[0.82rem] italic text-gray-300">Sem comentário.</p>
+        <p className="mt-4 pl-[52px] text-[0.82rem] italic text-gray-300">
+          Sem comentário.
+        </p>
       )}
 
       {/* Action row */}
@@ -452,7 +538,9 @@ function ReviewCard({ review }) {
         <button
           onClick={handleLike}
           className={`flex cursor-pointer items-center gap-1.5 rounded-full px-3 py-1.5 text-[0.8rem] transition-all ${
-            liked ? "bg-indigo-50 text-indigo-600" : "bg-gray-50 text-gray-400 hover:bg-gray-100"
+            liked
+              ? "bg-indigo-50 text-indigo-600"
+              : "bg-gray-50 text-gray-400 hover:bg-gray-100"
           }`}
         >
           <ThumbsUp size={13} fill={liked ? "currentColor" : "none"} />
@@ -509,12 +597,16 @@ export default function UniversityDetailPage() {
       try {
         const [uniResponse, reviewsResponse] = await Promise.all([
           fetch(`/api/v1/universities/${id}`),
-          fetch(`/api/v1/reviews?universityId=${id}&limit=${REVIEWS_PER_PAGE}&page=1`),
+          fetch(
+            `/api/v1/reviews?universityId=${id}&limit=${REVIEWS_PER_PAGE}&page=1`,
+          ),
         ]);
 
         if (!uniResponse.ok) {
           const data = await uniResponse.json();
-          throw new Error(data.error?.message || "Universidade não encontrada.");
+          throw new Error(
+            data.error?.message || "Universidade não encontrada.",
+          );
         }
 
         const uniData = await uniResponse.json();
@@ -538,7 +630,7 @@ export default function UniversityDetailPage() {
     setIsLoadingMore(true);
     try {
       const response = await fetch(
-        `/api/v1/reviews?universityId=${id}&limit=${REVIEWS_PER_PAGE}&page=${nextPage}`
+        `/api/v1/reviews?universityId=${id}&limit=${REVIEWS_PER_PAGE}&page=${nextPage}`,
       );
       const data = await response.json();
       setReviews((prev) => [...prev, ...(data.data ?? [])]);
@@ -550,12 +642,15 @@ export default function UniversityDetailPage() {
 
   const sortedReviews = useMemo(() => {
     const copy = [...reviews];
-    if (activeFilter === "Nota alta") return copy.sort((a, b) => b.rating - a.rating);
-    if (activeFilter === "Nota baixa") return copy.sort((a, b) => a.rating - b.rating);
+    if (activeFilter === "Nota alta")
+      return copy.sort((a, b) => b.rating - a.rating);
+    if (activeFilter === "Nota baixa")
+      return copy.sort((a, b) => a.rating - b.rating);
     return copy.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
   }, [reviews, activeFilter]);
 
-  const hasMoreReviews = reviewsPagination && reviewsPagination.page < reviewsPagination.totalPages;
+  const hasMoreReviews =
+    reviewsPagination && reviewsPagination.page < reviewsPagination.totalPages;
 
   if (isLoading) {
     return (
@@ -594,8 +689,11 @@ export default function UniversityDetailPage() {
         <div className="dot-grid absolute inset-0 opacity-30" />
 
         {/* Radial purple glow */}
-        <div className="absolute left-1/2 top-0 h-[400px] w-[700px] -translate-x-1/2 rounded-full opacity-20 blur-3xl"
-          style={{ background: "radial-gradient(circle, #7c3aed 0%, transparent 70%)" }}
+        <div
+          className="absolute left-1/2 top-0 h-[400px] w-[700px] -translate-x-1/2 rounded-full opacity-20 blur-3xl"
+          style={{
+            background: "radial-gradient(circle, #7c3aed 0%, transparent 70%)",
+          }}
         />
 
         <div className="relative z-10 mx-auto max-w-3xl px-4 sm:px-6">
@@ -634,13 +732,20 @@ export default function UniversityDetailPage() {
           {activeTab === "Avaliações ⭐" && (
             <>
               <RatingOverview stats={university.stats} />
-              <FilterBar activeFilter={activeFilter} onFilterChange={setActiveFilter} />
+              <FilterBar
+                activeFilter={activeFilter}
+                onFilterChange={setActiveFilter}
+              />
 
               {sortedReviews.length === 0 ? (
                 <div className="rounded-2xl border border-gray-100 bg-white p-10 text-center shadow-sm">
                   <p className="mb-2 text-2xl">🎓</p>
-                  <p className="text-sm font-medium text-gray-500">Nenhuma avaliação ainda.</p>
-                  <p className="mt-0.5 text-xs text-gray-400">Seja o primeiro a avaliar!</p>
+                  <p className="text-sm font-medium text-gray-500">
+                    Nenhuma avaliação ainda.
+                  </p>
+                  <p className="mt-0.5 text-xs text-gray-400">
+                    Seja o primeiro a avaliar!
+                  </p>
                 </div>
               ) : (
                 <>
@@ -658,9 +763,24 @@ export default function UniversityDetailPage() {
                     >
                       {isLoadingMore ? (
                         <>
-                          <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 0 1 8-8v4a4 4 0 0 0-4 4H4z" />
+                          <svg
+                            className="h-4 w-4 animate-spin"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                          >
+                            <circle
+                              className="opacity-25"
+                              cx="12"
+                              cy="12"
+                              r="10"
+                              stroke="currentColor"
+                              strokeWidth="4"
+                            />
+                            <path
+                              className="opacity-75"
+                              fill="currentColor"
+                              d="M4 12a8 8 0 0 1 8-8v4a4 4 0 0 0-4 4H4z"
+                            />
                           </svg>
                           Carregando...
                         </>

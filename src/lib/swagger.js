@@ -11,7 +11,8 @@ const swaggerSpec = {
       get: {
         tags: ["Health"],
         summary: "Check application health",
-        description: "Returns the overall status of the application, including server uptime and database connectivity.",
+        description:
+          "Returns the overall status of the application, including server uptime and database connectivity.",
         responses: {
           200: {
             description: "Application is healthy",
@@ -37,8 +38,20 @@ const swaggerSpec = {
         tags: ["Universities"],
         summary: "List all universities",
         parameters: [
-          { name: "page", in: "query", required: false, schema: { type: "integer", default: 1 }, description: "Page number" },
-          { name: "limit", in: "query", required: false, schema: { type: "integer", default: 10, maximum: 100 }, description: "Number of items per page" },
+          {
+            name: "page",
+            in: "query",
+            required: false,
+            schema: { type: "integer", default: 1 },
+            description: "Page number",
+          },
+          {
+            name: "limit",
+            in: "query",
+            required: false,
+            schema: { type: "integer", default: 10, maximum: 100 },
+            description: "Number of items per page",
+          },
         ],
         responses: {
           200: {
@@ -48,7 +61,10 @@ const swaggerSpec = {
                 schema: {
                   type: "object",
                   properties: {
-                    data: { type: "array", items: { $ref: "#/components/schemas/University" } },
+                    data: {
+                      type: "array",
+                      items: { $ref: "#/components/schemas/University" },
+                    },
                     pagination: { $ref: "#/components/schemas/Pagination" },
                   },
                 },
@@ -170,7 +186,8 @@ const swaggerSpec = {
       get: {
         tags: ["Universities"],
         summary: "Get a university by ID",
-        description: "Returns university details, aggregate review stats, and the full list of reviews with author info. Reviews are included in a single query to avoid N+1.",
+        description:
+          "Returns university details, aggregate review stats, and the full list of reviews with author info. Reviews are included in a single query to avoid N+1.",
         responses: {
           200: {
             description: "University found",
@@ -224,8 +241,22 @@ const swaggerSpec = {
         },
         responses: {
           501: { description: "Not implemented" },
-          401: { description: "Authentication required", content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } } },
-          403: { description: "Forbidden: ADMIN role required", content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } } },
+          401: {
+            description: "Authentication required",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
+          403: {
+            description: "Forbidden: ADMIN role required",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
         },
       },
       delete: {
@@ -235,8 +266,22 @@ const swaggerSpec = {
         security: [{ BearerAuth: [] }],
         responses: {
           501: { description: "Not implemented" },
-          401: { description: "Authentication required", content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } } },
-          403: { description: "Forbidden: ADMIN role required", content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } } },
+          401: {
+            description: "Authentication required",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
+          403: {
+            description: "Forbidden: ADMIN role required",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
         },
       },
     },
@@ -245,9 +290,27 @@ const swaggerSpec = {
         tags: ["Reviews"],
         summary: "List all reviews",
         parameters: [
-          { name: "universityId", in: "query", required: false, schema: { type: "string", format: "uuid" }, description: "Filter reviews by university ID" },
-          { name: "page", in: "query", required: false, schema: { type: "integer", default: 1 }, description: "Page number" },
-          { name: "limit", in: "query", required: false, schema: { type: "integer", default: 10, maximum: 100 }, description: "Number of items per page" },
+          {
+            name: "universityId",
+            in: "query",
+            required: false,
+            schema: { type: "string", format: "uuid" },
+            description: "Filter reviews by university ID",
+          },
+          {
+            name: "page",
+            in: "query",
+            required: false,
+            schema: { type: "integer", default: 1 },
+            description: "Page number",
+          },
+          {
+            name: "limit",
+            in: "query",
+            required: false,
+            schema: { type: "integer", default: 10, maximum: 100 },
+            description: "Number of items per page",
+          },
         ],
         responses: {
           200: {
@@ -257,7 +320,10 @@ const swaggerSpec = {
                 schema: {
                   type: "object",
                   properties: {
-                    data: { type: "array", items: { $ref: "#/components/schemas/Review" } },
+                    data: {
+                      type: "array",
+                      items: { $ref: "#/components/schemas/Review" },
+                    },
                     pagination: { $ref: "#/components/schemas/Pagination" },
                   },
                 },
@@ -277,7 +343,8 @@ const swaggerSpec = {
       post: {
         tags: ["Reviews"],
         summary: "Create a review",
-        description: "Requires authentication. Only registered users can submit reviews.",
+        description:
+          "Requires authentication. Only registered users can submit reviews.",
         security: [{ BearerAuth: [] }],
         requestBody: {
           required: true,
@@ -285,10 +352,25 @@ const swaggerSpec = {
             "application/json": {
               schema: {
                 type: "object",
-                required: ["rating", "difficultyLevel", "universityId", "comment"],
+                required: [
+                  "rating",
+                  "difficultyLevel",
+                  "universityId",
+                  "comment",
+                ],
                 properties: {
-                  rating: { type: "integer", minimum: 1, maximum: 5, example: 4 },
-                  comment: { type: "string", minLength: 10, maxLength: 2000, example: "Great university overall!" },
+                  rating: {
+                    type: "integer",
+                    minimum: 1,
+                    maximum: 5,
+                    example: 4,
+                  },
+                  comment: {
+                    type: "string",
+                    minLength: 10,
+                    maxLength: 2000,
+                    example: "Great university overall!",
+                  },
                   difficultyLevel: {
                     type: "integer",
                     minimum: 1,
@@ -368,7 +450,8 @@ const swaggerSpec = {
       put: {
         tags: ["Reviews"],
         summary: "Update a review",
-        description: "Requires authentication. Only the author can update their own review.",
+        description:
+          "Requires authentication. Only the author can update their own review.",
         security: [{ BearerAuth: [] }],
         requestBody: {
           required: true,
@@ -427,7 +510,8 @@ const swaggerSpec = {
       delete: {
         tags: ["Reviews"],
         summary: "Delete a review",
-        description: "Requires authentication. Only the author can delete their own review.",
+        description:
+          "Requires authentication. Only the author can delete their own review.",
         security: [{ BearerAuth: [] }],
         responses: {
           200: {
@@ -473,9 +557,27 @@ const swaggerSpec = {
         tags: ["Courses"],
         summary: "List all courses",
         parameters: [
-          { name: "page", in: "query", required: false, schema: { type: "integer", default: 1 }, description: "Page number" },
-          { name: "limit", in: "query", required: false, schema: { type: "integer", default: 10, maximum: 100 }, description: "Number of items per page" },
-          { name: "category", in: "query", required: false, schema: { type: "string" }, description: "Filter courses by category" },
+          {
+            name: "page",
+            in: "query",
+            required: false,
+            schema: { type: "integer", default: 1 },
+            description: "Page number",
+          },
+          {
+            name: "limit",
+            in: "query",
+            required: false,
+            schema: { type: "integer", default: 10, maximum: 100 },
+            description: "Number of items per page",
+          },
+          {
+            name: "category",
+            in: "query",
+            required: false,
+            schema: { type: "string" },
+            description: "Filter courses by category",
+          },
         ],
         responses: {
           200: {
@@ -485,7 +587,10 @@ const swaggerSpec = {
                 schema: {
                   type: "object",
                   properties: {
-                    data: { type: "array", items: { $ref: "#/components/schemas/Course" } },
+                    data: {
+                      type: "array",
+                      items: { $ref: "#/components/schemas/Course" },
+                    },
                     pagination: { $ref: "#/components/schemas/Pagination" },
                   },
                 },
@@ -516,11 +621,30 @@ const swaggerSpec = {
                 required: ["title", "description", "link"],
                 properties: {
                   title: { type: "string", example: "Introduction to CS" },
-                  description: { type: "string", example: "A beginner course on computer science" },
-                  link: { type: "string", example: "https://example.com/cs101" },
-                  image: { type: "string", nullable: true, example: "https://example.com/cs101.jpg" },
-                  price: { type: "number", format: "float", nullable: true, example: 99.9 },
-                  category: { type: "string", nullable: true, example: "Technology" },
+                  description: {
+                    type: "string",
+                    example: "A beginner course on computer science",
+                  },
+                  link: {
+                    type: "string",
+                    example: "https://example.com/cs101",
+                  },
+                  image: {
+                    type: "string",
+                    nullable: true,
+                    example: "https://example.com/cs101.jpg",
+                  },
+                  price: {
+                    type: "number",
+                    format: "float",
+                    nullable: true,
+                    example: 99.9,
+                  },
+                  category: {
+                    type: "string",
+                    nullable: true,
+                    example: "Technology",
+                  },
                 },
               },
             },
@@ -703,8 +827,20 @@ const swaggerSpec = {
         description: "Requires ADMIN or MODERATOR role.",
         security: [{ BearerAuth: [] }],
         parameters: [
-          { name: "page", in: "query", required: false, schema: { type: "integer", default: 1 }, description: "Page number" },
-          { name: "limit", in: "query", required: false, schema: { type: "integer", default: 10, maximum: 100 }, description: "Number of items per page" },
+          {
+            name: "page",
+            in: "query",
+            required: false,
+            schema: { type: "integer", default: 1 },
+            description: "Page number",
+          },
+          {
+            name: "limit",
+            in: "query",
+            required: false,
+            schema: { type: "integer", default: 10, maximum: 100 },
+            description: "Number of items per page",
+          },
         ],
         responses: {
           200: {
@@ -714,7 +850,10 @@ const swaggerSpec = {
                 schema: {
                   type: "object",
                   properties: {
-                    data: { type: "array", items: { $ref: "#/components/schemas/User" } },
+                    data: {
+                      type: "array",
+                      items: { $ref: "#/components/schemas/User" },
+                    },
                     pagination: { $ref: "#/components/schemas/Pagination" },
                   },
                 },
@@ -771,7 +910,8 @@ const swaggerSpec = {
                     maxLength: 40,
                     nullable: true,
                     example: "Secret1!",
-                    description: "8-40 characters. Must include at least one uppercase letter, one lowercase letter, one number, and one symbol.",
+                    description:
+                      "8-40 characters. Must include at least one uppercase letter, one lowercase letter, one number, and one symbol.",
                   },
                   username: {
                     type: "string",
@@ -816,7 +956,8 @@ const swaggerSpec = {
       post: {
         tags: ["Sessions"],
         summary: "Log in a user",
-        description: "Pass your email address or username in the `identifier` field together with `password`.",
+        description:
+          "Pass your email address or username in the `identifier` field together with `password`.",
         requestBody: {
           required: true,
           content: {
@@ -871,7 +1012,8 @@ const swaggerSpec = {
       post: {
         tags: ["Sessions"],
         summary: "Refresh access token",
-        description: "Exchange a valid refresh token for a new access token and a rotated refresh token.",
+        description:
+          "Exchange a valid refresh token for a new access token and a rotated refresh token.",
         requestBody: {
           required: true,
           content: {
@@ -882,7 +1024,8 @@ const swaggerSpec = {
                 properties: {
                   refreshToken: {
                     type: "string",
-                    description: "The refresh token received from login or a previous refresh.",
+                    description:
+                      "The refresh token received from login or a previous refresh.",
                   },
                 },
               },
@@ -897,8 +1040,14 @@ const swaggerSpec = {
                 schema: {
                   type: "object",
                   properties: {
-                    token: { type: "string", description: "New short-lived access token (JWT)." },
-                    refreshToken: { type: "string", description: "New rotated refresh token." },
+                    token: {
+                      type: "string",
+                      description: "New short-lived access token (JWT).",
+                    },
+                    refreshToken: {
+                      type: "string",
+                      description: "New rotated refresh token.",
+                    },
                   },
                 },
               },
@@ -927,7 +1076,8 @@ const swaggerSpec = {
       post: {
         tags: ["Sessions"],
         summary: "Log out a user",
-        description: "Invalidates the provided refresh token so it can no longer be used. Requires a valid access token.",
+        description:
+          "Invalidates the provided refresh token so it can no longer be used. Requires a valid access token.",
         security: [{ BearerAuth: [] }],
         requestBody: {
           required: true,
@@ -954,7 +1104,10 @@ const swaggerSpec = {
                 schema: {
                   type: "object",
                   properties: {
-                    message: { type: "string", example: "Logged out successfully" },
+                    message: {
+                      type: "string",
+                      example: "Logged out successfully",
+                    },
                   },
                 },
               },
@@ -1055,7 +1208,8 @@ const swaggerSpec = {
                     type: "string",
                     minLength: 8,
                     maxLength: 40,
-                    description: "8-40 characters. Must include at least one uppercase letter, one lowercase letter, one number, and one symbol.",
+                    description:
+                      "8-40 characters. Must include at least one uppercase letter, one lowercase letter, one number, and one symbol.",
                   },
                 },
               },
@@ -1086,7 +1240,8 @@ const swaggerSpec = {
       put: {
         tags: ["Users"],
         summary: "Verify account email via token",
-        description: "Public endpoint. Called automatically by the /verify-email page after a user clicks the link in their inbox. On success the account is marked as emailVerified.",
+        description:
+          "Public endpoint. Called automatically by the /verify-email page after a user clicks the link in their inbox. On success the account is marked as emailVerified.",
         requestBody: {
           required: true,
           content: {
@@ -1119,18 +1274,27 @@ const swaggerSpec = {
           },
           400: {
             description: "Missing or expired token",
-            content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } },
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
           },
           404: {
             description: "Token not found",
-            content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } },
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
           },
         },
       },
       post: {
         tags: ["Users"],
         summary: "Resend email verification",
-        description: "Requires authentication. Sends a new verification email to the account's registered email address.",
+        description:
+          "Requires authentication. Sends a new verification email to the account's registered email address.",
         security: [{ BearerAuth: [] }],
         responses: {
           200: {
@@ -1146,11 +1310,19 @@ const swaggerSpec = {
           },
           400: {
             description: "Account has no email address",
-            content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } },
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
           },
           401: {
             description: "Authentication required",
-            content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } },
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
           },
         },
       },
@@ -1209,7 +1381,8 @@ const swaggerSpec = {
             },
           },
           403: {
-            description: "Forbidden: anonymous accounts cannot verify a university email",
+            description:
+              "Forbidden: anonymous accounts cannot verify a university email",
             content: {
               "application/json": {
                 schema: { $ref: "#/components/schemas/Error" },
@@ -1327,7 +1500,8 @@ const swaggerSpec = {
       delete: {
         tags: ["Users"],
         summary: "Delete a user by ID",
-        description: "Requires ADMIN role. Permanently deletes the user account.",
+        description:
+          "Requires ADMIN role. Permanently deletes the user account.",
         security: [{ BearerAuth: [] }],
         responses: {
           200: {
@@ -1381,12 +1555,24 @@ const swaggerSpec = {
       Health: {
         type: "object",
         properties: {
-          status: { type: "string", enum: ["healthy", "unhealthy"], example: "healthy" },
-          uptime: { type: "integer", description: "Server uptime in seconds", example: 12345 },
+          status: {
+            type: "string",
+            enum: ["healthy", "unhealthy"],
+            example: "healthy",
+          },
+          uptime: {
+            type: "integer",
+            description: "Server uptime in seconds",
+            example: 12345,
+          },
           database: {
             type: "object",
             properties: {
-              status: { type: "string", enum: ["healthy", "unhealthy"], example: "healthy" },
+              status: {
+                type: "string",
+                enum: ["healthy", "unhealthy"],
+                example: "healthy",
+              },
               activeConnections: { type: "integer", example: 5 },
             },
           },
@@ -1419,9 +1605,24 @@ const swaggerSpec = {
         type: "object",
         properties: {
           reviewCount: { type: "integer", example: 18 },
-          averageRating: { type: "number", format: "float", nullable: true, example: 4.3 },
-          averageDifficultyLevel: { type: "number", format: "float", nullable: true, example: 3.5 },
-          recommendationPercentage: { type: "integer", nullable: true, example: 87, description: "Percentage of reviews with rating ≥ 4" },
+          averageRating: {
+            type: "number",
+            format: "float",
+            nullable: true,
+            example: 4.3,
+          },
+          averageDifficultyLevel: {
+            type: "number",
+            format: "float",
+            nullable: true,
+            example: 3.5,
+          },
+          recommendationPercentage: {
+            type: "integer",
+            nullable: true,
+            example: 87,
+            description: "Percentage of reviews with rating ≥ 4",
+          },
         },
       },
       UniversityDetail: {
@@ -1461,7 +1662,8 @@ const swaggerSpec = {
             type: "string",
             format: "uuid",
             nullable: true,
-            description: "Only present in the creation response for unauthenticated reviews.",
+            description:
+              "Only present in the creation response for unauthenticated reviews.",
           },
           createdAt: { type: "string", format: "date-time" },
         },
@@ -1483,8 +1685,15 @@ const swaggerSpec = {
         type: "object",
         properties: {
           user: { $ref: "#/components/schemas/User" },
-          token: { type: "string", description: "Short-lived access token (JWT, 15 min)." },
-          refreshToken: { type: "string", description: "Long-lived refresh token (7 days). Use POST /api/v1/users/refresh to renew." },
+          token: {
+            type: "string",
+            description: "Short-lived access token (JWT, 15 min).",
+          },
+          refreshToken: {
+            type: "string",
+            description:
+              "Long-lived refresh token (7 days). Use POST /api/v1/users/refresh to renew.",
+          },
         },
       },
       Error: {
@@ -1506,7 +1715,10 @@ const swaggerSpec = {
           title: { type: "string" },
           description: { type: "string" },
           image: { type: "string", nullable: true },
-          link: { type: "string", description: "External affiliate/enrollment URL" },
+          link: {
+            type: "string",
+            description: "External affiliate/enrollment URL",
+          },
           price: { type: "number", format: "float", nullable: true },
           category: { type: "string", nullable: true },
           active: { type: "boolean" },

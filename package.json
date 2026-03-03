@@ -9,6 +9,8 @@
     "lint": "eslint",
     "test": "jest",
     "format:check": "bash scripts/formatCheckChanged.sh",
+    "lint:prettier:check": "prettier --check .",
+    "lint:prettier:fix": "prettier --write .",
     "commitlint": "commitlint --from HEAD~1 --to HEAD",
     "secretlint": "secretlint \"**/*\" --secretlintignore .secretlintignore",
     "db:generate": "prisma generate",
