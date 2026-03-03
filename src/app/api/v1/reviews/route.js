@@ -8,7 +8,11 @@ export const GET = withErrorHandler(async (request) => {
   const { searchParams } = new URL(request.url);
   const universityId = searchParams.get("universityId");
   const { page, limit, skip } = parsePagination(searchParams);
-  const { data, total } = await reviewService.listReviews({ universityId, skip, take: limit });
+  const { data, total } = await reviewService.listReviews({
+    universityId,
+    skip,
+    take: limit,
+  });
   return NextResponse.json(paginatedResponse(data, total, page, limit));
 });
 

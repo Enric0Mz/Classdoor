@@ -36,7 +36,11 @@ describe("userService.deleteUser", () => {
 
 describe("DELETE /api/v1/users/me", () => {
   it("returns 200 with success message when authenticated", async () => {
-    requireVerifiedUser.mockReturnValue({ id: "user-1", email: "test@test.com", role: "USER" });
+    requireVerifiedUser.mockReturnValue({
+      id: "user-1",
+      email: "test@test.com",
+      role: "USER",
+    });
     userRepository.deleteUser.mockResolvedValue({ id: "user-1" });
 
     const response = await DELETE(makeRequest());

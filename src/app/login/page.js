@@ -43,7 +43,6 @@ export default function LoginPage() {
 
   return (
     <main className="flex min-h-[calc(100vh-4rem)]">
-
       {/* ── Left branding panel (desktop only) ── */}
       <div
         className="relative hidden overflow-hidden lg:flex lg:w-1/2 flex-col justify-between"
@@ -107,7 +106,6 @@ export default function LoginPage() {
 
       {/* ── Right form panel ── */}
       <div className="flex flex-1 flex-col items-center justify-center bg-gray-50 px-6 py-12">
-
         {/* Mobile logo — hidden on large screens */}
         <div className="mb-8 text-center lg:hidden">
           <Link href="/" className="inline-flex items-center gap-2.5">
@@ -132,25 +130,37 @@ export default function LoginPage() {
 
           {/* Form card */}
           <div className="rounded-2xl border border-gray-100 bg-white p-8 shadow-sm">
-
             {error && (
               <div className="mb-5 flex items-start gap-2.5 rounded-xl border border-red-100 bg-red-50 p-3.5">
-                <svg className="mt-0.5 h-4 w-4 shrink-0 text-red-500" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm-1-5a1 1 0 1 0 2 0V9a1 1 0 1 0-2 0v4zm1-7.5a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5z" clipRule="evenodd" />
+                <svg
+                  className="mt-0.5 h-4 w-4 shrink-0 text-red-500"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm-1-5a1 1 0 1 0 2 0V9a1 1 0 1 0-2 0v4zm1-7.5a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5z"
+                    clipRule="evenodd"
+                  />
                 </svg>
                 <p className="text-sm text-red-600">{error}</p>
               </div>
             )}
 
             <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-
               {/* Identifier */}
               <div className="flex flex-col gap-1.5">
-                <label htmlFor="identifier" className="text-sm font-medium text-gray-700">
+                <label
+                  htmlFor="identifier"
+                  className="text-sm font-medium text-gray-700"
+                >
                   Email ou nome de usuário
                 </label>
                 <div className="relative">
-                  <AtSign size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <AtSign
+                    size={15}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                  />
                   <input
                     id="identifier"
                     type="text"
@@ -165,11 +175,17 @@ export default function LoginPage() {
 
               {/* Password */}
               <div className="flex flex-col gap-1.5">
-                <label htmlFor="password" className="text-sm font-medium text-gray-700">
+                <label
+                  htmlFor="password"
+                  className="text-sm font-medium text-gray-700"
+                >
                   Senha
                 </label>
                 <div className="relative">
-                  <Lock size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <Lock
+                    size={15}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                  />
                   <input
                     id="password"
                     type={showPassword ? "text" : "password"}
@@ -197,9 +213,24 @@ export default function LoginPage() {
               >
                 {isLoading ? (
                   <>
-                    <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 0 1 8-8v4a4 4 0 0 0-4 4H4z" />
+                    <svg
+                      className="h-4 w-4 animate-spin"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      />
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 0 1 8-8v4a4 4 0 0 0-4 4H4z"
+                      />
                     </svg>
                     Entrando...
                   </>
@@ -212,7 +243,10 @@ export default function LoginPage() {
 
           <p className="mt-6 text-center text-sm text-gray-500">
             Não tem conta?{" "}
-            <Link href="/register" className="font-semibold text-indigo-600 hover:underline">
+            <Link
+              href="/register"
+              className="font-semibold text-indigo-600 hover:underline"
+            >
               Cadastrar
             </Link>
           </p>

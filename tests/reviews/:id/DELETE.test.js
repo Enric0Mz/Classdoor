@@ -65,7 +65,11 @@ describe("reviewService.deleteReview", () => {
 
 describe("DELETE /api/v1/reviews/:id", () => {
   it("returns 200 when the authenticated user is the author", async () => {
-    requireVerifiedUser.mockReturnValue({ id: "user-1", email: "user@test.com", role: "USER" });
+    requireVerifiedUser.mockReturnValue({
+      id: "user-1",
+      email: "user@test.com",
+      role: "USER",
+    });
     reviewRepository.findById.mockResolvedValue(REVIEW);
     reviewRepository.remove.mockResolvedValue(REVIEW);
 
@@ -87,7 +91,11 @@ describe("DELETE /api/v1/reviews/:id", () => {
   });
 
   it("returns 403 when authenticated user is not the author", async () => {
-    requireVerifiedUser.mockReturnValue({ id: "other-user", email: "other@test.com", role: "USER" });
+    requireVerifiedUser.mockReturnValue({
+      id: "other-user",
+      email: "other@test.com",
+      role: "USER",
+    });
     reviewRepository.findById.mockResolvedValue(REVIEW);
 
     const response = await DELETE({}, makeParams("review-1"));

@@ -2,7 +2,7 @@ import { registerUser } from "@/domain/userService";
 import * as userRepository from "@/repositories/userRepository";
 import * as emailVerificationRepository from "@/repositories/emailVerificationRepository";
 import { sendEmailVerification } from "@/lib/emailService";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import { signToken } from "@/lib/auth";
 import { POST } from "@/app/api/v1/users/route";
 
@@ -23,7 +23,7 @@ jest.mock("@/lib/emailService", () => ({
   sendEmailVerification: jest.fn(),
 }));
 
-jest.mock("bcrypt", () => ({
+jest.mock("bcryptjs", () => ({
   hash: jest.fn(),
 }));
 
@@ -59,12 +59,19 @@ describe("userService.registerUser", () => {
     userRepository.create.mockResolvedValue(created);
     signToken.mockReturnValue("jwt-token");
 
-    const result = await registerUser({ username: "AgilOnca123", password: VALID_PASSWORD });
+    const result = await registerUser({
+      username: "AgilOnca123",
+      password: VALID_PASSWORD,
+    });
 
     expect(userRepository.create).toHaveBeenCalledWith(
-      expect.objectContaining({ username: "AgilOnca123", password: "hashed" })
+      expect.objectContaining({ username: "AgilOnca123", password: "hashed" }),
     );
-    expect(signToken).toHaveBeenCalledWith({ id: "user-1", email: null, role: "USER" });
+    expect(signToken).toHaveBeenCalledWith({
+      id: "user-1",
+      email: null,
+      role: "USER",
+    });
     expect(result.user).not.toHaveProperty("password");
     expect(result.token).toBe("jwt-token");
   });
@@ -80,7 +87,10 @@ describe("userService.registerUser", () => {
     };
     userRepository.findByUsername.mockResolvedValue(null);
     userRepository.findByEmail.mockResolvedValue(null);
-    userRepository.findById.mockResolvedValue({ id: "user-2", emailVerified: false });
+    userRepository.findById.mockResolvedValue({
+      id: "user-2",
+      emailVerified: false,
+    });
     bcrypt.hash.mockResolvedValue("hashed");
     userRepository.create.mockResolvedValue(created);
     signToken.mockReturnValue("jwt-token");
@@ -88,11 +98,19 @@ describe("userService.registerUser", () => {
     emailVerificationRepository.create.mockResolvedValue({ id: "verif-1" });
     sendEmailVerification.mockResolvedValue(undefined);
 
-    const result = await registerUser({ username: "AgilOnca123", email: "test@test.com", password: VALID_PASSWORD });
+    const result = await registerUser({
+      username: "AgilOnca123",
+      email: "test@test.com",
+      password: VALID_PASSWORD,
+    });
 
     expect(userRepository.findByEmail).toHaveBeenCalledWith("test@test.com");
     expect(userRepository.create).toHaveBeenCalledWith(
-      expect.objectContaining({ email: "test@test.com", password: "hashed", username: "AgilOnca123" })
+      expect.objectContaining({
+        email: "test@test.com",
+        password: "hashed",
+        username: "AgilOnca123",
+      }),
     );
     expect(result.user).not.toHaveProperty("password");
     expect(result.token).toBe("jwt-token");
@@ -109,7 +127,10 @@ describe("userService.registerUser", () => {
     };
     userRepository.findByUsername.mockResolvedValue(null);
     userRepository.findByEmail.mockResolvedValue(null);
-    userRepository.findById.mockResolvedValue({ id: "user-2", emailVerified: false });
+    userRepository.findById.mockResolvedValue({
+      id: "user-2",
+      emailVerified: false,
+    });
     bcrypt.hash.mockResolvedValue("hashed");
     userRepository.create.mockResolvedValue(created);
     signToken.mockReturnValue("jwt-token");
@@ -117,9 +138,16 @@ describe("userService.registerUser", () => {
     emailVerificationRepository.create.mockResolvedValue({ id: "verif-1" });
     sendEmailVerification.mockResolvedValue(undefined);
 
-    await registerUser({ username: "AgilOnca123", email: "test@test.com", password: VALID_PASSWORD });
+    await registerUser({
+      username: "AgilOnca123",
+      email: "test@test.com",
+      password: VALID_PASSWORD,
+    });
 
-    expect(sendEmailVerification).toHaveBeenCalledWith("test@test.com", expect.any(String));
+    expect(sendEmailVerification).toHaveBeenCalledWith(
+      "test@test.com",
+      expect.any(String),
+    );
   });
 
   it("does not send a verification email for anonymous registration (no email)", async () => {
@@ -158,7 +186,10 @@ describe("userService.registerUser", () => {
     const result = await registerUser({ password: VALID_PASSWORD });
 
     expect(userRepository.create).toHaveBeenCalledWith(
-      expect.objectContaining({ username: expect.any(String), password: "hashed" })
+      expect.objectContaining({
+        username: expect.any(String),
+        password: "hashed",
+      }),
     );
     expect(result.user).toHaveProperty("username");
   });
@@ -166,7 +197,9 @@ describe("userService.registerUser", () => {
   it("throws 400 when password is missing", async () => {
     userRepository.findByUsername.mockResolvedValue(null);
 
-    await expect(registerUser({ username: "AgilOnca123" })).rejects.toMatchObject({
+    await expect(
+      registerUser({ username: "AgilOnca123" }),
+    ).rejects.toMatchObject({
       message: "Password is required",
       statusCode: 400,
     });
@@ -176,7 +209,9 @@ describe("userService.registerUser", () => {
   it("throws 400 when password is too short (under 8 chars)", async () => {
     userRepository.findByUsername.mockResolvedValue(null);
 
-    await expect(registerUser({ username: "AgilOnca123", password: "Aa1!" })).rejects.toMatchObject({
+    await expect(
+      registerUser({ username: "AgilOnca123", password: "Aa1!" }),
+    ).rejects.toMatchObject({
       message: "Password must be at least 8 characters long",
       statusCode: 400,
     });
@@ -187,7 +222,10 @@ describe("userService.registerUser", () => {
     userRepository.findByUsername.mockResolvedValue(null);
 
     await expect(
-      registerUser({ username: "AgilOnca123", password: "Secret1!" + "a".repeat(33) })
+      registerUser({
+        username: "AgilOnca123",
+        password: "Secret1!" + "a".repeat(33),
+      }),
     ).rejects.toMatchObject({
       message: "Password must be at most 40 characters long",
       statusCode: 400,
@@ -197,7 +235,9 @@ describe("userService.registerUser", () => {
   it("throws 400 when password has no uppercase letter", async () => {
     userRepository.findByUsername.mockResolvedValue(null);
 
-    await expect(registerUser({ username: "AgilOnca123", password: "secret1!" })).rejects.toMatchObject({
+    await expect(
+      registerUser({ username: "AgilOnca123", password: "secret1!" }),
+    ).rejects.toMatchObject({
       message: "Password must contain at least one uppercase letter",
       statusCode: 400,
     });
@@ -206,7 +246,9 @@ describe("userService.registerUser", () => {
   it("throws 400 when password has no lowercase letter", async () => {
     userRepository.findByUsername.mockResolvedValue(null);
 
-    await expect(registerUser({ username: "AgilOnca123", password: "SECRET1!" })).rejects.toMatchObject({
+    await expect(
+      registerUser({ username: "AgilOnca123", password: "SECRET1!" }),
+    ).rejects.toMatchObject({
       message: "Password must contain at least one lowercase letter",
       statusCode: 400,
     });
@@ -215,7 +257,9 @@ describe("userService.registerUser", () => {
   it("throws 400 when password has no number", async () => {
     userRepository.findByUsername.mockResolvedValue(null);
 
-    await expect(registerUser({ username: "AgilOnca123", password: "Secrettt!" })).rejects.toMatchObject({
+    await expect(
+      registerUser({ username: "AgilOnca123", password: "Secrettt!" }),
+    ).rejects.toMatchObject({
       message: "Password must contain at least one number",
       statusCode: 400,
     });
@@ -224,7 +268,9 @@ describe("userService.registerUser", () => {
   it("throws 400 when password has no symbol", async () => {
     userRepository.findByUsername.mockResolvedValue(null);
 
-    await expect(registerUser({ username: "AgilOnca123", password: "Secret123" })).rejects.toMatchObject({
+    await expect(
+      registerUser({ username: "AgilOnca123", password: "Secret123" }),
+    ).rejects.toMatchObject({
       message: "Password must contain at least one symbol",
       statusCode: 400,
     });
@@ -234,7 +280,11 @@ describe("userService.registerUser", () => {
     userRepository.findByUsername.mockResolvedValue(null);
 
     await expect(
-      registerUser({ username: "AgilOnca123", email: "not-an-email", password: VALID_PASSWORD })
+      registerUser({
+        username: "AgilOnca123",
+        email: "not-an-email",
+        password: VALID_PASSWORD,
+      }),
     ).rejects.toMatchObject({
       message: "Invalid email format",
       statusCode: 400,
@@ -244,10 +294,17 @@ describe("userService.registerUser", () => {
 
   it("throws 409 when email already exists", async () => {
     userRepository.findByUsername.mockResolvedValue(null);
-    userRepository.findByEmail.mockResolvedValue({ id: "user-1", email: "test@test.com" });
+    userRepository.findByEmail.mockResolvedValue({
+      id: "user-1",
+      email: "test@test.com",
+    });
 
     await expect(
-      registerUser({ username: "AgilOnca123", email: "test@test.com", password: VALID_PASSWORD })
+      registerUser({
+        username: "AgilOnca123",
+        email: "test@test.com",
+        password: VALID_PASSWORD,
+      }),
     ).rejects.toMatchObject({
       message: "A user with this email already exists",
       statusCode: 409,
@@ -256,16 +313,19 @@ describe("userService.registerUser", () => {
   });
 
   it("throws 409 when username already exists", async () => {
-    userRepository.findByUsername.mockResolvedValue({ id: "user-1", username: "AgilOnca123" });
+    userRepository.findByUsername.mockResolvedValue({
+      id: "user-1",
+      username: "AgilOnca123",
+    });
 
-    await expect(registerUser({ username: "AgilOnca123", password: VALID_PASSWORD })).rejects.toMatchObject({
+    await expect(
+      registerUser({ username: "AgilOnca123", password: VALID_PASSWORD }),
+    ).rejects.toMatchObject({
       message: "A user with this username already exists",
       statusCode: 409,
     });
     expect(userRepository.create).not.toHaveBeenCalled();
   });
-
-
 });
 
 describe("POST /api/v1/users", () => {
@@ -283,7 +343,9 @@ describe("POST /api/v1/users", () => {
     userRepository.create.mockResolvedValue(created);
     signToken.mockReturnValue("jwt-token");
 
-    const response = await POST(makeRequest({ username: "AgilOnca123", password: VALID_PASSWORD }));
+    const response = await POST(
+      makeRequest({ username: "AgilOnca123", password: VALID_PASSWORD }),
+    );
 
     expect(response.status).toBe(201);
     expect(response.body.token).toBe("jwt-token");
@@ -301,7 +363,10 @@ describe("POST /api/v1/users", () => {
     };
     userRepository.findByUsername.mockResolvedValue(null);
     userRepository.findByEmail.mockResolvedValue(null);
-    userRepository.findById.mockResolvedValue({ id: "user-2", emailVerified: false });
+    userRepository.findById.mockResolvedValue({
+      id: "user-2",
+      emailVerified: false,
+    });
     bcrypt.hash.mockResolvedValue("hashed");
     userRepository.create.mockResolvedValue(created);
     signToken.mockReturnValue("jwt-token");
@@ -309,7 +374,13 @@ describe("POST /api/v1/users", () => {
     emailVerificationRepository.create.mockResolvedValue({ id: "verif-1" });
     sendEmailVerification.mockResolvedValue(undefined);
 
-    const response = await POST(makeRequest({ username: "AgilOnca123", email: "test@test.com", password: VALID_PASSWORD }));
+    const response = await POST(
+      makeRequest({
+        username: "AgilOnca123",
+        email: "test@test.com",
+        password: VALID_PASSWORD,
+      }),
+    );
 
     expect(response.status).toBe(201);
     expect(response.body.user.email).toBe("test@test.com");
@@ -329,20 +400,34 @@ describe("POST /api/v1/users", () => {
   it("returns 400 when password does not meet complexity rules", async () => {
     userRepository.findByUsername.mockResolvedValue(null);
 
-    const response = await POST(makeRequest({ username: "AgilOnca123", password: "nouppercase1!" }));
+    const response = await POST(
+      makeRequest({ username: "AgilOnca123", password: "nouppercase1!" }),
+    );
 
     expect(response.status).toBe(400);
   });
 
   it("returns 409 when email already exists", async () => {
     userRepository.findByUsername.mockResolvedValue(null);
-    userRepository.findByEmail.mockResolvedValue({ id: "user-1", email: "test@test.com" });
+    userRepository.findByEmail.mockResolvedValue({
+      id: "user-1",
+      email: "test@test.com",
+    });
 
-    const response = await POST(makeRequest({ username: "AgilOnca123", email: "test@test.com", password: VALID_PASSWORD }));
+    const response = await POST(
+      makeRequest({
+        username: "AgilOnca123",
+        email: "test@test.com",
+        password: VALID_PASSWORD,
+      }),
+    );
 
     expect(response.status).toBe(409);
     expect(response.body).toEqual({
-      error: { message: "A user with this email already exists", statusCode: 409 },
+      error: {
+        message: "A user with this email already exists",
+        statusCode: 409,
+      },
     });
   });
 });

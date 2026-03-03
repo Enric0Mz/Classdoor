@@ -4,7 +4,16 @@ import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { Search, BookOpen, TrendingUp, X } from "lucide-react";
 
-const CATEGORY_FILTERS = ["Todos", "Programação", "Design", "Marketing", "Negócios", "Dados", "DevOps", "Outros"];
+const CATEGORY_FILTERS = [
+  "Todos",
+  "Programação",
+  "Design",
+  "Marketing",
+  "Negócios",
+  "Dados",
+  "DevOps",
+  "Outros",
+];
 
 export default function CoursesPage() {
   const [courses, setCourses] = useState([]);
@@ -39,7 +48,7 @@ export default function CoursesPage() {
       result = result.filter(
         (course) =>
           course.title.toLowerCase().includes(query) ||
-          course.description.toLowerCase().includes(query)
+          course.description.toLowerCase().includes(query),
       );
     }
     return result;
@@ -67,12 +76,16 @@ export default function CoursesPage() {
           </h1>
 
           <p className="stagger-3 mx-auto mt-6 max-w-2xl text-lg text-gray-400">
-            Cursos cuidadosamente selecionados para alavancar sua carreira acadêmica e profissional.
+            Cursos cuidadosamente selecionados para alavancar sua carreira
+            acadêmica e profissional.
           </p>
 
           <div className="mx-auto mt-10 max-w-2xl">
             <div className="group relative flex items-center rounded-2xl border border-white/10 bg-white/5 px-4 py-3 backdrop-blur-sm transition-all focus-within:border-indigo-400/50 focus-within:ring-2 focus-within:ring-indigo-500/60">
-              <Search className="mr-3 shrink-0 text-gray-500 group-focus-within:text-indigo-400" size={20} />
+              <Search
+                className="mr-3 shrink-0 text-gray-500 group-focus-within:text-indigo-400"
+                size={20}
+              />
               <input
                 type="text"
                 placeholder="Busque por título ou descrição..."
@@ -113,7 +126,10 @@ export default function CoursesPage() {
           ))}
           {(activeCategory !== "Todos" || searchQuery) && (
             <button
-              onClick={() => { setActiveCategory("Todos"); setSearchQuery(""); }}
+              onClick={() => {
+                setActiveCategory("Todos");
+                setSearchQuery("");
+              }}
               className="flex items-center gap-1 rounded-full px-4 py-1.5 text-sm font-medium text-red-500 ring-1 ring-inset ring-red-200 hover:bg-red-50"
             >
               <X size={14} />
@@ -130,7 +146,10 @@ export default function CoursesPage() {
         {loading ? (
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {Array.from({ length: 8 }).map((_, index) => (
-              <div key={index} className="flex flex-col gap-3 rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
+              <div
+                key={index}
+                className="flex flex-col gap-3 rounded-2xl border border-gray-100 bg-white p-4 shadow-sm"
+              >
                 <div className="skeleton h-40 w-full rounded-xl" />
                 <div className="skeleton h-4 w-3/4 rounded" />
                 <div className="skeleton h-4 w-1/2 rounded" />
@@ -153,10 +172,17 @@ export default function CoursesPage() {
             <div className="mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-gray-100 text-gray-400">
               <BookOpen size={32} />
             </div>
-            <h3 className="text-lg font-semibold text-gray-900">Nenhum curso encontrado</h3>
-            <p className="max-w-xs text-gray-500">Tente ajustar seus filtros ou buscar por outro termo.</p>
+            <h3 className="text-lg font-semibold text-gray-900">
+              Nenhum curso encontrado
+            </h3>
+            <p className="max-w-xs text-gray-500">
+              Tente ajustar seus filtros ou buscar por outro termo.
+            </p>
             <button
-              onClick={() => { setSearchQuery(""); setActiveCategory("Todos"); }}
+              onClick={() => {
+                setSearchQuery("");
+                setActiveCategory("Todos");
+              }}
               className="mt-6 font-medium text-indigo-600 hover:underline"
             >
               Limpar busca
@@ -194,7 +220,9 @@ function CourseCard({ course }) {
           className="h-40 w-full rounded-t-2xl object-cover"
         />
       ) : (
-        <div className={`h-40 w-full rounded-t-2xl bg-gradient-to-br ${gradients[gradientIndex]} flex items-center justify-center`}>
+        <div
+          className={`h-40 w-full rounded-t-2xl bg-gradient-to-br ${gradients[gradientIndex]} flex items-center justify-center`}
+        >
           <BookOpen size={40} className="text-white/80" />
         </div>
       )}
@@ -217,7 +245,9 @@ function CourseCard({ course }) {
               R$ {course.price.toFixed(2)}
             </span>
           ) : (
-            <span className="text-sm font-medium text-emerald-600">Gratuito</span>
+            <span className="text-sm font-medium text-emerald-600">
+              Gratuito
+            </span>
           )}
           <Link
             href={`/courses/${course.id}`}

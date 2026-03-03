@@ -37,7 +37,7 @@ describe("universityEmailVerificationService.submitUniversityEmail", () => {
     findUniversityByDomain.mockReturnValue(null);
 
     await expect(
-      submitUniversityEmail("user-1", "user@email.com", "me@gmail.com")
+      submitUniversityEmail("user-1", "user@email.com", "me@gmail.com"),
     ).rejects.toMatchObject({
       message: "Email domain is not recognized as a university email",
       statusCode: 400,
@@ -48,23 +48,32 @@ describe("universityEmailVerificationService.submitUniversityEmail", () => {
   });
 
   it("proceeds to send verification when the domain is recognized", async () => {
-    findUniversityByDomain.mockReturnValue({ name: "Universidade de São Paulo" });
+    findUniversityByDomain.mockReturnValue({
+      name: "Universidade de São Paulo",
+    });
     verificationRepository.deleteByUserId.mockResolvedValue(undefined);
     verificationRepository.create.mockResolvedValue({ id: "verif-1" });
     sendVerificationEmail.mockResolvedValue(undefined);
 
-    const result = await submitUniversityEmail("user-1", "user@email.com", "me@usp.br");
+    const result = await submitUniversityEmail(
+      "user-1",
+      "user@email.com",
+      "me@usp.br",
+    );
 
     expect(findUniversityByDomain).toHaveBeenCalledWith("usp.br");
     expect(verificationRepository.create).toHaveBeenCalledWith(
-      expect.objectContaining({ userId: "user-1", universityEmail: "me@usp.br" })
+      expect.objectContaining({
+        userId: "user-1",
+        universityEmail: "me@usp.br",
+      }),
     );
     expect(result).toEqual({ message: "Verification email sent" });
   });
 
   it("throws 403 when the user has no registered email (anonymous)", async () => {
     await expect(
-      submitUniversityEmail("user-anon", null, "me@usp.br")
+      submitUniversityEmail("user-anon", null, "me@usp.br"),
     ).rejects.toMatchObject({
       message: "Anonymous accounts cannot submit a university email",
       statusCode: 403,
@@ -73,7 +82,7 @@ describe("universityEmailVerificationService.submitUniversityEmail", () => {
 
   it("throws 400 when the email format is invalid before checking the domain", async () => {
     await expect(
-      submitUniversityEmail("user-1", "user@email.com", "not-an-email")
+      submitUniversityEmail("user-1", "user@email.com", "not-an-email"),
     ).rejects.toMatchObject({
       message: "Invalid university email format",
       statusCode: 400,
@@ -101,7 +110,9 @@ describe("universityEmailVerificationService.verifyUniversityEmail", () => {
 
     await verifyUniversityEmail("valid-token");
 
-    expect(universityRepository.findByEmailDomain).toHaveBeenCalledWith("usp.br");
+    expect(universityRepository.findByEmailDomain).toHaveBeenCalledWith(
+      "usp.br",
+    );
   });
 
   it("sets verified=true and links universityId when a matching university is in the DB", async () => {
@@ -121,13 +132,17 @@ describe("universityEmailVerificationService.verifyUniversityEmail", () => {
 
     const result = await verifyUniversityEmail("valid-token");
 
-    expect(universityRepository.findByEmailDomain).toHaveBeenCalledWith("usp.br");
+    expect(universityRepository.findByEmailDomain).toHaveBeenCalledWith(
+      "usp.br",
+    );
     expect(userRepository.update).toHaveBeenCalledWith("user-1", {
       universityEmail: "me@usp.br",
       verified: true,
       universityId: "univ-usp",
     });
-    expect(result).toEqual({ message: "University email verified successfully" });
+    expect(result).toEqual({
+      message: "University email verified successfully",
+    });
   });
 
   it("sets universityId to null when no matching university is found in the DB", async () => {

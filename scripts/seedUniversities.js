@@ -12,7 +12,12 @@ const { readFileSync } = require("fs");
 const { join } = require("path");
 
 const prisma = new PrismaClient();
-const UNIVERSITIES_FILE_PATH = join(__dirname, "..", "data", "universities.json");
+const UNIVERSITIES_FILE_PATH = join(
+  __dirname,
+  "..",
+  "data",
+  "universities.json",
+);
 
 async function main() {
   const fileContents = readFileSync(UNIVERSITIES_FILE_PATH, "utf-8");
@@ -27,11 +32,15 @@ async function main() {
     const { name, location, website, image, type, courses } = entry;
 
     if (!name || !location || !type) {
-      console.log(`  [SKIP] Missing required fields (name, location, type) for entry: "${name ?? "unnamed"}"`);
+      console.log(
+        `  [SKIP] Missing required fields (name, location, type) for entry: "${name ?? "unnamed"}"`,
+      );
       continue;
     }
 
-    const existingUniversity = await prisma.university.findUnique({ where: { name } });
+    const existingUniversity = await prisma.university.findUnique({
+      where: { name },
+    });
 
     await prisma.university.upsert({
       where: { name },

@@ -80,9 +80,9 @@ describe("reviewService — isVerified computation", () => {
     it("adds isVerified to all reviews in the list", async () => {
       reviewRepository.findAll.mockResolvedValue({
         data: [
-          makeReview(UNIVERSITY_ID),          // same university → verified
-          makeReview("univ-other"),            // different university → not verified
-          makeReview(null),                    // no university link → not verified
+          makeReview(UNIVERSITY_ID), // same university → verified
+          makeReview("univ-other"), // different university → not verified
+          makeReview(null), // no university link → not verified
         ],
         total: 3,
       });
@@ -100,8 +100,13 @@ describe("reviewService — isVerified computation", () => {
       reviewRepository.create.mockResolvedValue(makeReview(UNIVERSITY_ID));
 
       const { review } = await createReview(
-        { rating: 4, difficultyLevel: 3, universityId: UNIVERSITY_ID, comment: "Great university overall!" },
-        "user-1"
+        {
+          rating: 4,
+          difficultyLevel: 3,
+          universityId: UNIVERSITY_ID,
+          comment: "Great university overall!",
+        },
+        "user-1",
       );
 
       expect(review.isVerified).toBe(true);
@@ -109,21 +114,49 @@ describe("reviewService — isVerified computation", () => {
 
     it("throws 400 when comment is missing", async () => {
       await expect(
-        createReview({ rating: 4, difficultyLevel: 3, universityId: UNIVERSITY_ID }, "user-1")
-      ).rejects.toMatchObject({ message: "comment is required", statusCode: 400 });
+        createReview(
+          { rating: 4, difficultyLevel: 3, universityId: UNIVERSITY_ID },
+          "user-1",
+        ),
+      ).rejects.toMatchObject({
+        message: "comment is required",
+        statusCode: 400,
+      });
     });
 
     it("throws 400 when comment is too short", async () => {
       await expect(
-        createReview({ rating: 4, difficultyLevel: 3, universityId: UNIVERSITY_ID, comment: "short" }, "user-1")
-      ).rejects.toMatchObject({ message: "comment must be at least 10 characters", statusCode: 400 });
+        createReview(
+          {
+            rating: 4,
+            difficultyLevel: 3,
+            universityId: UNIVERSITY_ID,
+            comment: "short",
+          },
+          "user-1",
+        ),
+      ).rejects.toMatchObject({
+        message: "comment must be at least 10 characters",
+        statusCode: 400,
+      });
     });
 
     it("throws 400 when comment exceeds the maximum length", async () => {
       const tooLongComment = "a".repeat(2001);
       await expect(
-        createReview({ rating: 4, difficultyLevel: 3, universityId: UNIVERSITY_ID, comment: tooLongComment }, "user-1")
-      ).rejects.toMatchObject({ message: "comment must be at most 2000 characters", statusCode: 400 });
+        createReview(
+          {
+            rating: 4,
+            difficultyLevel: 3,
+            universityId: UNIVERSITY_ID,
+            comment: tooLongComment,
+          },
+          "user-1",
+        ),
+      ).rejects.toMatchObject({
+        message: "comment must be at most 2000 characters",
+        statusCode: 400,
+      });
     });
   });
 
@@ -132,7 +165,12 @@ describe("reviewService — isVerified computation", () => {
       reviewRepository.findById.mockResolvedValue(makeReview(UNIVERSITY_ID));
       reviewRepository.update.mockResolvedValue(makeReview(UNIVERSITY_ID));
 
-      const result = await updateReview("review-1", { rating: 5 }, "user-1", "USER");
+      const result = await updateReview(
+        "review-1",
+        { rating: 5 },
+        "user-1",
+        "USER",
+      );
 
       expect(result.isVerified).toBe(true);
     });
@@ -141,8 +179,11 @@ describe("reviewService — isVerified computation", () => {
       reviewRepository.findById.mockResolvedValue(makeReview(UNIVERSITY_ID));
 
       await expect(
-        updateReview("review-1", { comment: "tiny" }, "user-1", "USER")
-      ).rejects.toMatchObject({ message: "comment must be at least 10 characters", statusCode: 400 });
+        updateReview("review-1", { comment: "tiny" }, "user-1", "USER"),
+      ).rejects.toMatchObject({
+        message: "comment must be at least 10 characters",
+        statusCode: 400,
+      });
     });
 
     it("throws 400 when an updated comment exceeds the maximum length", async () => {
@@ -150,8 +191,11 @@ describe("reviewService — isVerified computation", () => {
       const tooLongComment = "b".repeat(2001);
 
       await expect(
-        updateReview("review-1", { comment: tooLongComment }, "user-1", "USER")
-      ).rejects.toMatchObject({ message: "comment must be at most 2000 characters", statusCode: 400 });
+        updateReview("review-1", { comment: tooLongComment }, "user-1", "USER"),
+      ).rejects.toMatchObject({
+        message: "comment must be at most 2000 characters",
+        statusCode: 400,
+      });
     });
   });
 });

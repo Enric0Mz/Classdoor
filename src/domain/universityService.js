@@ -3,7 +3,15 @@ import * as universityRepository from "@/repositories/universityRepository";
 
 const VALID_TYPES = ["PUBLIC", "PRIVATE"];
 
-export async function createUniversity({ name, location, website, image, type, courses, rating }) {
+export async function createUniversity({
+  name,
+  location,
+  website,
+  image,
+  type,
+  courses,
+  rating,
+}) {
   if (!name) {
     throw new AppError("Name is required", 400);
   }
@@ -25,7 +33,15 @@ export async function createUniversity({ name, location, website, image, type, c
     throw new AppError("A university with this name already exists", 409);
   }
 
-  return universityRepository.create({ name, location, website, image, type, courses, rating });
+  return universityRepository.create({
+    name,
+    location,
+    website,
+    image,
+    type,
+    courses,
+    rating,
+  });
 }
 
 export async function listUniversities({ skip, take } = {}) {
@@ -44,10 +60,17 @@ function computeStats(reviews) {
     };
   }
 
-  const averageRating = reviews.reduce((sum, review) => sum + review.rating, 0) / reviewCount;
-  const averageDifficultyLevel = reviews.reduce((sum, review) => sum + review.difficultyLevel, 0) / reviewCount;
-  const recommendedCount = reviews.filter((review) => review.rating >= 4).length;
-  const recommendationPercentage = Math.round((recommendedCount / reviewCount) * 100);
+  const averageRating =
+    reviews.reduce((sum, review) => sum + review.rating, 0) / reviewCount;
+  const averageDifficultyLevel =
+    reviews.reduce((sum, review) => sum + review.difficultyLevel, 0) /
+    reviewCount;
+  const recommendedCount = reviews.filter(
+    (review) => review.rating >= 4,
+  ).length;
+  const recommendationPercentage = Math.round(
+    (recommendedCount / reviewCount) * 100,
+  );
 
   return {
     averageRating: +averageRating.toFixed(1),

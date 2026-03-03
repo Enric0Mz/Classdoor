@@ -68,7 +68,10 @@ describe("createRefreshToken", () => {
 
     await createRefreshToken("user-1");
 
-    expect(refreshTokenRepository.deleteOldestByUserId).toHaveBeenCalledWith("user-1", 5);
+    expect(refreshTokenRepository.deleteOldestByUserId).toHaveBeenCalledWith(
+      "user-1",
+      5,
+    );
   });
 
   it("sets expiration 7 days in the future", async () => {
@@ -106,7 +109,9 @@ describe("rotateRefreshToken", () => {
     expect(result).toHaveProperty("refreshToken");
     expect(typeof result.accessToken).toBe("string");
     expect(typeof result.refreshToken).toBe("string");
-    expect(refreshTokenRepository.deleteByToken).toHaveBeenCalledWith("old-token");
+    expect(refreshTokenRepository.deleteByToken).toHaveBeenCalledWith(
+      "old-token",
+    );
   });
 
   it("throws 401 when the token does not exist", async () => {
@@ -132,7 +137,9 @@ describe("rotateRefreshToken", () => {
       message: "Refresh token expired",
       statusCode: 401,
     });
-    expect(refreshTokenRepository.deleteByToken).toHaveBeenCalledWith("expired-token");
+    expect(refreshTokenRepository.deleteByToken).toHaveBeenCalledWith(
+      "expired-token",
+    );
   });
 
   it("throws 401 when the user no longer exists", async () => {
@@ -155,12 +162,16 @@ describe("rotateRefreshToken", () => {
 
 describe("invalidateRefreshToken", () => {
   it("deletes the token from the database", async () => {
-    refreshTokenRepository.findByToken.mockResolvedValue({ token: "valid-token" });
+    refreshTokenRepository.findByToken.mockResolvedValue({
+      token: "valid-token",
+    });
     refreshTokenRepository.deleteByToken.mockResolvedValue({});
 
     await invalidateRefreshToken("valid-token");
 
-    expect(refreshTokenRepository.deleteByToken).toHaveBeenCalledWith("valid-token");
+    expect(refreshTokenRepository.deleteByToken).toHaveBeenCalledWith(
+      "valid-token",
+    );
   });
 
   it("throws 401 when the token does not exist", async () => {

@@ -15,9 +15,33 @@ jest.mock("next/server", () => ({
 beforeEach(() => jest.clearAllMocks());
 
 const SAMPLE_REVIEWS = [
-  { id: "r-1", rating: 5, difficultyLevel: 3, comment: "Amazing", authorId: "u-1", author: { id: "u-1", username: "AgilOnca123", verified: true }, createdAt: new Date() },
-  { id: "r-2", rating: 4, difficultyLevel: 4, comment: "Good",    authorId: null, author: null, createdAt: new Date() },
-  { id: "r-3", rating: 2, difficultyLevel: 2, comment: "Meh",     authorId: null, author: null, createdAt: new Date() },
+  {
+    id: "r-1",
+    rating: 5,
+    difficultyLevel: 3,
+    comment: "Amazing",
+    authorId: "u-1",
+    author: { id: "u-1", username: "AgilOnca123", verified: true },
+    createdAt: new Date(),
+  },
+  {
+    id: "r-2",
+    rating: 4,
+    difficultyLevel: 4,
+    comment: "Good",
+    authorId: null,
+    author: null,
+    createdAt: new Date(),
+  },
+  {
+    id: "r-3",
+    rating: 2,
+    difficultyLevel: 2,
+    comment: "Meh",
+    authorId: null,
+    author: null,
+    createdAt: new Date(),
+  },
 ];
 
 const UNIVERSITY_IN_DB = {
@@ -61,7 +85,10 @@ describe("universityService.getUniversityById", () => {
   });
 
   it("returns null stats when university has no reviews", async () => {
-    universityRepository.findById.mockResolvedValue({ ...UNIVERSITY_IN_DB, reviews: [] });
+    universityRepository.findById.mockResolvedValue({
+      ...UNIVERSITY_IN_DB,
+      reviews: [],
+    });
 
     const result = await getUniversityById("uni-1");
 

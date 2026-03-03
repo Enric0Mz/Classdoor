@@ -41,9 +41,20 @@ function makeRequest(body) {
 
 describe("POST /api/v1/courses", () => {
   it("returns 201 when ADMIN creates a course", async () => {
-    requireVerifiedUser.mockReturnValue({ id: "admin-1", email: "admin@test.com", role: "ADMIN" });
+    requireVerifiedUser.mockReturnValue({
+      id: "admin-1",
+      email: "admin@test.com",
+      role: "ADMIN",
+    });
     requireRole.mockImplementation(() => {});
-    const created = { id: "course-1", ...VALID_COURSE_BODY, active: true, createdBy: "admin-1", createdAt: new Date(), updatedAt: new Date() };
+    const created = {
+      id: "course-1",
+      ...VALID_COURSE_BODY,
+      active: true,
+      createdBy: "admin-1",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
     courseRepository.create.mockResolvedValue(created);
 
     const response = await POST(makeRequest(VALID_COURSE_BODY));
@@ -54,7 +65,11 @@ describe("POST /api/v1/courses", () => {
 
   it("returns 403 when USER tries to create a course", async () => {
     const { AppError } = require("@/errors/AppError");
-    requireVerifiedUser.mockReturnValue({ id: "user-1", email: "user@test.com", role: "USER" });
+    requireVerifiedUser.mockReturnValue({
+      id: "user-1",
+      email: "user@test.com",
+      role: "USER",
+    });
     requireRole.mockImplementation(() => {
       throw new AppError("Forbidden: insufficient permissions", 403);
     });
@@ -63,7 +78,10 @@ describe("POST /api/v1/courses", () => {
 
     expect(response.status).toBe(403);
     expect(response.body).toEqual({
-      error: { message: "Forbidden: insufficient permissions", statusCode: 403 },
+      error: {
+        message: "Forbidden: insufficient permissions",
+        statusCode: 403,
+      },
     });
   });
 
@@ -82,10 +100,16 @@ describe("POST /api/v1/courses", () => {
   });
 
   it("returns 400 when required fields are missing", async () => {
-    requireVerifiedUser.mockReturnValue({ id: "admin-1", email: "admin@test.com", role: "ADMIN" });
+    requireVerifiedUser.mockReturnValue({
+      id: "admin-1",
+      email: "admin@test.com",
+      role: "ADMIN",
+    });
     requireRole.mockImplementation(() => {});
 
-    const response = await POST(makeRequest({ description: "desc", link: "link" }));
+    const response = await POST(
+      makeRequest({ description: "desc", link: "link" }),
+    );
 
     expect(response.status).toBe(400);
     expect(response.body).toEqual({

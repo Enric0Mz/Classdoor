@@ -15,7 +15,7 @@ export const POST = withErrorHandler(async (request) => {
   const result = await verificationService.submitUniversityEmail(
     decoded.id,
     decoded.email,
-    universityEmail
+    universityEmail,
   );
 
   return NextResponse.json(result);

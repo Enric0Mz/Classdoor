@@ -1,7 +1,11 @@
 import { readFileSync } from "fs";
 import { join } from "path";
 
-const DOMAINS_FILE_PATH = join(process.cwd(), "data", "university-domains.json");
+const DOMAINS_FILE_PATH = join(
+  process.cwd(),
+  "data",
+  "university-domains.json",
+);
 
 function loadUniversityDomains() {
   const fileContents = readFileSync(DOMAINS_FILE_PATH, "utf-8");
@@ -21,8 +25,8 @@ export function findUniversityByDomain(domain) {
 
   const matchedUniversity = universityList.find((university) =>
     university.domains.some(
-      (universityDomain) => universityDomain.toLowerCase() === normalizedDomain
-    )
+      (universityDomain) => universityDomain.toLowerCase() === normalizedDomain,
+    ),
   );
 
   return matchedUniversity ?? null;

@@ -32,8 +32,19 @@ beforeEach(() => jest.clearAllMocks());
 
 describe("universityService.createUniversity", () => {
   it("creates a university with valid input", async () => {
-    const input = { name: "MIT", location: "Cambridge", website: "https://mit.edu", type: "PRIVATE", courses: ["Business"], rating: 4.5 };
-    const created = { id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890", ...input, createdAt: new Date() };
+    const input = {
+      name: "MIT",
+      location: "Cambridge",
+      website: "https://mit.edu",
+      type: "PRIVATE",
+      courses: ["Business"],
+      rating: 4.5,
+    };
+    const created = {
+      id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      ...input,
+      createdAt: new Date(),
+    };
     universityRepository.findByName.mockResolvedValue(null);
     universityRepository.create.mockResolvedValue(created);
 
@@ -47,7 +58,10 @@ describe("universityService.createUniversity", () => {
   it("creates a university without optional fields", async () => {
     const input = { name: "MIT", location: "Cambridge", type: "PUBLIC" };
     universityRepository.findByName.mockResolvedValue(null);
-    universityRepository.create.mockResolvedValue({ id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890", ...input });
+    universityRepository.create.mockResolvedValue({
+      id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      ...input,
+    });
 
     await createUniversity(input);
 
@@ -63,7 +77,9 @@ describe("universityService.createUniversity", () => {
   });
 
   it("throws 400 when name is missing", async () => {
-    await expect(createUniversity({ location: "Cambridge", type: "PUBLIC" })).rejects.toMatchObject({
+    await expect(
+      createUniversity({ location: "Cambridge", type: "PUBLIC" }),
+    ).rejects.toMatchObject({
       message: "Name is required",
       statusCode: 400,
     });
@@ -72,7 +88,9 @@ describe("universityService.createUniversity", () => {
   });
 
   it("throws 400 when location is missing", async () => {
-    await expect(createUniversity({ name: "MIT", type: "PUBLIC" })).rejects.toMatchObject({
+    await expect(
+      createUniversity({ name: "MIT", type: "PUBLIC" }),
+    ).rejects.toMatchObject({
       message: "Location is required",
       statusCode: 400,
     });
@@ -80,7 +98,9 @@ describe("universityService.createUniversity", () => {
   });
 
   it("throws 400 when type is missing", async () => {
-    await expect(createUniversity({ name: "MIT", location: "Cambridge" })).rejects.toMatchObject({
+    await expect(
+      createUniversity({ name: "MIT", location: "Cambridge" }),
+    ).rejects.toMatchObject({
       message: "Type is required",
       statusCode: 400,
     });
@@ -88,7 +108,9 @@ describe("universityService.createUniversity", () => {
   });
 
   it("throws 400 when type is invalid", async () => {
-    await expect(createUniversity({ name: "MIT", location: "Cambridge", type: "HYBRID" })).rejects.toMatchObject({
+    await expect(
+      createUniversity({ name: "MIT", location: "Cambridge", type: "HYBRID" }),
+    ).rejects.toMatchObject({
       message: "Type must be PUBLIC or PRIVATE",
       statusCode: 400,
     });
@@ -96,10 +118,13 @@ describe("universityService.createUniversity", () => {
   });
 
   it("throws 409 when university name already exists", async () => {
-    universityRepository.findByName.mockResolvedValue({ id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890", name: "MIT" });
+    universityRepository.findByName.mockResolvedValue({
+      id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      name: "MIT",
+    });
 
     await expect(
-      createUniversity({ name: "MIT", location: "Cambridge", type: "PRIVATE" })
+      createUniversity({ name: "MIT", location: "Cambridge", type: "PRIVATE" }),
     ).rejects.toMatchObject({
       message: "A university with this name already exists",
       statusCode: 409,
@@ -110,9 +135,24 @@ describe("universityService.createUniversity", () => {
 
 describe("POST /api/v1/universities", () => {
   it("returns 201 with the created university when authenticated as ADMIN", async () => {
-    const input = { name: "MIT", location: "Cambridge", website: "https://mit.edu", type: "PRIVATE", courses: ["Business"], rating: 4.5 };
-    const created = { id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890", ...input, createdAt: "2024-01-01T00:00:00.000Z" };
-    requireVerifiedUser.mockReturnValue({ id: "admin-1", email: "admin@test.com", role: "ADMIN" });
+    const input = {
+      name: "MIT",
+      location: "Cambridge",
+      website: "https://mit.edu",
+      type: "PRIVATE",
+      courses: ["Business"],
+      rating: 4.5,
+    };
+    const created = {
+      id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      ...input,
+      createdAt: "2024-01-01T00:00:00.000Z",
+    };
+    requireVerifiedUser.mockReturnValue({
+      id: "admin-1",
+      email: "admin@test.com",
+      role: "ADMIN",
+    });
     requireRole.mockReturnValue(undefined);
     universityRepository.findByName.mockResolvedValue(null);
     universityRepository.create.mockResolvedValue(created);
@@ -120,7 +160,10 @@ describe("POST /api/v1/universities", () => {
     const response = await POST(makeRequest(input));
 
     expect(requireVerifiedUser).toHaveBeenCalled();
-    expect(requireRole).toHaveBeenCalledWith({ id: "admin-1", email: "admin@test.com", role: "ADMIN" }, ["ADMIN"]);
+    expect(requireRole).toHaveBeenCalledWith(
+      { id: "admin-1", email: "admin@test.com", role: "ADMIN" },
+      ["ADMIN"],
+    );
     expect(response.status).toBe(201);
     expect(response.body).toEqual(created);
   });
@@ -131,7 +174,9 @@ describe("POST /api/v1/universities", () => {
       throw new AppError("Authentication required", 401);
     });
 
-    const response = await POST(makeRequest({ name: "MIT", location: "Cambridge", type: "PUBLIC" }));
+    const response = await POST(
+      makeRequest({ name: "MIT", location: "Cambridge", type: "PUBLIC" }),
+    );
 
     expect(response.status).toBe(401);
     expect(response.body).toEqual({
@@ -141,24 +186,39 @@ describe("POST /api/v1/universities", () => {
 
   it("returns 403 when authenticated user is not ADMIN", async () => {
     const { AppError } = require("@/errors/AppError");
-    requireVerifiedUser.mockReturnValue({ id: "user-1", email: "user@test.com", role: "USER" });
+    requireVerifiedUser.mockReturnValue({
+      id: "user-1",
+      email: "user@test.com",
+      role: "USER",
+    });
     requireRole.mockImplementation(() => {
       throw new AppError("Forbidden: insufficient permissions", 403);
     });
 
-    const response = await POST(makeRequest({ name: "MIT", location: "Cambridge", type: "PUBLIC" }));
+    const response = await POST(
+      makeRequest({ name: "MIT", location: "Cambridge", type: "PUBLIC" }),
+    );
 
     expect(response.status).toBe(403);
     expect(response.body).toEqual({
-      error: { message: "Forbidden: insufficient permissions", statusCode: 403 },
+      error: {
+        message: "Forbidden: insufficient permissions",
+        statusCode: 403,
+      },
     });
   });
 
   it("returns 400 when name is missing", async () => {
-    requireVerifiedUser.mockReturnValue({ id: "admin-1", email: "admin@test.com", role: "ADMIN" });
+    requireVerifiedUser.mockReturnValue({
+      id: "admin-1",
+      email: "admin@test.com",
+      role: "ADMIN",
+    });
     requireRole.mockReturnValue(undefined);
 
-    const response = await POST(makeRequest({ location: "Cambridge", type: "PUBLIC" }));
+    const response = await POST(
+      makeRequest({ location: "Cambridge", type: "PUBLIC" }),
+    );
 
     expect(response.status).toBe(400);
     expect(response.body).toEqual({
@@ -167,7 +227,11 @@ describe("POST /api/v1/universities", () => {
   });
 
   it("returns 400 when location is missing", async () => {
-    requireVerifiedUser.mockReturnValue({ id: "admin-1", email: "admin@test.com", role: "ADMIN" });
+    requireVerifiedUser.mockReturnValue({
+      id: "admin-1",
+      email: "admin@test.com",
+      role: "ADMIN",
+    });
     requireRole.mockReturnValue(undefined);
 
     const response = await POST(makeRequest({ name: "MIT", type: "PUBLIC" }));
@@ -179,10 +243,16 @@ describe("POST /api/v1/universities", () => {
   });
 
   it("returns 400 when type is missing", async () => {
-    requireVerifiedUser.mockReturnValue({ id: "admin-1", email: "admin@test.com", role: "ADMIN" });
+    requireVerifiedUser.mockReturnValue({
+      id: "admin-1",
+      email: "admin@test.com",
+      role: "ADMIN",
+    });
     requireRole.mockReturnValue(undefined);
 
-    const response = await POST(makeRequest({ name: "MIT", location: "Cambridge" }));
+    const response = await POST(
+      makeRequest({ name: "MIT", location: "Cambridge" }),
+    );
 
     expect(response.status).toBe(400);
     expect(response.body).toEqual({
@@ -191,10 +261,16 @@ describe("POST /api/v1/universities", () => {
   });
 
   it("returns 400 when type is invalid", async () => {
-    requireVerifiedUser.mockReturnValue({ id: "admin-1", email: "admin@test.com", role: "ADMIN" });
+    requireVerifiedUser.mockReturnValue({
+      id: "admin-1",
+      email: "admin@test.com",
+      role: "ADMIN",
+    });
     requireRole.mockReturnValue(undefined);
 
-    const response = await POST(makeRequest({ name: "MIT", location: "Cambridge", type: "HYBRID" }));
+    const response = await POST(
+      makeRequest({ name: "MIT", location: "Cambridge", type: "HYBRID" }),
+    );
 
     expect(response.status).toBe(400);
     expect(response.body).toEqual({
@@ -203,25 +279,43 @@ describe("POST /api/v1/universities", () => {
   });
 
   it("returns 409 when the university already exists", async () => {
-    requireVerifiedUser.mockReturnValue({ id: "admin-1", email: "admin@test.com", role: "ADMIN" });
+    requireVerifiedUser.mockReturnValue({
+      id: "admin-1",
+      email: "admin@test.com",
+      role: "ADMIN",
+    });
     requireRole.mockReturnValue(undefined);
-    universityRepository.findByName.mockResolvedValue({ id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890", name: "MIT" });
+    universityRepository.findByName.mockResolvedValue({
+      id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      name: "MIT",
+    });
 
-    const response = await POST(makeRequest({ name: "MIT", location: "Cambridge", type: "PRIVATE" }));
+    const response = await POST(
+      makeRequest({ name: "MIT", location: "Cambridge", type: "PRIVATE" }),
+    );
 
     expect(response.status).toBe(409);
     expect(response.body).toEqual({
-      error: { message: "A university with this name already exists", statusCode: 409 },
+      error: {
+        message: "A university with this name already exists",
+        statusCode: 409,
+      },
     });
   });
 
   it("returns 500 on unexpected repository error", async () => {
-    requireVerifiedUser.mockReturnValue({ id: "admin-1", email: "admin@test.com", role: "ADMIN" });
+    requireVerifiedUser.mockReturnValue({
+      id: "admin-1",
+      email: "admin@test.com",
+      role: "ADMIN",
+    });
     requireRole.mockReturnValue(undefined);
     universityRepository.findByName.mockResolvedValue(null);
     universityRepository.create.mockRejectedValue(new Error("DB down"));
 
-    const response = await POST(makeRequest({ name: "MIT", location: "Cambridge", type: "PUBLIC" }));
+    const response = await POST(
+      makeRequest({ name: "MIT", location: "Cambridge", type: "PUBLIC" }),
+    );
 
     expect(response.status).toBe(500);
     expect(response.body).toEqual({

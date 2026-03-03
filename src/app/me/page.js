@@ -4,8 +4,15 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
-  GraduationCap, Mail, AtSign, Calendar, ShieldCheck,
-  ShieldAlert, LogOut, Trash2, AlertTriangle,
+  GraduationCap,
+  Mail,
+  AtSign,
+  Calendar,
+  ShieldCheck,
+  ShieldAlert,
+  LogOut,
+  Trash2,
+  AlertTriangle,
 } from "lucide-react";
 
 function getInitials(user) {
@@ -92,7 +99,9 @@ export default function MePage() {
 
         if (!response.ok) {
           const data = await response.json().catch(() => ({}));
-          throw new Error(data.error?.message || "Não foi possível carregar seu perfil.");
+          throw new Error(
+            data.error?.message || "Não foi possível carregar seu perfil.",
+          );
         }
 
         const data = await response.json();
@@ -176,7 +185,9 @@ export default function MePage() {
             <AlertTriangle size={28} />
           </div>
           <div>
-            <h2 className="text-lg font-semibold text-white">Conta não encontrada</h2>
+            <h2 className="text-lg font-semibold text-white">
+              Conta não encontrada
+            </h2>
             <p className="mt-1 text-sm text-gray-400">
               Essa conta não existe mais. Ela pode ter sido deletada.
             </p>
@@ -212,7 +223,9 @@ export default function MePage() {
             <Mail size={22} className="text-amber-400" />
           </div>
 
-          <h2 className="text-lg font-semibold text-white">Verifique seu email</h2>
+          <h2 className="text-lg font-semibold text-white">
+            Verifique seu email
+          </h2>
 
           {email ? (
             <p className="mt-2 text-sm text-gray-400">
@@ -237,7 +250,9 @@ export default function MePage() {
                 disabled={resendStatus === "sending"}
                 className="brand-gradient w-full rounded-xl px-4 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-60"
               >
-                {resendStatus === "sending" ? "Enviando..." : "Reenviar email de verificação"}
+                {resendStatus === "sending"
+                  ? "Enviando..."
+                  : "Reenviar email de verificação"}
               </button>
             )}
 
@@ -289,7 +304,6 @@ export default function MePage() {
 
   return (
     <main className="bg-gray-50">
-
       {/* Dark hero band */}
       <section
         className="relative overflow-hidden pb-20 pt-12"
@@ -333,7 +347,6 @@ export default function MePage() {
       {/* Content cards */}
       <div className="mx-auto max-w-2xl px-6 py-8">
         <div className="flex flex-col gap-4">
-
           {/* Info card */}
           <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
             <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-400">
@@ -393,8 +406,8 @@ export default function MePage() {
                 </p>
                 <p className="mt-1 text-sm text-indigo-700">
                   Vincule seu email universitário para ganhar o selo{" "}
-                  <span className="font-medium">Verificado</span> e mostrar que você
-                  realmente estuda ou estudou na universidade que avalia.
+                  <span className="font-medium">Verificado</span> e mostrar que
+                  você realmente estuda ou estudou na universidade que avalia.
                 </p>
                 <Link
                   href="#"
@@ -424,7 +437,9 @@ export default function MePage() {
 
             <div className="mt-4 flex items-center justify-between gap-4">
               <div>
-                <p className="text-sm font-medium text-gray-700">Deletar conta</p>
+                <p className="text-sm font-medium text-gray-700">
+                  Deletar conta
+                </p>
                 <p className="mt-0.5 text-xs text-gray-400">
                   {deleteConfirming
                     ? "Tem certeza? Essa ação é permanente e não pode ser desfeita."
@@ -454,8 +469,8 @@ export default function MePage() {
                   {isDeleting
                     ? "Deletando..."
                     : deleteConfirming
-                    ? "Confirmar exclusão"
-                    : "Deletar conta"}
+                      ? "Confirmar exclusão"
+                      : "Deletar conta"}
                 </button>
               </div>
             </div>
@@ -464,7 +479,6 @@ export default function MePage() {
               <p className="mt-3 text-xs text-red-500">{deleteError}</p>
             )}
           </div>
-
         </div>
       </div>
     </main>

@@ -13,7 +13,12 @@ export const PUT = withErrorHandler(async (request, { params }) => {
   const { id } = await params;
   const decoded = await requireVerifiedUser(request);
   const body = await request.json();
-  const review = await reviewService.updateReview(id, body, decoded.id, decoded.role);
+  const review = await reviewService.updateReview(
+    id,
+    body,
+    decoded.id,
+    decoded.role,
+  );
   return NextResponse.json(review);
 });
 

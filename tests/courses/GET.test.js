@@ -15,8 +15,30 @@ jest.mock("next/server", () => ({
 beforeEach(() => jest.clearAllMocks());
 
 const SAMPLE_COURSES = [
-  { id: "course-1", title: "CS101", description: "Intro", link: "https://example.com/cs101", price: 99.9, category: "Technology", active: true, createdBy: "user-1", createdAt: new Date(), updatedAt: new Date() },
-  { id: "course-2", title: "Math201", description: "Advanced", link: "https://example.com/math201", price: null, category: "Science", active: true, createdBy: "user-1", createdAt: new Date(), updatedAt: new Date() },
+  {
+    id: "course-1",
+    title: "CS101",
+    description: "Intro",
+    link: "https://example.com/cs101",
+    price: 99.9,
+    category: "Technology",
+    active: true,
+    createdBy: "user-1",
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    id: "course-2",
+    title: "Math201",
+    description: "Advanced",
+    link: "https://example.com/math201",
+    price: null,
+    category: "Science",
+    active: true,
+    createdBy: "user-1",
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
 ];
 
 const PAGINATED_COURSES = { data: SAMPLE_COURSES, total: 2 };
@@ -43,9 +65,18 @@ describe("GET /api/v1/courses", () => {
 
     const response = await GET(makeGetRequest("?page=2&limit=5"));
 
-    expect(courseRepository.findAll).toHaveBeenCalledWith({ category: null, skip: 5, take: 5 });
+    expect(courseRepository.findAll).toHaveBeenCalledWith({
+      category: null,
+      skip: 5,
+      take: 5,
+    });
     expect(response.status).toBe(200);
-    expect(response.body.pagination).toEqual({ page: 2, limit: 5, total: 2, totalPages: 1 });
+    expect(response.body.pagination).toEqual({
+      page: 2,
+      limit: 5,
+      total: 2,
+      totalPages: 1,
+    });
   });
 
   it("returns 200 filtered by category", async () => {
@@ -54,7 +85,11 @@ describe("GET /api/v1/courses", () => {
 
     const response = await GET(makeGetRequest("?category=Technology"));
 
-    expect(courseRepository.findAll).toHaveBeenCalledWith({ category: "Technology", skip: 0, take: 10 });
+    expect(courseRepository.findAll).toHaveBeenCalledWith({
+      category: "Technology",
+      skip: 0,
+      take: 10,
+    });
     expect(response.status).toBe(200);
     expect(response.body.data).toEqual([SAMPLE_COURSES[0]]);
   });

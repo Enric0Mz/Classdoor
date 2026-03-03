@@ -28,7 +28,11 @@ const USER_IN_DB = {
 
 describe("GET /api/v1/users/me", () => {
   it("returns 200 and user without password when token is valid", async () => {
-    requireVerifiedUser.mockReturnValue({ id: "user-1", email: "test@test.com", role: "USER" });
+    requireVerifiedUser.mockReturnValue({
+      id: "user-1",
+      email: "test@test.com",
+      role: "USER",
+    });
     userRepository.findById.mockResolvedValue(USER_IN_DB);
 
     const response = await GET({});
@@ -39,7 +43,11 @@ describe("GET /api/v1/users/me", () => {
   });
 
   it("returns 404 when user no longer exists in the database", async () => {
-    requireVerifiedUser.mockReturnValue({ id: "user-1", email: "test@test.com", role: "USER" });
+    requireVerifiedUser.mockReturnValue({
+      id: "user-1",
+      email: "test@test.com",
+      role: "USER",
+    });
     userRepository.findById.mockResolvedValue(null);
 
     const response = await GET({});

@@ -2,7 +2,11 @@ import { AppError } from "@/errors/AppError";
 import * as courseRepository from "@/repositories/courseRepository";
 
 export async function listCourses({ skip, take, category } = {}) {
-  const { data, total } = await courseRepository.findAll({ skip, take, category });
+  const { data, total } = await courseRepository.findAll({
+    skip,
+    take,
+    category,
+  });
   return { data, total };
 }
 

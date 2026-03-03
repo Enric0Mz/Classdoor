@@ -35,7 +35,10 @@ function makeParams(id) {
 describe("userService.getUserById", () => {
   it("returns user without password", async () => {
     userRepository.findById.mockResolvedValue({
-      id: "user-1", email: "test@test.com", password: "hashed", createdAt: new Date(),
+      id: "user-1",
+      email: "test@test.com",
+      password: "hashed",
+      createdAt: new Date(),
     });
 
     const result = await getUserById("user-1");
@@ -56,7 +59,11 @@ describe("userService.getUserById", () => {
 
 describe("GET /api/v1/users/:id", () => {
   it("returns 200 when user fetches their own data", async () => {
-    requireVerifiedUser.mockReturnValue({ id: "user-1", email: "test@test.com", role: "USER" });
+    requireVerifiedUser.mockReturnValue({
+      id: "user-1",
+      email: "test@test.com",
+      role: "USER",
+    });
     userRepository.findById.mockResolvedValue(USER_IN_DB);
 
     const response = await GET({}, makeParams("user-1"));
@@ -66,7 +73,11 @@ describe("GET /api/v1/users/:id", () => {
   });
 
   it("returns 200 when ADMIN fetches any user", async () => {
-    requireVerifiedUser.mockReturnValue({ id: "admin-1", email: "admin@test.com", role: "ADMIN" });
+    requireVerifiedUser.mockReturnValue({
+      id: "admin-1",
+      email: "admin@test.com",
+      role: "ADMIN",
+    });
     userRepository.findById.mockResolvedValue(USER_IN_DB);
 
     const response = await GET({}, makeParams("user-1"));
@@ -75,7 +86,11 @@ describe("GET /api/v1/users/:id", () => {
   });
 
   it("returns 200 when MODERATOR fetches any user", async () => {
-    requireVerifiedUser.mockReturnValue({ id: "mod-1", email: "mod@test.com", role: "MODERATOR" });
+    requireVerifiedUser.mockReturnValue({
+      id: "mod-1",
+      email: "mod@test.com",
+      role: "MODERATOR",
+    });
     userRepository.findById.mockResolvedValue(USER_IN_DB);
 
     const response = await GET({}, makeParams("user-1"));
@@ -84,7 +99,11 @@ describe("GET /api/v1/users/:id", () => {
   });
 
   it("returns 403 when USER fetches another user's data", async () => {
-    requireVerifiedUser.mockReturnValue({ id: "user-2", email: "other@test.com", role: "USER" });
+    requireVerifiedUser.mockReturnValue({
+      id: "user-2",
+      email: "other@test.com",
+      role: "USER",
+    });
 
     const response = await GET({}, makeParams("user-1"));
 
@@ -106,7 +125,11 @@ describe("GET /api/v1/users/:id", () => {
   });
 
   it("returns 404 when user not found", async () => {
-    requireVerifiedUser.mockReturnValue({ id: "user-1", email: "test@test.com", role: "USER" });
+    requireVerifiedUser.mockReturnValue({
+      id: "user-1",
+      email: "test@test.com",
+      role: "USER",
+    });
     userRepository.findById.mockResolvedValue(null);
 
     const response = await GET({}, makeParams("user-1"));

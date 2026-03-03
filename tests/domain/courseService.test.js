@@ -38,7 +38,11 @@ describe("courseService.listCourses", () => {
 
     const result = await listCourses();
 
-    expect(courseRepository.findAll).toHaveBeenCalledWith({ skip: undefined, take: undefined, category: undefined });
+    expect(courseRepository.findAll).toHaveBeenCalledWith({
+      skip: undefined,
+      take: undefined,
+      category: undefined,
+    });
     expect(result).toEqual(paginated);
   });
 
@@ -48,7 +52,11 @@ describe("courseService.listCourses", () => {
 
     const result = await listCourses({ category: "Technology" });
 
-    expect(courseRepository.findAll).toHaveBeenCalledWith({ skip: undefined, take: undefined, category: "Technology" });
+    expect(courseRepository.findAll).toHaveBeenCalledWith({
+      skip: undefined,
+      take: undefined,
+      category: "Technology",
+    });
     expect(result).toEqual(paginated);
   });
 });
@@ -91,13 +99,15 @@ describe("courseService.createCourse", () => {
         description: "A beginner course",
         link: "https://example.com/cs101",
         createdBy: "user-1",
-      })
+      }),
     );
     expect(result).toEqual(SAMPLE_COURSE);
   });
 
   it("throws 400 when title is missing", async () => {
-    await expect(createCourse({ description: "desc", link: "link" }, "user-1")).rejects.toMatchObject({
+    await expect(
+      createCourse({ description: "desc", link: "link" }, "user-1"),
+    ).rejects.toMatchObject({
       message: "title is required",
       statusCode: 400,
     });
@@ -105,7 +115,9 @@ describe("courseService.createCourse", () => {
   });
 
   it("throws 400 when description is missing", async () => {
-    await expect(createCourse({ title: "title", link: "link" }, "user-1")).rejects.toMatchObject({
+    await expect(
+      createCourse({ title: "title", link: "link" }, "user-1"),
+    ).rejects.toMatchObject({
       message: "description is required",
       statusCode: 400,
     });
@@ -113,7 +125,9 @@ describe("courseService.createCourse", () => {
   });
 
   it("throws 400 when link is missing", async () => {
-    await expect(createCourse({ title: "title", description: "desc" }, "user-1")).rejects.toMatchObject({
+    await expect(
+      createCourse({ title: "title", description: "desc" }, "user-1"),
+    ).rejects.toMatchObject({
       message: "link is required",
       statusCode: 400,
     });
@@ -129,14 +143,18 @@ describe("courseService.updateCourse", () => {
 
     const result = await updateCourse("course-1", { title: "Updated Title" });
 
-    expect(courseRepository.update).toHaveBeenCalledWith("course-1", { title: "Updated Title" });
+    expect(courseRepository.update).toHaveBeenCalledWith("course-1", {
+      title: "Updated Title",
+    });
     expect(result).toEqual(updatedCourse);
   });
 
   it("throws 404 when course is not found", async () => {
     courseRepository.findById.mockResolvedValue(null);
 
-    await expect(updateCourse("missing", { title: "Updated" })).rejects.toMatchObject({
+    await expect(
+      updateCourse("missing", { title: "Updated" }),
+    ).rejects.toMatchObject({
       message: "Course not found",
       statusCode: 404,
     });

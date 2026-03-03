@@ -22,21 +22,75 @@ const CORS_HEADERS = {
  */
 const RATE_LIMIT_RULES = [
   // Auth endpoints — brute force / credential stuffing protection
-  { pathname: "/api/v1/users/login",   method: "POST", group: "auth", maxRequests: 10, windowMs: 15 * 60 * 1000 },
-  { pathname: "/api/v1/users",         method: "POST", group: "auth", maxRequests: 10, windowMs: 15 * 60 * 1000 },
-  { pathname: "/api/v1/users/refresh", method: "POST", group: "auth", maxRequests: 10, windowMs: 15 * 60 * 1000 },
+  {
+    pathname: "/api/v1/users/login",
+    method: "POST",
+    group: "auth",
+    maxRequests: 10,
+    windowMs: 15 * 60 * 1000,
+  },
+  {
+    pathname: "/api/v1/users",
+    method: "POST",
+    group: "auth",
+    maxRequests: 10,
+    windowMs: 15 * 60 * 1000,
+  },
+  {
+    pathname: "/api/v1/users/refresh",
+    method: "POST",
+    group: "auth",
+    maxRequests: 10,
+    windowMs: 15 * 60 * 1000,
+  },
 
   // Token verification — prevent token enumeration attacks
-  { pathname: "/api/v1/users/me/email/verify",            method: "PUT",  group: "token-verify", maxRequests: 10, windowMs: 15 * 60 * 1000 },
-  { pathname: "/api/v1/users/me/university-email/verify", method: "POST", group: "token-verify", maxRequests: 10, windowMs: 15 * 60 * 1000 },
+  {
+    pathname: "/api/v1/users/me/email/verify",
+    method: "PUT",
+    group: "token-verify",
+    maxRequests: 10,
+    windowMs: 15 * 60 * 1000,
+  },
+  {
+    pathname: "/api/v1/users/me/university-email/verify",
+    method: "POST",
+    group: "token-verify",
+    maxRequests: 10,
+    windowMs: 15 * 60 * 1000,
+  },
 
   // Email resend — prevent email bombing
-  { pathname: "/api/v1/users/me/email/verify", method: "POST", group: "email-resend", maxRequests: 5, windowMs: 60 * 60 * 1000 },
+  {
+    pathname: "/api/v1/users/me/email/verify",
+    method: "POST",
+    group: "email-resend",
+    maxRequests: 5,
+    windowMs: 60 * 60 * 1000,
+  },
 
   // Public listing endpoints — scraping deterrent
-  { pathname: "/api/v1/reviews",      method: "GET", group: "public-listing", maxRequests: 100, windowMs: 60 * 1000 },
-  { pathname: "/api/v1/universities", method: "GET", group: "public-listing", maxRequests: 100, windowMs: 60 * 1000 },
-  { pathname: "/api/v1/courses",      method: "GET", group: "public-listing", maxRequests: 100, windowMs: 60 * 1000 },
+  {
+    pathname: "/api/v1/reviews",
+    method: "GET",
+    group: "public-listing",
+    maxRequests: 100,
+    windowMs: 60 * 1000,
+  },
+  {
+    pathname: "/api/v1/universities",
+    method: "GET",
+    group: "public-listing",
+    maxRequests: 100,
+    windowMs: 60 * 1000,
+  },
+  {
+    pathname: "/api/v1/courses",
+    method: "GET",
+    group: "public-listing",
+    maxRequests: 100,
+    windowMs: 60 * 1000,
+  },
 ];
 
 /**
@@ -63,7 +117,7 @@ function getClientIp(request) {
  */
 function findMatchingRule(pathname, method) {
   return RATE_LIMIT_RULES.find(
-    (rule) => rule.pathname === pathname && rule.method === method
+    (rule) => rule.pathname === pathname && rule.method === method,
   );
 }
 
@@ -88,9 +142,20 @@ export function middleware(request) {
     const rateLimitKey = `${clientIp}:${matchedRule.group}`;
     const retryAfterSeconds = Math.ceil(matchedRule.windowMs / 1000);
 
-    if (!isRequestAllowed(rateLimitKey, matchedRule.maxRequests, matchedRule.windowMs)) {
+    if (
+      !isRequestAllowed(
+        rateLimitKey,
+        matchedRule.maxRequests,
+        matchedRule.windowMs,
+      )
+    ) {
       return NextResponse.json(
-        { error: { message: "Too many requests, please try again later.", statusCode: 429 } },
+        {
+          error: {
+            message: "Too many requests, please try again later.",
+            statusCode: 429,
+          },
+        },
         {
           status: 429,
           headers: {
@@ -98,7 +163,7 @@ export function middleware(request) {
             ...CORS_HEADERS,
             "Retry-After": String(retryAfterSeconds),
           },
-        }
+        },
       );
     }
   }

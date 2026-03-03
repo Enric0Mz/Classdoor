@@ -32,7 +32,9 @@ describe("DELETE /api/v1/universities/:id", () => {
     const response = await DELETE(makeRequest(), makeParams("uni-1"));
 
     expect(requireVerifiedUser).toHaveBeenCalled();
-    expect(requireRole).toHaveBeenCalledWith({ id: "admin-1", role: "ADMIN" }, ["ADMIN"]);
+    expect(requireRole).toHaveBeenCalledWith({ id: "admin-1", role: "ADMIN" }, [
+      "ADMIN",
+    ]);
     expect(response.status).toBe(501);
     expect(response.body).toEqual({ message: "Not implemented" });
   });
@@ -62,7 +64,10 @@ describe("DELETE /api/v1/universities/:id", () => {
 
     expect(response.status).toBe(403);
     expect(response.body).toEqual({
-      error: { message: "Forbidden: insufficient permissions", statusCode: 403 },
+      error: {
+        message: "Forbidden: insufficient permissions",
+        statusCode: 403,
+      },
     });
   });
 });

@@ -28,7 +28,9 @@ jest.mock("@/repositories/universityRepository", () => ({
 }));
 
 jest.mock("@/lib/universityDomains", () => ({
-  findUniversityByDomain: jest.fn().mockReturnValue({ name: "Test University" }),
+  findUniversityByDomain: jest
+    .fn()
+    .mockReturnValue({ name: "Test University" }),
 }));
 
 jest.mock("next/server", () => ({
@@ -45,24 +47,33 @@ describe("universityEmailVerificationService.submitUniversityEmail", () => {
     verificationRepository.create.mockResolvedValue({ id: "verif-1" });
     sendVerificationEmail.mockResolvedValue(undefined);
 
-    const result = await submitUniversityEmail("user-1", "user@email.com", "me@uni.br");
+    const result = await submitUniversityEmail(
+      "user-1",
+      "user@email.com",
+      "me@uni.br",
+    );
 
-    expect(verificationRepository.deleteByUserId).toHaveBeenCalledWith("user-1");
+    expect(verificationRepository.deleteByUserId).toHaveBeenCalledWith(
+      "user-1",
+    );
     expect(verificationRepository.create).toHaveBeenCalledWith(
       expect.objectContaining({
         userId: "user-1",
         universityEmail: "me@uni.br",
         token: expect.any(String),
         expiresAt: expect.any(Date),
-      })
+      }),
     );
-    expect(sendVerificationEmail).toHaveBeenCalledWith("me@uni.br", expect.any(String));
+    expect(sendVerificationEmail).toHaveBeenCalledWith(
+      "me@uni.br",
+      expect.any(String),
+    );
     expect(result).toEqual({ message: "Verification email sent" });
   });
 
   it("throws 403 for anonymous users without a registered email", async () => {
     await expect(
-      submitUniversityEmail("user-anon", null, "me@uni.br")
+      submitUniversityEmail("user-anon", null, "me@uni.br"),
     ).rejects.toMatchObject({
       message: "Anonymous accounts cannot submit a university email",
       statusCode: 403,
@@ -72,7 +83,7 @@ describe("universityEmailVerificationService.submitUniversityEmail", () => {
 
   it("throws 400 when university email format is invalid", async () => {
     await expect(
-      submitUniversityEmail("user-1", "user@email.com", "not-an-email")
+      submitUniversityEmail("user-1", "user@email.com", "not-an-email"),
     ).rejects.toMatchObject({
       message: "Invalid university email format",
       statusCode: 400,
@@ -87,10 +98,14 @@ describe("universityEmailVerificationService.submitUniversityEmail", () => {
 
     await submitUniversityEmail("user-1", "user@email.com", "me@uni.br");
 
-    expect(verificationRepository.deleteByUserId).toHaveBeenCalledWith("user-1");
+    expect(verificationRepository.deleteByUserId).toHaveBeenCalledWith(
+      "user-1",
+    );
     // deleteByUserId must be called before create
-    const deleteCallOrder = verificationRepository.deleteByUserId.mock.invocationCallOrder[0];
-    const createCallOrder = verificationRepository.create.mock.invocationCallOrder[0];
+    const deleteCallOrder =
+      verificationRepository.deleteByUserId.mock.invocationCallOrder[0];
+    const createCallOrder =
+      verificationRepository.create.mock.invocationCallOrder[0];
     expect(deleteCallOrder).toBeLessThan(createCallOrder);
   });
 });
@@ -105,12 +120,18 @@ function makeRequest(body, token) {
 
 describe("POST /api/v1/users/me/university-email", () => {
   it("returns 200 with success message for authenticated user", async () => {
-    requireVerifiedUser.mockReturnValue({ id: "user-1", email: "user@email.com", role: "USER" });
+    requireVerifiedUser.mockReturnValue({
+      id: "user-1",
+      email: "user@email.com",
+      role: "USER",
+    });
     verificationRepository.deleteByUserId.mockResolvedValue(undefined);
     verificationRepository.create.mockResolvedValue({ id: "verif-1" });
     sendVerificationEmail.mockResolvedValue(undefined);
 
-    const response = await POST(makeRequest({ universityEmail: "me@uni.br" }, "valid-token"));
+    const response = await POST(
+      makeRequest({ universityEmail: "me@uni.br" }, "valid-token"),
+    );
 
     expect(response.status).toBe(200);
     expect(response.body).toEqual({ message: "Verification email sent" });
@@ -128,9 +149,15 @@ describe("POST /api/v1/users/me/university-email", () => {
   });
 
   it("returns 403 for anonymous user without a registered email", async () => {
-    requireVerifiedUser.mockReturnValue({ id: "user-anon", email: null, role: "USER" });
+    requireVerifiedUser.mockReturnValue({
+      id: "user-anon",
+      email: null,
+      role: "USER",
+    });
 
-    const response = await POST(makeRequest({ universityEmail: "me@uni.br" }, "anon-token"));
+    const response = await POST(
+      makeRequest({ universityEmail: "me@uni.br" }, "anon-token"),
+    );
 
     expect(response.status).toBe(403);
     expect(response.body).toEqual({
@@ -142,7 +169,11 @@ describe("POST /api/v1/users/me/university-email", () => {
   });
 
   it("returns 400 when universityEmail field is missing", async () => {
-    requireVerifiedUser.mockReturnValue({ id: "user-1", email: "user@email.com", role: "USER" });
+    requireVerifiedUser.mockReturnValue({
+      id: "user-1",
+      email: "user@email.com",
+      role: "USER",
+    });
 
     const response = await POST(makeRequest({}, "valid-token"));
 

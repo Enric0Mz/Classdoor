@@ -22,7 +22,6 @@ export default function LogoutPage() {
       <div className="absolute left-1/2 top-1/2 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-radial from-violet-900/30 to-transparent blur-3xl" />
 
       <div className="relative z-10 flex flex-col items-center px-4 text-center">
-
         {/* Logo */}
         <Link href="/" className="mb-12 inline-flex items-center gap-2.5">
           <div className="brand-gradient flex h-10 w-10 items-center justify-center rounded-xl text-white">
@@ -70,14 +69,16 @@ export default function LogoutPage() {
 
         {/* Quick chips */}
         <div className="mt-10 flex flex-wrap justify-center gap-2">
-          {["Explorar universidades", "Ver rankings", "Encontrar cursos"].map((chip) => (
-            <span
-              key={chip}
-              className="rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-xs text-gray-400 backdrop-blur-sm"
-            >
-              {chip}
-            </span>
-          ))}
+          {["Explorar universidades", "Ver rankings", "Encontrar cursos"].map(
+            (chip) => (
+              <span
+                key={chip}
+                className="rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-xs text-gray-400 backdrop-blur-sm"
+              >
+                {chip}
+              </span>
+            ),
+          )}
         </div>
       </div>
     </main>
