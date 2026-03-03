@@ -1,6 +1,6 @@
 import { updateUser } from "@/domain/userService";
 import * as userRepository from "@/repositories/userRepository";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import { requireVerifiedUser } from "@/lib/auth";
 import { PUT } from "@/app/api/v1/users/me/route";
 

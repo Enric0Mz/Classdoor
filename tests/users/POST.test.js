@@ -2,7 +2,7 @@ import { registerUser } from "@/domain/userService";
 import * as userRepository from "@/repositories/userRepository";
 import * as emailVerificationRepository from "@/repositories/emailVerificationRepository";
 import { sendEmailVerification } from "@/lib/emailService";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import { signToken } from "@/lib/auth";
 import { POST } from "@/app/api/v1/users/route";
 

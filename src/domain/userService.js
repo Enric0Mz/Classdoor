@@ -1,4 +1,4 @@
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import { AppError } from "@/errors/AppError";
 import * as userRepository from "@/repositories/userRepository";
 import * as emailVerificationService from "@/domain/emailVerificationService";
