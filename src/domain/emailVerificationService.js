@@ -4,7 +4,6 @@ import * as emailVerificationRepository from "@/repositories/emailVerificationRe
 import * as userRepository from "@/repositories/userRepository";
 import * as universityRepository from "@/repositories/universityRepository";
 import { sendEmailVerification } from "@/lib/emailService";
-import { findUniversityByDomain } from "@/lib/universityDomains";
 
 const VERIFICATION_TOKEN_EXPIRY_HOURS = 24;
 
@@ -41,16 +40,14 @@ export async function verifyEmail(token) {
   }
 
   const domain = record.email.split("@")[1].toLowerCase();
-  const isUniversityEmail = findUniversityByDomain(domain) !== null;
+  const linkedUniversity = await universityRepository.findByEmailDomain(domain);
 
   const updateData = { emailVerified: true };
 
-  if (isUniversityEmail) {
-    const linkedUniversity =
-      await universityRepository.findByEmailDomain(domain);
+  if (linkedUniversity) {
     updateData.universityEmail = record.email;
     updateData.verified = true;
-    updateData.universityId = linkedUniversity?.id ?? null;
+    updateData.universityId = linkedUniversity.id;
   }
 
   await userRepository.update(record.userId, updateData);

@@ -13,11 +13,7 @@ jest.mock("@/repositories/userRepository", () => ({
 }));
 
 jest.mock("@/repositories/universityRepository", () => ({
-  findByEmailDomain: jest.fn(),
-}));
-
-jest.mock("@/lib/universityDomains", () => ({
-  findUniversityByDomain: jest.fn().mockReturnValue(null),
+  findByEmailDomain: jest.fn().mockResolvedValue(null),
 }));
 
 jest.mock("@/lib/emailService", () => ({
