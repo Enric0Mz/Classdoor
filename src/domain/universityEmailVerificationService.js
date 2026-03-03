@@ -4,7 +4,6 @@ import * as verificationRepository from "@/repositories/universityEmailVerificat
 import * as userRepository from "@/repositories/userRepository";
 import * as universityRepository from "@/repositories/universityRepository";
 import { sendVerificationEmail } from "@/lib/emailService";
-import { findUniversityByDomain } from "@/lib/universityDomains";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const VERIFICATION_TOKEN_EXPIRY_HOURS = 24;
@@ -25,8 +24,8 @@ export async function submitUniversityEmail(
     throw new AppError("Invalid university email format", 400);
   }
 
-  const domain = universityEmail.split("@")[1];
-  const knownUniversity = findUniversityByDomain(domain);
+  const domain = universityEmail.split("@")[1].toLowerCase();
+  const knownUniversity = await universityRepository.findByEmailDomain(domain);
 
   if (!knownUniversity) {
     throw new AppError(
