@@ -44,7 +44,7 @@ export async function requireVerifiedUser(request) {
   if (!user) {
     throw new AppError("User not found", 404);
   }
-  if (!user.emailVerified) {
+  if (user.role !== "ADMIN" && !user.emailVerified) {
     throw new AppError("Email verification required", 403);
   }
 
