@@ -18,6 +18,12 @@ enum Role {
   ADMIN
 }
 
+enum SubmissionStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 model University {
   id        String              @id @default(uuid())
   name      String              @unique
@@ -28,9 +34,10 @@ model University {
   courses   String[]
   rating    Float?
   createdAt DateTime            @default(now())
-  reviews   Review[]
-  domains   UniversityDomain[]
-  users     User[]
+  reviews     Review[]
+  domains     UniversityDomain[]
+  users       User[]
+  submissions UniversitySubmission[]
 }
 
 model UniversityDomain {
@@ -72,6 +79,7 @@ model User {
   universityEmailVerifications UniversityEmailVerification[]
   emailVerifications           EmailVerification[]
   refreshTokens                RefreshToken[]
+  universitySubmissions        UniversitySubmission[]
 }
 
 model EmailVerification {
@@ -101,6 +109,24 @@ model RefreshToken {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   expiresAt DateTime
   createdAt DateTime @default(now())
+}
+
+model UniversitySubmission {
+  id           String           @id @default(uuid())
+  name         String
+  location     String?
+  type         UniversityType
+  website      String?
+  emailDomain  String?
+  status       SubmissionStatus @default(PENDING)
+  reason       String?
+  submitterId  String
+  submitter    User             @relation(fields: [submitterId], references: [id])
+  universityId String?
+  university   University?      @relation(fields: [universityId], references: [id])
+  reviewedBy   String?
+  reviewedAt   DateTime?
+  createdAt    DateTime         @default(now())
 }
 
 model Course {

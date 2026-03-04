@@ -13,6 +13,11 @@ import {
   LogOut,
   Trash2,
   AlertTriangle,
+  Lightbulb,
+  Clock,
+  CheckCircle,
+  XCircle,
+  Settings,
 } from "lucide-react";
 
 function getInitials(user) {
@@ -420,6 +425,20 @@ export default function MePage() {
             </div>
           )}
 
+          {/* Admin Panel Link */}
+          {user.role === "ADMIN" && (
+            <Link
+              href="/admin/university-submissions"
+              className="flex w-full items-center justify-center gap-2 rounded-2xl border border-indigo-100 bg-indigo-50 py-3 text-sm font-medium text-indigo-700 transition-colors hover:bg-indigo-100"
+            >
+              <Settings size={15} />
+              Abrir painel administrativo
+            </Link>
+          )}
+
+          {/* University Submissions */}
+          <UniversitySubmissionsSection />
+
           {/* Logout */}
           <button
             onClick={handleLogout}
@@ -497,6 +516,123 @@ function InfoRow({ icon, label, value, badge }) {
         {badge}
       </div>
     </li>
+  );
+}
+
+function SubmissionStatusBadge({ status }) {
+  const config = {
+    PENDING: {
+      label: "Pendente",
+      icon: Clock,
+      className: "bg-yellow-50 text-yellow-700 border-yellow-200",
+    },
+    APPROVED: {
+      label: "Aprovada",
+      icon: CheckCircle,
+      className: "bg-green-50 text-green-700 border-green-200",
+    },
+    REJECTED: {
+      label: "Rejeitada",
+      icon: XCircle,
+      className: "bg-red-50 text-red-700 border-red-200",
+    },
+  };
+  const { label, icon: Icon, className } = config[status] || config.PENDING;
+
+  return (
+    <span
+      className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs font-medium ${className}`}
+    >
+      <Icon size={11} />
+      {label}
+    </span>
+  );
+}
+
+function UniversitySubmissionsSection() {
+  const [submissions, setSubmissions] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchSubmissions() {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+
+      try {
+        const response = await fetch(
+          "/api/v1/users/me/university-submissions",
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          },
+        );
+        if (response.ok) {
+          const data = await response.json();
+          setSubmissions(data.data ?? []);
+        }
+      } catch {
+        // non-blocking
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    fetchSubmissions();
+  }, []);
+
+  return (
+    <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
+      <div className="mb-4 flex items-center justify-between">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-400">
+          Minhas sugestoes de universidade
+        </h2>
+        <Link
+          href="/sugerir-universidade"
+          className="inline-flex items-center gap-1.5 text-xs font-medium text-indigo-600 transition-colors hover:text-indigo-700"
+        >
+          <Lightbulb size={12} />
+          Sugerir universidade
+        </Link>
+      </div>
+
+      {isLoading ? (
+        <div className="flex flex-col gap-3">
+          {[1, 2].map((i) => (
+            <div key={i} className="flex justify-between">
+              <div className="skeleton h-4 w-40 rounded" />
+              <div className="skeleton h-4 w-20 rounded-full" />
+            </div>
+          ))}
+        </div>
+      ) : submissions.length === 0 ? (
+        <p className="text-sm text-gray-400">
+          Voce ainda nao sugeriu nenhuma universidade.
+        </p>
+      ) : (
+        <ul className="flex flex-col divide-y divide-gray-50">
+          {submissions.map((submission) => (
+            <li
+              key={submission.id}
+              className="flex items-center justify-between gap-4 py-3"
+            >
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-gray-800 truncate">
+                  {submission.name}
+                </p>
+                <p className="text-xs text-gray-400">
+                  {formatDate(submission.createdAt)}
+                </p>
+                {submission.status === "REJECTED" && submission.reason && (
+                  <p className="mt-1 text-xs text-red-500">
+                    Motivo: {submission.reason}
+                  </p>
+                )}
+              </div>
+              <SubmissionStatusBadge status={submission.status} />
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
   );
 }
 
