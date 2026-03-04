@@ -451,7 +451,7 @@ function ReviewCard({ review }) {
             <span className="text-[0.82rem] font-semibold text-gray-700">
               {review.rating.toFixed(1)}
             </span>
-            {review.author?.verified && (
+            {review.isVerified && (
               <span className="flex items-center gap-1 rounded-full bg-indigo-50 px-2 py-0.5 text-[0.7rem] font-medium text-indigo-600">
                 <ShieldCheck size={10} />
                 Verificado
