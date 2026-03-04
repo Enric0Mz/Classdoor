@@ -74,8 +74,7 @@ function VerifyEmailContent() {
 
   const descriptionText = {
     verifying: "Estamos confirmando seu endereço de e-mail.",
-    success:
-      "Seu endereço de e-mail foi confirmado. Agora você pode acessar sua conta.",
+    success: "Seu endereço de e-mail foi confirmado com sucesso.",
     error: errorMessage,
   };
 
@@ -133,10 +132,10 @@ function VerifyEmailContent() {
         {status === "success" && (
           <div className="mt-8 flex w-full max-w-xs flex-col gap-3">
             <Link
-              href="/login"
+              href="/me"
               className="brand-gradient flex items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
             >
-              Fazer login
+              Ver meu perfil
             </Link>
             <Link
               href="/universities"
