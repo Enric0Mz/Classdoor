@@ -24,13 +24,9 @@ jest.mock("@/lib/auth", () => ({
 }));
 
 jest.mock("@/repositories/universityRepository", () => ({
-  findByEmailDomain: jest.fn(),
-}));
-
-jest.mock("@/lib/universityDomains", () => ({
-  findUniversityByDomain: jest
+  findByEmailDomain: jest
     .fn()
-    .mockReturnValue({ name: "Test University" }),
+    .mockResolvedValue({ id: "univ-1", name: "Test University" }),
 }));
 
 jest.mock("next/server", () => ({

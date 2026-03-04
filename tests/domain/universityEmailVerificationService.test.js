@@ -6,7 +6,6 @@ import * as verificationRepository from "@/repositories/universityEmailVerificat
 import * as userRepository from "@/repositories/userRepository";
 import * as universityRepository from "@/repositories/universityRepository";
 import { sendVerificationEmail } from "@/lib/emailService";
-import { findUniversityByDomain } from "@/lib/universityDomains";
 
 jest.mock("@/repositories/universityEmailVerificationRepository", () => ({
   create: jest.fn(),
@@ -26,15 +25,11 @@ jest.mock("@/lib/emailService", () => ({
   sendVerificationEmail: jest.fn(),
 }));
 
-jest.mock("@/lib/universityDomains", () => ({
-  findUniversityByDomain: jest.fn(),
-}));
-
 beforeEach(() => jest.clearAllMocks());
 
 describe("universityEmailVerificationService.submitUniversityEmail", () => {
   it("throws 400 when the email domain is not a recognized university domain", async () => {
-    findUniversityByDomain.mockReturnValue(null);
+    universityRepository.findByEmailDomain.mockResolvedValue(null);
 
     await expect(
       submitUniversityEmail("user-1", "user@email.com", "me@gmail.com"),
@@ -48,7 +43,8 @@ describe("universityEmailVerificationService.submitUniversityEmail", () => {
   });
 
   it("proceeds to send verification when the domain is recognized", async () => {
-    findUniversityByDomain.mockReturnValue({
+    universityRepository.findByEmailDomain.mockResolvedValue({
+      id: "univ-usp",
       name: "Universidade de São Paulo",
     });
     verificationRepository.deleteByUserId.mockResolvedValue(undefined);
@@ -61,7 +57,9 @@ describe("universityEmailVerificationService.submitUniversityEmail", () => {
       "me@usp.br",
     );
 
-    expect(findUniversityByDomain).toHaveBeenCalledWith("usp.br");
+    expect(universityRepository.findByEmailDomain).toHaveBeenCalledWith(
+      "usp.br",
+    );
     expect(verificationRepository.create).toHaveBeenCalledWith(
       expect.objectContaining({
         userId: "user-1",
@@ -88,7 +86,7 @@ describe("universityEmailVerificationService.submitUniversityEmail", () => {
       statusCode: 400,
     });
 
-    expect(findUniversityByDomain).not.toHaveBeenCalled();
+    expect(universityRepository.findByEmailDomain).not.toHaveBeenCalled();
   });
 });
 
