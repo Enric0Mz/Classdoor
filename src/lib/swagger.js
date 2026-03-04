@@ -1447,6 +1447,438 @@ const swaggerSpec = {
         },
       },
     },
+    "/api/v1/university-submissions": {
+      get: {
+        tags: ["University Submissions"],
+        summary: "List university submissions",
+        description:
+          "Returns a paginated list of university submissions. Requires ADMIN or MODERATOR role. Supports filtering by status.",
+        security: [{ BearerAuth: [] }],
+        parameters: [
+          {
+            name: "page",
+            in: "query",
+            required: false,
+            schema: { type: "integer", default: 1 },
+            description: "Page number",
+          },
+          {
+            name: "limit",
+            in: "query",
+            required: false,
+            schema: { type: "integer", default: 10, maximum: 100 },
+            description: "Number of items per page",
+          },
+          {
+            name: "status",
+            in: "query",
+            required: false,
+            schema: {
+              type: "string",
+              enum: ["PENDING", "APPROVED", "REJECTED"],
+            },
+            description: "Filter by submission status",
+          },
+        ],
+        responses: {
+          200: {
+            description: "List of submissions",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    data: {
+                      type: "array",
+                      items: {
+                        $ref: "#/components/schemas/UniversitySubmission",
+                      },
+                    },
+                    pagination: {
+                      $ref: "#/components/schemas/Pagination",
+                    },
+                  },
+                },
+              },
+            },
+          },
+          401: {
+            description: "Authentication required",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
+          403: {
+            description: "Forbidden: ADMIN or MODERATOR role required",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
+        },
+      },
+      post: {
+        tags: ["University Submissions"],
+        summary: "Create a university submission",
+        description:
+          "Allows a verified user to suggest a university to be added. Rate limited to 5 submissions per hour.",
+        security: [{ BearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                required: ["name", "type"],
+                properties: {
+                  name: { type: "string", description: "University name" },
+                  type: {
+                    type: "string",
+                    enum: ["PUBLIC", "PRIVATE"],
+                    description: "University type",
+                  },
+                  location: {
+                    type: "string",
+                    nullable: true,
+                    description: "State abbreviation (e.g. SP, RJ)",
+                  },
+                  website: {
+                    type: "string",
+                    nullable: true,
+                    description: "University website URL",
+                  },
+                  emailDomain: {
+                    type: "string",
+                    nullable: true,
+                    description: "University email domain (e.g. usp.br)",
+                  },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          201: {
+            description: "Submission created",
+            content: {
+              "application/json": {
+                schema: {
+                  $ref: "#/components/schemas/UniversitySubmission",
+                },
+              },
+            },
+          },
+          400: {
+            description: "Validation error (name or type missing/invalid)",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
+          401: {
+            description: "Authentication required",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
+          409: {
+            description:
+              "University already exists or a pending submission with the same name exists",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
+          429: {
+            description: "Rate limit exceeded",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
+        },
+      },
+    },
+    "/api/v1/university-submissions/{id}": {
+      parameters: [
+        {
+          name: "id",
+          in: "path",
+          required: true,
+          schema: { type: "string", format: "uuid" },
+        },
+      ],
+      get: {
+        tags: ["University Submissions"],
+        summary: "Get a university submission by ID",
+        description: "Requires ADMIN or MODERATOR role.",
+        security: [{ BearerAuth: [] }],
+        responses: {
+          200: {
+            description: "Submission found",
+            content: {
+              "application/json": {
+                schema: {
+                  $ref: "#/components/schemas/UniversitySubmission",
+                },
+              },
+            },
+          },
+          401: {
+            description: "Authentication required",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
+          403: {
+            description: "Forbidden: ADMIN or MODERATOR role required",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
+          404: {
+            description: "Submission not found",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
+        },
+      },
+    },
+    "/api/v1/university-submissions/{id}/approve": {
+      parameters: [
+        {
+          name: "id",
+          in: "path",
+          required: true,
+          schema: { type: "string", format: "uuid" },
+        },
+      ],
+      put: {
+        tags: ["University Submissions"],
+        summary: "Approve a university submission",
+        description:
+          "Marks a pending submission as approved. Requires ADMIN role. Optionally links the submission to the created university via universityId.",
+        security: [{ BearerAuth: [] }],
+        requestBody: {
+          required: false,
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                properties: {
+                  universityId: {
+                    type: "string",
+                    format: "uuid",
+                    description:
+                      "ID of the university created from this submission, for traceability",
+                  },
+                  emailDomain: {
+                    type: "string",
+                    nullable: true,
+                    description:
+                      "Email domain to link to the university (e.g. usp.br). If provided with universityId, creates a UniversityDomain record.",
+                  },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: "Submission approved",
+            content: {
+              "application/json": {
+                schema: {
+                  $ref: "#/components/schemas/UniversitySubmission",
+                },
+              },
+            },
+          },
+          400: {
+            description: "Submission is not in PENDING status",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
+          401: {
+            description: "Authentication required",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
+          403: {
+            description: "Forbidden: ADMIN role required",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
+          404: {
+            description: "Submission not found",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
+        },
+      },
+    },
+    "/api/v1/university-submissions/{id}/reject": {
+      parameters: [
+        {
+          name: "id",
+          in: "path",
+          required: true,
+          schema: { type: "string", format: "uuid" },
+        },
+      ],
+      put: {
+        tags: ["University Submissions"],
+        summary: "Reject a university submission",
+        description:
+          "Marks a pending submission as rejected with a reason. Requires ADMIN role.",
+        security: [{ BearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                required: ["reason"],
+                properties: {
+                  reason: {
+                    type: "string",
+                    description: "Reason for rejecting the submission",
+                  },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: "Submission rejected",
+            content: {
+              "application/json": {
+                schema: {
+                  $ref: "#/components/schemas/UniversitySubmission",
+                },
+              },
+            },
+          },
+          400: {
+            description:
+              "Reason is required or submission is not in PENDING status",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
+          401: {
+            description: "Authentication required",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
+          403: {
+            description: "Forbidden: ADMIN role required",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
+          404: {
+            description: "Submission not found",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
+        },
+      },
+    },
+    "/api/v1/users/me/university-submissions": {
+      get: {
+        tags: ["University Submissions"],
+        summary: "List current user's university submissions",
+        description:
+          "Returns a paginated list of submissions made by the authenticated user.",
+        security: [{ BearerAuth: [] }],
+        parameters: [
+          {
+            name: "page",
+            in: "query",
+            required: false,
+            schema: { type: "integer", default: 1 },
+            description: "Page number",
+          },
+          {
+            name: "limit",
+            in: "query",
+            required: false,
+            schema: { type: "integer", default: 10, maximum: 100 },
+            description: "Number of items per page",
+          },
+        ],
+        responses: {
+          200: {
+            description: "List of user's submissions",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    data: {
+                      type: "array",
+                      items: {
+                        $ref: "#/components/schemas/UniversitySubmission",
+                      },
+                    },
+                    pagination: {
+                      $ref: "#/components/schemas/Pagination",
+                    },
+                  },
+                },
+              },
+            },
+          },
+          401: {
+            description: "Authentication required",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
+        },
+      },
+    },
     "/api/v1/users/{id}": {
       parameters: [
         {
@@ -1694,6 +2126,47 @@ const swaggerSpec = {
             description:
               "Long-lived refresh token (7 days). Use POST /api/v1/users/refresh to renew.",
           },
+        },
+      },
+      UniversitySubmission: {
+        type: "object",
+        properties: {
+          id: { type: "string", format: "uuid" },
+          name: { type: "string" },
+          location: { type: "string", nullable: true },
+          type: { type: "string", enum: ["PUBLIC", "PRIVATE"] },
+          website: { type: "string", nullable: true },
+          emailDomain: {
+            type: "string",
+            nullable: true,
+            description: "University email domain (e.g. usp.br)",
+          },
+          status: {
+            type: "string",
+            enum: ["PENDING", "APPROVED", "REJECTED"],
+          },
+          reason: {
+            type: "string",
+            nullable: true,
+            description:
+              "Rejection reason, present only when status is REJECTED",
+          },
+          submitterId: { type: "string", format: "uuid" },
+          submitter: {
+            type: "object",
+            nullable: true,
+            properties: {
+              id: { type: "string", format: "uuid" },
+              username: { type: "string" },
+            },
+          },
+          reviewedBy: { type: "string", format: "uuid", nullable: true },
+          reviewedAt: {
+            type: "string",
+            format: "date-time",
+            nullable: true,
+          },
+          createdAt: { type: "string", format: "date-time" },
         },
       },
       Error: {
