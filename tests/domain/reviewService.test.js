@@ -18,6 +18,15 @@ jest.mock("@/lib/sanitize", () => ({
   sanitizeString: jest.fn((value) => value),
 }));
 
+const mockModerateComment = jest.fn().mockResolvedValue({
+  moderationStatus: "APPROVED",
+  moderationReason: null,
+});
+
+jest.mock("@/domain/moderationService", () => ({
+  moderateComment: (...args) => mockModerateComment(...args),
+}));
+
 beforeEach(() => jest.clearAllMocks());
 
 const UNIVERSITY_ID = "univ-usp";
@@ -30,6 +39,8 @@ function makeReview(authorUniversityId, reviewUniversityId = UNIVERSITY_ID) {
     universityId: reviewUniversityId,
     comment: "Great university",
     authorId: "user-1",
+    moderationStatus: "APPROVED",
+    moderationReason: null,
     author: {
       id: "user-1",
       username: "TestUser",
@@ -160,6 +171,98 @@ describe("reviewService — isVerified computation", () => {
     });
   });
 
+  describe("createReview — moderation", () => {
+    it("passes the sanitized comment to moderateComment", async () => {
+      reviewRepository.create.mockResolvedValue(makeReview(UNIVERSITY_ID));
+
+      await createReview(
+        {
+          rating: 4,
+          difficultyLevel: 3,
+          universityId: UNIVERSITY_ID,
+          comment: "Great university overall!",
+        },
+        "user-1",
+      );
+
+      expect(mockModerateComment).toHaveBeenCalledWith(
+        "Great university overall!",
+      );
+    });
+
+    it("saves moderationStatus and moderationReason to the database", async () => {
+      mockModerateComment.mockResolvedValueOnce({
+        moderationStatus: "REJECTED_OFFENSIVE",
+        moderationReason: "Linguagem ofensiva detectada.",
+      });
+      reviewRepository.create.mockResolvedValue({
+        ...makeReview(UNIVERSITY_ID),
+        moderationStatus: "REJECTED_OFFENSIVE",
+        moderationReason: "Linguagem ofensiva detectada.",
+      });
+
+      await createReview(
+        {
+          rating: 4,
+          difficultyLevel: 3,
+          universityId: UNIVERSITY_ID,
+          comment: "Texto ofensivo aqui!!",
+        },
+        "user-1",
+      );
+
+      expect(reviewRepository.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          moderationStatus: "REJECTED_OFFENSIVE",
+          moderationReason: "Linguagem ofensiva detectada.",
+        }),
+      );
+    });
+
+    it("returns moderation object when review is rejected", async () => {
+      mockModerateComment.mockResolvedValueOnce({
+        moderationStatus: "REJECTED_NONSENSE",
+        moderationReason: "Conteúdo sem sentido.",
+      });
+      reviewRepository.create.mockResolvedValue({
+        ...makeReview(UNIVERSITY_ID),
+        moderationStatus: "REJECTED_NONSENSE",
+        moderationReason: "Conteúdo sem sentido.",
+      });
+
+      const result = await createReview(
+        {
+          rating: 4,
+          difficultyLevel: 3,
+          universityId: UNIVERSITY_ID,
+          comment: "asdjkfhaslkdjfh",
+        },
+        "user-1",
+      );
+
+      expect(result.moderation).toEqual({
+        status: "REJECTED_NONSENSE",
+        reason: "Conteúdo sem sentido.",
+      });
+    });
+
+    it("does not include moderation object when review is approved", async () => {
+      reviewRepository.create.mockResolvedValue(makeReview(UNIVERSITY_ID));
+
+      const result = await createReview(
+        {
+          rating: 4,
+          difficultyLevel: 3,
+          universityId: UNIVERSITY_ID,
+          comment: "Ótima universidade!",
+        },
+        "user-1",
+      );
+
+      expect(result.moderation).toBeUndefined();
+    });
+  });
+
   describe("updateReview", () => {
     it("returns isVerified on the updated review", async () => {
       reviewRepository.findById.mockResolvedValue(makeReview(UNIVERSITY_ID));
@@ -195,6 +298,61 @@ describe("reviewService — isVerified computation", () => {
       ).rejects.toMatchObject({
         message: "comment must be at most 2000 characters",
         statusCode: 400,
+      });
+    });
+
+    it("re-runs moderation when the comment is updated", async () => {
+      reviewRepository.findById.mockResolvedValue(makeReview(UNIVERSITY_ID));
+      reviewRepository.update.mockResolvedValue(makeReview(UNIVERSITY_ID));
+
+      await updateReview(
+        "review-1",
+        { comment: "Updated comment here" },
+        "user-1",
+        "USER",
+      );
+
+      expect(mockModerateComment).toHaveBeenCalledWith("Updated comment here");
+      expect(reviewRepository.update).toHaveBeenCalledWith(
+        "review-1",
+        expect.objectContaining({
+          moderationStatus: "APPROVED",
+          moderationReason: null,
+        }),
+      );
+    });
+
+    it("does not run moderation when only rating is updated", async () => {
+      reviewRepository.findById.mockResolvedValue(makeReview(UNIVERSITY_ID));
+      reviewRepository.update.mockResolvedValue(makeReview(UNIVERSITY_ID));
+
+      await updateReview("review-1", { rating: 5 }, "user-1", "USER");
+
+      expect(mockModerateComment).not.toHaveBeenCalled();
+    });
+
+    it("returns moderation object when updated comment is rejected", async () => {
+      mockModerateComment.mockResolvedValueOnce({
+        moderationStatus: "REJECTED_OFFENSIVE",
+        moderationReason: "Linguagem ofensiva.",
+      });
+      reviewRepository.findById.mockResolvedValue(makeReview(UNIVERSITY_ID));
+      reviewRepository.update.mockResolvedValue({
+        ...makeReview(UNIVERSITY_ID),
+        moderationStatus: "REJECTED_OFFENSIVE",
+        moderationReason: "Linguagem ofensiva.",
+      });
+
+      const result = await updateReview(
+        "review-1",
+        { comment: "Texto ofensivo" },
+        "user-1",
+        "USER",
+      );
+
+      expect(result.moderation).toEqual({
+        status: "REJECTED_OFFENSIVE",
+        reason: "Linguagem ofensiva.",
       });
     });
   });

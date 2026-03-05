@@ -312,9 +312,11 @@ const swaggerSpec = {
             description: "Number of items per page",
           },
         ],
+        description:
+          "Returns only approved reviews. Rejected reviews (offensive, nonsensical, or spam) are hidden from public listings.",
         responses: {
           200: {
-            description: "A paginated list of reviews",
+            description: "A paginated list of approved reviews",
             content: {
               "application/json": {
                 schema: {
@@ -385,13 +387,19 @@ const swaggerSpec = {
         },
         responses: {
           201: {
-            description: "Review created",
+            description:
+              "Review created. If the review was rejected by moderation, a `moderation` object is included with the reason.",
             content: {
               "application/json": {
                 schema: {
                   type: "object",
                   properties: {
                     review: { $ref: "#/components/schemas/Review" },
+                    moderation: {
+                      $ref: "#/components/schemas/ModerationResult",
+                      description:
+                        "Only present when the review is rejected by content moderation.",
+                    },
                   },
                 },
               },
@@ -1665,7 +1673,45 @@ const swaggerSpec = {
             description:
               "Only present in the creation response for unauthenticated reviews.",
           },
+          moderationStatus: {
+            type: "string",
+            enum: [
+              "APPROVED",
+              "REJECTED_OFFENSIVE",
+              "REJECTED_NONSENSE",
+              "REJECTED_OTHER",
+            ],
+            description:
+              "Content moderation status. Reviews with any REJECTED status are hidden from public listings.",
+          },
+          moderationReason: {
+            type: "string",
+            nullable: true,
+            description:
+              "User-facing explanation in Portuguese for why the review was rejected.",
+          },
           createdAt: { type: "string", format: "date-time" },
+        },
+      },
+      ModerationResult: {
+        type: "object",
+        description:
+          "Included in the response when a review is rejected by content moderation.",
+        properties: {
+          status: {
+            type: "string",
+            enum: [
+              "REJECTED_OFFENSIVE",
+              "REJECTED_NONSENSE",
+              "REJECTED_OTHER",
+            ],
+          },
+          reason: {
+            type: "string",
+            description: "User-facing explanation in Portuguese.",
+            example:
+              "Sua avaliação contém linguagem ofensiva e não pode ser publicada.",
+          },
         },
       },
       User: {

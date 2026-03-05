@@ -15,7 +15,10 @@ export async function create(data) {
 }
 
 export async function findAll({ universityId, skip, take } = {}) {
-  const where = universityId ? { universityId } : {};
+  const where = { moderationStatus: "APPROVED" };
+  if (universityId) {
+    where.universityId = universityId;
+  }
   const [data, total] = await prisma.$transaction([
     prisma.review.findMany({
       where,
