@@ -69,6 +69,15 @@ const RATE_LIMIT_RULES = [
     windowMs: 60 * 60 * 1000,
   },
 
+  // University submissions — prevent spam
+  {
+    pathname: "/api/v1/university-submissions",
+    method: "POST",
+    group: "university-submissions",
+    maxRequests: 5,
+    windowMs: 60 * 60 * 1000,
+  },
+
   // Public listing endpoints — scraping deterrent
   {
     pathname: "/api/v1/reviews",
