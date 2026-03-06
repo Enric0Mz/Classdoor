@@ -165,7 +165,10 @@ export async function updateReview(id, data, requesterId, requesterRole) {
   const updatedReview = await reviewRepository.update(id, updateData);
   const result = withIsVerified(updatedReview);
 
-  if (updateData.moderationStatus && updateData.moderationStatus !== "APPROVED") {
+  if (
+    updateData.moderationStatus &&
+    updateData.moderationStatus !== "APPROVED"
+  ) {
     return {
       ...result,
       moderation: {

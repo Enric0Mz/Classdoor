@@ -121,9 +121,7 @@ describe("moderationService", () => {
         model: "claude-haiku-4-5-20251001",
         messages: [
           expect.objectContaining({
-            content: expect.stringContaining(
-              "Minha avaliação da universidade",
-            ),
+            content: expect.stringContaining("Minha avaliação da universidade"),
           }),
         ],
       }),

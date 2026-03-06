@@ -74,7 +74,10 @@ export async function moderateComment(comment) {
       moderationReason: parsed.reason || null,
     };
   } catch (error) {
-    console.error("Moderation API error, defaulting to APPROVED:", error.message);
+    console.error(
+      "Moderation API error, defaulting to APPROVED:",
+      error.message,
+    );
     return DEFAULT_APPROVED_RESULT;
   }
 }

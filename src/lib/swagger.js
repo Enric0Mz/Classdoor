@@ -2132,11 +2132,7 @@ const swaggerSpec = {
         properties: {
           status: {
             type: "string",
-            enum: [
-              "REJECTED_OFFENSIVE",
-              "REJECTED_NONSENSE",
-              "REJECTED_OTHER",
-            ],
+            enum: ["REJECTED_OFFENSIVE", "REJECTED_NONSENSE", "REJECTED_OTHER"],
           },
           reason: {
             type: "string",
