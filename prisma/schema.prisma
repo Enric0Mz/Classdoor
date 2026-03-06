@@ -18,6 +18,14 @@ enum Role {
   ADMIN
 }
 
+enum ModerationStatus {
+  APPROVED
+  PENDING_MODERATION
+  REJECTED_OFFENSIVE
+  REJECTED_NONSENSE
+  REJECTED_OTHER
+}
+
 enum SubmissionStatus {
   PENDING
   APPROVED
@@ -57,8 +65,10 @@ model Review {
   university      University @relation(fields: [universityId], references: [id])
   authorId        String?
   author          User?      @relation(fields: [authorId], references: [id])
-  editToken       String?
-  createdAt       DateTime   @default(now())
+  editToken         String?
+  moderationStatus  ModerationStatus @default(PENDING_MODERATION)
+  moderationReason  String?
+  createdAt         DateTime         @default(now())
 }
 
 model User {

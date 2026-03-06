@@ -1,6 +1,7 @@
 import { AppError } from "@/errors/AppError";
 import * as reviewRepository from "@/repositories/reviewRepository";
 import { sanitizeString } from "@/lib/sanitize";
+import { moderateComment } from "@/domain/moderationService";
 
 function validateRating(rating) {
   if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
@@ -84,14 +85,34 @@ export async function createReview(body, authorId) {
   const sanitizedComment = sanitizeString(comment);
   validateComment(sanitizedComment);
 
+  const { moderationStatus, moderationReason } =
+    await moderateComment(sanitizedComment);
+
   const review = await reviewRepository.create({
     rating,
     difficultyLevel,
     universityId,
     comment: sanitizedComment,
     authorId,
+    moderationStatus,
+    moderationReason,
   });
-  return { review: withIsVerified(review) };
+
+  const result = { review: withIsVerified(review) };
+
+  if (moderationStatus === "PENDING_MODERATION") {
+    result.moderation = {
+      status: "PENDING_MODERATION",
+      reason: "Sua avaliação foi recebida e será publicada em breve.",
+    };
+  } else if (moderationStatus !== "APPROVED") {
+    result.moderation = {
+      status: moderationStatus,
+      reason: moderationReason,
+    };
+  }
+
+  return result;
 }
 
 export async function listReviews({ universityId, skip, take } = {}) {
@@ -105,7 +126,7 @@ export async function listReviews({ universityId, skip, take } = {}) {
 
 export async function getReviewById(id) {
   const review = await reviewRepository.findById(id);
-  if (!review) {
+  if (!review || review.moderationStatus !== "APPROVED") {
     throw new AppError("Review not found", 404);
   }
   return withIsVerified(review);
@@ -139,10 +160,40 @@ export async function updateReview(id, data, requesterId, requesterRole) {
     const sanitizedComment = sanitizeString(comment);
     validateComment(sanitizedComment);
     updateData.comment = sanitizedComment;
+
+    const { moderationStatus, moderationReason } =
+      await moderateComment(sanitizedComment);
+    updateData.moderationStatus = moderationStatus;
+    updateData.moderationReason = moderationReason;
   }
 
   const updatedReview = await reviewRepository.update(id, updateData);
-  return withIsVerified(updatedReview);
+  const result = withIsVerified(updatedReview);
+
+  if (updateData.moderationStatus === "PENDING_MODERATION") {
+    return {
+      ...result,
+      moderation: {
+        status: "PENDING_MODERATION",
+        reason: "Sua avaliação foi recebida e será publicada em breve.",
+      },
+    };
+  }
+
+  if (
+    updateData.moderationStatus &&
+    updateData.moderationStatus !== "APPROVED"
+  ) {
+    return {
+      ...result,
+      moderation: {
+        status: updateData.moderationStatus,
+        reason: updateData.moderationReason,
+      },
+    };
+  }
+
+  return result;
 }
 
 export async function deleteReview(id, requesterId, requesterRole) {

@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "Review" ALTER COLUMN "moderationStatus" SET DEFAULT 'PENDING_MODERATION';

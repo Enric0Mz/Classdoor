@@ -312,9 +312,11 @@ const swaggerSpec = {
             description: "Number of items per page",
           },
         ],
+        description:
+          "Returns only approved reviews. Rejected reviews (offensive, nonsensical, or spam) are hidden from public listings.",
         responses: {
           200: {
-            description: "A paginated list of reviews",
+            description: "A paginated list of approved reviews",
             content: {
               "application/json": {
                 schema: {
@@ -385,13 +387,19 @@ const swaggerSpec = {
         },
         responses: {
           201: {
-            description: "Review created",
+            description:
+              "Review created. If the review was rejected by moderation, a `moderation` object is included with the reason.",
             content: {
               "application/json": {
                 schema: {
                   type: "object",
                   properties: {
                     review: { $ref: "#/components/schemas/Review" },
+                    moderation: {
+                      $ref: "#/components/schemas/ModerationResult",
+                      description:
+                        "Only present when the review is rejected by content moderation.",
+                    },
                   },
                 },
               },
@@ -1974,6 +1982,50 @@ const swaggerSpec = {
         },
       },
     },
+    "/api/v1/cron/moderate-reviews": {
+      post: {
+        tags: ["Cron"],
+        summary: "Process pending moderation queue",
+        description:
+          "Re-runs AI moderation on reviews stuck in PENDING_MODERATION status. Authenticated via CRON_SECRET in the Authorization header. Intended to be called by Vercel Cron Jobs every 5 minutes.",
+        security: [{ BearerAuth: [] }],
+        responses: {
+          200: {
+            description: "Processing stats",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    processed: {
+                      type: "integer",
+                      description: "Total pending reviews found",
+                    },
+                    succeeded: {
+                      type: "integer",
+                      description: "Reviews successfully moderated",
+                    },
+                    failed: {
+                      type: "integer",
+                      description:
+                        "Reviews that failed (will retry next cycle)",
+                    },
+                  },
+                },
+              },
+            },
+          },
+          401: {
+            description: "Invalid or missing CRON_SECRET",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
+        },
+      },
+    },
   },
   components: {
     securitySchemes: {
@@ -2097,7 +2149,47 @@ const swaggerSpec = {
             description:
               "Only present in the creation response for unauthenticated reviews.",
           },
+          moderationStatus: {
+            type: "string",
+            enum: [
+              "APPROVED",
+              "PENDING_MODERATION",
+              "REJECTED_OFFENSIVE",
+              "REJECTED_NONSENSE",
+              "REJECTED_OTHER",
+            ],
+            description:
+              "Content moderation status. Reviews with PENDING_MODERATION or any REJECTED status are hidden from public listings.",
+          },
+          moderationReason: {
+            type: "string",
+            nullable: true,
+            description:
+              "User-facing explanation in Portuguese for why the review was rejected.",
+          },
           createdAt: { type: "string", format: "date-time" },
+        },
+      },
+      ModerationResult: {
+        type: "object",
+        description:
+          "Included in the response when a review is rejected or pending moderation.",
+        properties: {
+          status: {
+            type: "string",
+            enum: [
+              "PENDING_MODERATION",
+              "REJECTED_OFFENSIVE",
+              "REJECTED_NONSENSE",
+              "REJECTED_OTHER",
+            ],
+          },
+          reason: {
+            type: "string",
+            description: "User-facing explanation in Portuguese.",
+            example:
+              "Sua avaliação contém linguagem ofensiva e não pode ser publicada.",
+          },
         },
       },
       User: {

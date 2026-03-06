@@ -15,7 +15,10 @@ export async function create(data) {
 }
 
 export async function findAll({ universityId, skip, take } = {}) {
-  const where = universityId ? { universityId } : {};
+  const where = { moderationStatus: "APPROVED" };
+  if (universityId) {
+    where.universityId = universityId;
+  }
   const [data, total] = await prisma.$transaction([
     prisma.review.findMany({
       where,
@@ -41,6 +44,14 @@ export async function update(id, data) {
     where: { id },
     data,
     include: { author: { select: AUTHOR_SELECT } },
+  });
+}
+
+export async function findPendingModeration(limit = 50) {
+  return prisma.review.findMany({
+    where: { moderationStatus: "PENDING_MODERATION" },
+    orderBy: { createdAt: "asc" },
+    take: limit,
   });
 }
 
