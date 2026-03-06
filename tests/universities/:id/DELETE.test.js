@@ -1,6 +1,13 @@
 import { DELETE } from "@/app/api/v1/universities/[id]/route";
+import { deleteUniversity } from "@/domain/universityService";
+import * as universityRepository from "@/repositories/universityRepository";
 import { requireVerifiedUser } from "@/lib/auth";
 import { requireRole } from "@/lib/authorization";
+
+jest.mock("@/repositories/universityRepository", () => ({
+  findById: jest.fn(),
+  remove: jest.fn(),
+}));
 
 jest.mock("@/lib/auth", () => ({
   requireVerifiedUser: jest.fn(),
@@ -24,10 +31,42 @@ function makeParams(id) {
 
 beforeEach(() => jest.clearAllMocks());
 
+const UNIVERSITY = {
+  id: "uni-1",
+  name: "USP",
+  location: "SP",
+  type: "PUBLIC",
+  reviews: [],
+};
+
+describe("universityService.deleteUniversity", () => {
+  it("deletes the university when it exists", async () => {
+    universityRepository.findById.mockResolvedValue(UNIVERSITY);
+    universityRepository.remove.mockResolvedValue(UNIVERSITY);
+
+    await deleteUniversity("uni-1");
+
+    expect(universityRepository.findById).toHaveBeenCalledWith("uni-1");
+    expect(universityRepository.remove).toHaveBeenCalledWith("uni-1");
+  });
+
+  it("throws 404 when university does not exist", async () => {
+    universityRepository.findById.mockResolvedValue(null);
+
+    await expect(deleteUniversity("missing")).rejects.toMatchObject({
+      message: "University not found",
+      statusCode: 404,
+    });
+    expect(universityRepository.remove).not.toHaveBeenCalled();
+  });
+});
+
 describe("DELETE /api/v1/universities/:id", () => {
-  it("returns 501 when authenticated as ADMIN", async () => {
+  it("returns 200 when authenticated as ADMIN", async () => {
     requireVerifiedUser.mockReturnValue({ id: "admin-1", role: "ADMIN" });
     requireRole.mockReturnValue(undefined);
+    universityRepository.findById.mockResolvedValue(UNIVERSITY);
+    universityRepository.remove.mockResolvedValue(UNIVERSITY);
 
     const response = await DELETE(makeRequest(), makeParams("uni-1"));
 
@@ -35,8 +74,21 @@ describe("DELETE /api/v1/universities/:id", () => {
     expect(requireRole).toHaveBeenCalledWith({ id: "admin-1", role: "ADMIN" }, [
       "ADMIN",
     ]);
-    expect(response.status).toBe(501);
-    expect(response.body).toEqual({ message: "Not implemented" });
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({ message: "University deleted" });
+  });
+
+  it("returns 404 when university does not exist", async () => {
+    requireVerifiedUser.mockReturnValue({ id: "admin-1", role: "ADMIN" });
+    requireRole.mockReturnValue(undefined);
+    universityRepository.findById.mockResolvedValue(null);
+
+    const response = await DELETE(makeRequest(), makeParams("missing"));
+
+    expect(response.status).toBe(404);
+    expect(response.body).toEqual({
+      error: { message: "University not found", statusCode: 404 },
+    });
   });
 
   it("returns 401 when no token is provided", async () => {

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import UniversityCard from "@/components/UniversityCard";
+import Link from "next/link";
 import {
   Search,
   SlidersHorizontal,
@@ -10,6 +11,7 @@ import {
   TrendingUp,
   X,
   Zap,
+  Lightbulb,
 } from "lucide-react";
 
 const STATE_FILTERS = [
@@ -35,12 +37,34 @@ export default function UniversitiesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const [userRole, setUserRole] = useState(null);
+
   // Filters
   const [activeState, setActiveState] = useState("Todos");
   const [activeType, setActiveType] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [sortByRating, setSortByRating] = useState(false);
+
+  useEffect(() => {
+    try {
+      const token = localStorage.getItem("token");
+      if (token) {
+        const decoded = JSON.parse(atob(token.split(".")[1]));
+        if (decoded?.role) setUserRole(decoded.role);
+      }
+    } catch {
+      // ignore invalid token
+    }
+  }, []);
+
+  const isAdmin = userRole === "ADMIN";
+
+  function handleUniversityDelete(universityId) {
+    setUniversities((prev) =>
+      prev.filter((university) => university.id !== universityId),
+    );
+  }
 
   useEffect(() => {
     async function fetchUniversities() {
@@ -379,14 +403,37 @@ export default function UniversitiesPage() {
             >
               Limpar busca
             </button>
+            <Link
+              href="/sugerir-universidade"
+              className="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 transition-colors hover:text-indigo-600"
+            >
+              <Lightbulb size={14} />
+              Nao encontrou sua universidade? Sugira aqui
+            </Link>
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {filtered.map((university) => (
-              <UniversityCard key={university.id} university={university} />
+              <UniversityCard
+                key={university.id}
+                university={university}
+                isAdmin={isAdmin}
+                onDelete={handleUniversityDelete}
+              />
             ))}
           </div>
         )}
+
+        {/* CTA for suggesting a university */}
+        <div className="mt-12 flex flex-col items-center gap-2 text-center">
+          <Link
+            href="/sugerir-universidade"
+            className="inline-flex items-center gap-2 rounded-full border border-indigo-100 bg-indigo-50 px-5 py-2.5 text-sm font-medium text-indigo-700 transition-colors hover:bg-indigo-100"
+          >
+            <Lightbulb size={15} />
+            Nao encontrou sua universidade? Sugira aqui
+          </Link>
+        </div>
       </div>
     </main>
   );

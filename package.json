@@ -21,6 +21,7 @@
     "db:seed": "npm run db:seed:universities && npm run db:seed:domains"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.78.0",
     "@prisma/client": "^5.22.0",
     "@tailwindcss/postcss": "^4.1.18",
     "bcryptjs": "^3.0.3",

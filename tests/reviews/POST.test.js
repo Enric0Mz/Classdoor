@@ -11,6 +11,13 @@ jest.mock("@/lib/auth", () => ({
   requireVerifiedUser: jest.fn(),
 }));
 
+jest.mock("@/domain/moderationService", () => ({
+  moderateComment: jest.fn().mockResolvedValue({
+    moderationStatus: "APPROVED",
+    moderationReason: null,
+  }),
+}));
+
 jest.mock("next/server", () => ({
   NextResponse: {
     json: jest.fn((body, init) => ({ body, status: init?.status ?? 200 })),
