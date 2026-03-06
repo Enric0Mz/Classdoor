@@ -100,7 +100,12 @@ export async function createReview(body, authorId) {
 
   const result = { review: withIsVerified(review) };
 
-  if (moderationStatus !== "APPROVED") {
+  if (moderationStatus === "PENDING_MODERATION") {
+    result.moderation = {
+      status: "PENDING_MODERATION",
+      reason: "Sua avaliação foi recebida e será publicada em breve.",
+    };
+  } else if (moderationStatus !== "APPROVED") {
     result.moderation = {
       status: moderationStatus,
       reason: moderationReason,
@@ -164,6 +169,16 @@ export async function updateReview(id, data, requesterId, requesterRole) {
 
   const updatedReview = await reviewRepository.update(id, updateData);
   const result = withIsVerified(updatedReview);
+
+  if (updateData.moderationStatus === "PENDING_MODERATION") {
+    return {
+      ...result,
+      moderation: {
+        status: "PENDING_MODERATION",
+        reason: "Sua avaliação foi recebida e será publicada em breve.",
+      },
+    };
+  }
 
   if (
     updateData.moderationStatus &&

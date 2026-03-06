@@ -20,6 +20,7 @@ enum Role {
 
 enum ModerationStatus {
   APPROVED
+  PENDING_MODERATION
   REJECTED_OFFENSIVE
   REJECTED_NONSENSE
   REJECTED_OTHER
@@ -65,7 +66,7 @@ model Review {
   authorId        String?
   author          User?      @relation(fields: [authorId], references: [id])
   editToken         String?
-  moderationStatus  ModerationStatus @default(APPROVED)
+  moderationStatus  ModerationStatus @default(PENDING_MODERATION)
   moderationReason  String?
   createdAt         DateTime         @default(now())
 }

@@ -64,29 +64,29 @@ describe("moderationService", () => {
     });
   });
 
-  it("defaults to APPROVED when API returns an invalid status", async () => {
+  it("defaults to PENDING_MODERATION when API returns an invalid status", async () => {
     mockApiResponse({ status: "INVALID_STATUS", reason: "something" });
 
     const result = await moderateComment("Qualquer texto");
 
     expect(result).toEqual({
-      moderationStatus: "APPROVED",
+      moderationStatus: "PENDING_MODERATION",
       moderationReason: null,
     });
   });
 
-  it("defaults to APPROVED when API call fails", async () => {
+  it("defaults to PENDING_MODERATION when API call fails", async () => {
     mockMessagesCreate.mockRejectedValue(new Error("API timeout"));
 
     const result = await moderateComment("Qualquer texto");
 
     expect(result).toEqual({
-      moderationStatus: "APPROVED",
+      moderationStatus: "PENDING_MODERATION",
       moderationReason: null,
     });
   });
 
-  it("defaults to APPROVED when API returns unparseable JSON", async () => {
+  it("defaults to PENDING_MODERATION when API returns unparseable JSON", async () => {
     mockMessagesCreate.mockResolvedValue({
       content: [{ text: "not valid json" }],
     });
@@ -94,7 +94,7 @@ describe("moderationService", () => {
     const result = await moderateComment("Qualquer texto");
 
     expect(result).toEqual({
-      moderationStatus: "APPROVED",
+      moderationStatus: "PENDING_MODERATION",
       moderationReason: null,
     });
   });

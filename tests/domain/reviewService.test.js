@@ -246,6 +246,33 @@ describe("reviewService — isVerified computation", () => {
       });
     });
 
+    it("returns pending moderation object when moderation API fails", async () => {
+      mockModerateComment.mockResolvedValueOnce({
+        moderationStatus: "PENDING_MODERATION",
+        moderationReason: null,
+      });
+      reviewRepository.create.mockResolvedValue({
+        ...makeReview(UNIVERSITY_ID),
+        moderationStatus: "PENDING_MODERATION",
+        moderationReason: null,
+      });
+
+      const result = await createReview(
+        {
+          rating: 4,
+          difficultyLevel: 3,
+          universityId: UNIVERSITY_ID,
+          comment: "Uma avaliação válida",
+        },
+        "user-1",
+      );
+
+      expect(result.moderation).toEqual({
+        status: "PENDING_MODERATION",
+        reason: "Sua avaliação foi recebida e será publicada em breve.",
+      });
+    });
+
     it("does not include moderation object when review is approved", async () => {
       reviewRepository.create.mockResolvedValue(makeReview(UNIVERSITY_ID));
 
@@ -329,6 +356,31 @@ describe("reviewService — isVerified computation", () => {
       await updateReview("review-1", { rating: 5 }, "user-1", "USER");
 
       expect(mockModerateComment).not.toHaveBeenCalled();
+    });
+
+    it("returns pending moderation object when moderation API fails on update", async () => {
+      mockModerateComment.mockResolvedValueOnce({
+        moderationStatus: "PENDING_MODERATION",
+        moderationReason: null,
+      });
+      reviewRepository.findById.mockResolvedValue(makeReview(UNIVERSITY_ID));
+      reviewRepository.update.mockResolvedValue({
+        ...makeReview(UNIVERSITY_ID),
+        moderationStatus: "PENDING_MODERATION",
+        moderationReason: null,
+      });
+
+      const result = await updateReview(
+        "review-1",
+        { comment: "Updated comment here" },
+        "user-1",
+        "USER",
+      );
+
+      expect(result.moderation).toEqual({
+        status: "PENDING_MODERATION",
+        reason: "Sua avaliação foi recebida e será publicada em breve.",
+      });
     });
 
     it("returns moderation object when updated comment is rejected", async () => {

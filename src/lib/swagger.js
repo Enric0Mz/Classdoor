@@ -1982,6 +1982,50 @@ const swaggerSpec = {
         },
       },
     },
+    "/api/v1/cron/moderate-reviews": {
+      post: {
+        tags: ["Cron"],
+        summary: "Process pending moderation queue",
+        description:
+          "Re-runs AI moderation on reviews stuck in PENDING_MODERATION status. Authenticated via CRON_SECRET in the Authorization header. Intended to be called by Vercel Cron Jobs every 5 minutes.",
+        security: [{ BearerAuth: [] }],
+        responses: {
+          200: {
+            description: "Processing stats",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    processed: {
+                      type: "integer",
+                      description: "Total pending reviews found",
+                    },
+                    succeeded: {
+                      type: "integer",
+                      description: "Reviews successfully moderated",
+                    },
+                    failed: {
+                      type: "integer",
+                      description:
+                        "Reviews that failed (will retry next cycle)",
+                    },
+                  },
+                },
+              },
+            },
+          },
+          401: {
+            description: "Invalid or missing CRON_SECRET",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
+        },
+      },
+    },
   },
   components: {
     securitySchemes: {
@@ -2109,12 +2153,13 @@ const swaggerSpec = {
             type: "string",
             enum: [
               "APPROVED",
+              "PENDING_MODERATION",
               "REJECTED_OFFENSIVE",
               "REJECTED_NONSENSE",
               "REJECTED_OTHER",
             ],
             description:
-              "Content moderation status. Reviews with any REJECTED status are hidden from public listings.",
+              "Content moderation status. Reviews with PENDING_MODERATION or any REJECTED status are hidden from public listings.",
           },
           moderationReason: {
             type: "string",
@@ -2128,11 +2173,16 @@ const swaggerSpec = {
       ModerationResult: {
         type: "object",
         description:
-          "Included in the response when a review is rejected by content moderation.",
+          "Included in the response when a review is rejected or pending moderation.",
         properties: {
           status: {
             type: "string",
-            enum: ["REJECTED_OFFENSIVE", "REJECTED_NONSENSE", "REJECTED_OTHER"],
+            enum: [
+              "PENDING_MODERATION",
+              "REJECTED_OFFENSIVE",
+              "REJECTED_NONSENSE",
+              "REJECTED_OTHER",
+            ],
           },
           reason: {
             type: "string",

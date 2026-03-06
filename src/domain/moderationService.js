@@ -8,6 +8,7 @@ function getAnthropicClient() {
       apiKey: process.env.ANTHROPIC_API_KEY,
     });
   }
+  console.log("CLIENT", anthropicClient);
   return anthropicClient;
 }
 
@@ -29,20 +30,21 @@ If rejected, include a short reason in Portuguese explaining why:
 
 Review comment to analyze:`;
 
-const DEFAULT_APPROVED_RESULT = {
-  moderationStatus: "APPROVED",
+const DEFAULT_PENDING_RESULT = {
+  moderationStatus: "PENDING_MODERATION",
   moderationReason: null,
 };
 
 /**
  * Moderates a review comment using Claude AI.
  * Returns the moderation status and an optional reason in Portuguese.
- * Fails open (defaults to APPROVED) if the API call fails.
+ * Fails closed (defaults to PENDING_MODERATION) if the API call fails.
  *
  * @param {string} comment - The review comment to moderate
  * @returns {Promise<{moderationStatus: string, moderationReason: string|null}>}
  */
 export async function moderateComment(comment) {
+  console.log("ENTROU", comment);
   try {
     const response = await getAnthropicClient().messages.create({
       model: "claude-haiku-4-5-20251001",
@@ -54,9 +56,10 @@ export async function moderateComment(comment) {
         },
       ],
     });
-
-    const responseText = response.content[0].text.trim();
+    const rawText = response.content[0].text.trim();
+    const responseText = rawText.replace(/^```(?:json)?\s*|\s*```$/g, "");
     const parsed = JSON.parse(responseText);
+    console.log("RESPOSTA DA IA", parsed);
 
     const validStatuses = [
       "APPROVED",
@@ -66,7 +69,7 @@ export async function moderateComment(comment) {
     ];
 
     if (!validStatuses.includes(parsed.status)) {
-      return DEFAULT_APPROVED_RESULT;
+      return DEFAULT_PENDING_RESULT;
     }
 
     return {
@@ -75,9 +78,9 @@ export async function moderateComment(comment) {
     };
   } catch (error) {
     console.error(
-      "Moderation API error, defaulting to APPROVED:",
+      "Moderation API error, defaulting to PENDING_MODERATION:",
       error.message,
     );
-    return DEFAULT_APPROVED_RESULT;
+    return DEFAULT_PENDING_RESULT;
   }
 }

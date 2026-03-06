@@ -47,6 +47,14 @@ export async function update(id, data) {
   });
 }
 
+export async function findPendingModeration(limit = 50) {
+  return prisma.review.findMany({
+    where: { moderationStatus: "PENDING_MODERATION" },
+    orderBy: { createdAt: "asc" },
+    take: limit,
+  });
+}
+
 export async function remove(id) {
   return prisma.review.delete({ where: { id } });
 }
