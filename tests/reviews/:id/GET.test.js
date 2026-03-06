@@ -19,6 +19,8 @@ const SAMPLE_REVIEW = {
   rating: 4,
   difficultyLevel: 3,
   universityId: "uni-1",
+  moderationStatus: "APPROVED",
+  moderationReason: null,
   author: { id: "user-1", username: "AgilOnca123", verified: true },
   createdAt: new Date(),
   isVerified: false,
