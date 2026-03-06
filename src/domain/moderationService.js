@@ -1,15 +1,9 @@
 import Anthropic from "@anthropic-ai/sdk";
 
-let anthropicClient;
-
 function getAnthropicClient() {
-  if (!anthropicClient) {
-    anthropicClient = new Anthropic({
-      apiKey: process.env.ANTHROPIC_API_KEY,
-    });
-  }
-  console.log("CLIENT", anthropicClient);
-  return anthropicClient;
+  return new Anthropic({
+    apiKey: process.env.ANTHROPIC_API_KEY,
+  });
 }
 
 const MODERATION_PROMPT = `You are a content moderator for a Brazilian university review platform.

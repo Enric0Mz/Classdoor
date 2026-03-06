@@ -45,3 +45,4 @@ next-env.d.ts
 
 # Sensitive Information
 data
+.env*.local
