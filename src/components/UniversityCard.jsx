@@ -1,5 +1,8 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
-import { MapPin, Star } from "lucide-react";
+import { MapPin, Star, Trash2 } from "lucide-react";
 
 function getInitials(name) {
   return name
@@ -44,7 +47,9 @@ function StarRating({ rating }) {
   );
 }
 
-export default function UniversityCard({ university }) {
+export default function UniversityCard({ university, isAdmin, onDelete }) {
+  const [deleteConfirming, setDeleteConfirming] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const initials = getInitials(university.name);
   const typeLabel = university.type === "PUBLIC" ? "Pública" : "Privada";
 
@@ -72,6 +77,45 @@ export default function UniversityCard({ university }) {
 
         {/* Gradient Overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-90 transition-opacity group-hover:opacity-100" />
+
+        {/* Admin delete button */}
+        {isAdmin && (
+          <button
+            onClick={async (event) => {
+              event.preventDefault();
+              event.stopPropagation();
+              if (!deleteConfirming) {
+                setDeleteConfirming(true);
+                return;
+              }
+              const token = localStorage.getItem("token");
+              setIsDeleting(true);
+              try {
+                const response = await fetch(
+                  `/api/v1/universities/${university.id}`,
+                  {
+                    method: "DELETE",
+                    headers: { Authorization: `Bearer ${token}` },
+                  },
+                );
+                if (!response.ok) throw new Error();
+                onDelete(university.id);
+              } catch {
+                setIsDeleting(false);
+                setDeleteConfirming(false);
+              }
+            }}
+            disabled={isDeleting}
+            className={`absolute top-3 left-3 z-10 flex cursor-pointer items-center gap-1.5 rounded-full px-2.5 py-1.5 text-xs font-medium backdrop-blur-sm transition-all disabled:opacity-60 ${
+              deleteConfirming
+                ? "bg-red-500 text-white hover:bg-red-600"
+                : "border border-white/20 bg-black/40 text-red-300 hover:bg-red-500/80 hover:text-white"
+            }`}
+          >
+            <Trash2 size={12} />
+            {isDeleting ? "..." : deleteConfirming ? "Confirmar" : ""}
+          </button>
+        )}
 
         {/* Floating Rating Badge */}
         {university.rating != null && (

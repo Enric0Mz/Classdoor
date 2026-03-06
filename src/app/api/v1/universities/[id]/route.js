@@ -17,7 +17,9 @@ export const PUT = withErrorHandler(async (request, { params }) => {
 });
 
 export const DELETE = withErrorHandler(async (request, { params }) => {
+  const { id } = await params;
   const decoded = await requireVerifiedUser(request);
   requireRole(decoded, ["ADMIN"]);
-  return NextResponse.json({ message: "Not implemented" }, { status: 501 });
+  await universityService.deleteUniversity(id);
+  return NextResponse.json({ message: "University deleted" });
 });

@@ -80,6 +80,14 @@ function computeStats(reviews) {
   };
 }
 
+export async function deleteUniversity(id) {
+  const university = await universityRepository.findById(id);
+  if (!university) {
+    throw new AppError("University not found", 404);
+  }
+  return universityRepository.remove(id);
+}
+
 export async function getUniversityById(id) {
   const university = await universityRepository.findById(id);
 

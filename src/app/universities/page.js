@@ -37,12 +37,34 @@ export default function UniversitiesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const [userRole, setUserRole] = useState(null);
+
   // Filters
   const [activeState, setActiveState] = useState("Todos");
   const [activeType, setActiveType] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [sortByRating, setSortByRating] = useState(false);
+
+  useEffect(() => {
+    try {
+      const token = localStorage.getItem("token");
+      if (token) {
+        const decoded = JSON.parse(atob(token.split(".")[1]));
+        if (decoded?.role) setUserRole(decoded.role);
+      }
+    } catch {
+      // ignore invalid token
+    }
+  }, []);
+
+  const isAdmin = userRole === "ADMIN";
+
+  function handleUniversityDelete(universityId) {
+    setUniversities((prev) =>
+      prev.filter((university) => university.id !== universityId),
+    );
+  }
 
   useEffect(() => {
     async function fetchUniversities() {
@@ -392,7 +414,12 @@ export default function UniversitiesPage() {
         ) : (
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {filtered.map((university) => (
-              <UniversityCard key={university.id} university={university} />
+              <UniversityCard
+                key={university.id}
+                university={university}
+                isAdmin={isAdmin}
+                onDelete={handleUniversityDelete}
+              />
             ))}
           </div>
         )}
