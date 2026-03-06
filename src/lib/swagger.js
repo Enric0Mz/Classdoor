@@ -265,7 +265,22 @@ const swaggerSpec = {
         description: "Requires ADMIN role.",
         security: [{ BearerAuth: [] }],
         responses: {
-          501: { description: "Not implemented" },
+          200: {
+            description: "University deleted successfully",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    message: {
+                      type: "string",
+                      example: "University deleted",
+                    },
+                  },
+                },
+              },
+            },
+          },
           401: {
             description: "Authentication required",
             content: {
@@ -276,6 +291,14 @@ const swaggerSpec = {
           },
           403: {
             description: "Forbidden: ADMIN role required",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
+          404: {
+            description: "University not found",
             content: {
               "application/json": {
                 schema: { $ref: "#/components/schemas/Error" },

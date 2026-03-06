@@ -40,6 +40,18 @@ export async function create(data) {
  * @param {string} domain - e.g. "usp.br"
  * @returns {object|null} The University record or null if not found
  */
+export async function remove(id) {
+  return prisma.$transaction(async (tx) => {
+    await tx.review.deleteMany({ where: { universityId: id } });
+    await tx.universityDomain.deleteMany({ where: { universityId: id } });
+    await tx.user.updateMany({
+      where: { universityId: id },
+      data: { universityId: null },
+    });
+    return tx.university.delete({ where: { id } });
+  });
+}
+
 export async function findByEmailDomain(domain) {
   const universityDomain = await prisma.universityDomain.findUnique({
     where: { domain },

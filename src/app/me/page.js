@@ -18,6 +18,8 @@ import {
   CheckCircle,
   XCircle,
   Settings,
+  Building2,
+  Shield,
 } from "lucide-react";
 
 function getInitials(user) {
@@ -53,6 +55,8 @@ export default function MePage() {
   const [pageState, setPageState] = useState("loading");
   const [errorMessage, setErrorMessage] = useState(null);
 
+  const [userRole, setUserRole] = useState(null);
+
   // Delete account flow
   const [deleteConfirming, setDeleteConfirming] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -72,6 +76,9 @@ export default function MePage() {
       router.push("/login");
       return;
     }
+
+    const decoded = decodeJwtPayload(token);
+    if (decoded?.role) setUserRole(decoded.role);
 
     async function fetchUser() {
       try {
@@ -425,20 +432,41 @@ export default function MePage() {
             </div>
           )}
 
-          {/* Admin Panel Link */}
-          {user.role === "ADMIN" && (
-            <Link
-              href="/admin/university-submissions"
-              className="flex w-full items-center justify-center gap-2 rounded-2xl border border-indigo-100 bg-indigo-50 py-3 text-sm font-medium text-indigo-700 transition-colors hover:bg-indigo-100"
-            >
-              <Settings size={15} />
-              Abrir painel administrativo
-            </Link>
+          {/* Admin Panel — only visible to admins */}
+          {(userRole === "ADMIN" || user.role === "ADMIN") && (
+            <div className="rounded-2xl border border-indigo-100 bg-white p-6 shadow-sm">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-100 text-indigo-600">
+                  <Shield size={16} />
+                </div>
+                <h2 className="text-sm font-semibold uppercase tracking-wide text-indigo-600">
+                  Painel Admin
+                </h2>
+              </div>
+              <p className="text-sm text-gray-500 mb-4">
+                Gerencie o conteudo da plataforma.
+              </p>
+              <div className="flex flex-wrap gap-3">
+                <Link
+                  href="/admin/universities/new"
+                  className="brand-gradient inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+                >
+                  <Building2 size={15} />
+                  Criar universidade
+                </Link>
+                <Link
+                  href="/admin/university-submissions"
+                  className="inline-flex items-center gap-2 rounded-xl border border-indigo-200 bg-indigo-50 px-5 py-2.5 text-sm font-medium text-indigo-700 transition-colors hover:bg-indigo-100"
+                >
+                  <Settings size={15} />
+                  Gerenciar sugestoes
+                </Link>
+              </div>
+            </div>
           )}
 
           {/* University Submissions */}
           <UniversitySubmissionsSection />
-
           {/* Logout */}
           <button
             onClick={handleLogout}

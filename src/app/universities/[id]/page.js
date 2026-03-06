@@ -14,7 +14,18 @@ import {
   SlidersHorizontal,
   ChevronDown,
   ArrowLeft,
+  Trash2,
 } from "lucide-react";
+
+// ─── JWT Helper ──────────────────────────────────────────────────────────────
+
+function decodeJwtPayload(token) {
+  try {
+    return JSON.parse(atob(token.split(".")[1]));
+  } catch {
+    return null;
+  }
+}
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -128,8 +139,16 @@ function StarRating({ rating, size = 15 }) {
 
 // ─── University Header ────────────────────────────────────────────────────────
 
-function UniversityHeader({ university, activeTab, onTabChange }) {
+function UniversityHeader({
+  university,
+  activeTab,
+  onTabChange,
+  isAdmin,
+  onDeleteUniversity,
+}) {
   const [following, setFollowing] = useState(false);
+  const [deleteConfirming, setDeleteConfirming] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const initials = getUniversityInitials(university.name);
   const typeLabel = university.type === "PUBLIC" ? "Pública" : "Privada";
 
@@ -190,18 +209,61 @@ function UniversityHeader({ university, activeTab, onTabChange }) {
             )}
           </div>
 
-          {/* Follow button */}
-          <button
-            onClick={() => setFollowing((prev) => !prev)}
-            className={`flex shrink-0 cursor-pointer items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium transition-all ${
-              following
-                ? "border border-indigo-300 bg-indigo-50 text-indigo-600 hover:bg-indigo-100"
-                : "brand-gradient border border-transparent text-white hover:opacity-90"
-            }`}
-          >
-            <Heart size={14} fill={following ? "#6366f1" : "none"} />
-            {following ? "Seguindo" : "Seguir"}
-          </button>
+          <div className="flex shrink-0 items-center gap-2">
+            {/* Follow button */}
+            <button
+              onClick={() => setFollowing((prev) => !prev)}
+              className={`flex cursor-pointer items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium transition-all ${
+                following
+                  ? "border border-indigo-300 bg-indigo-50 text-indigo-600 hover:bg-indigo-100"
+                  : "brand-gradient border border-transparent text-white hover:opacity-90"
+              }`}
+            >
+              <Heart size={14} fill={following ? "#6366f1" : "none"} />
+              {following ? "Seguindo" : "Seguir"}
+            </button>
+
+            {/* Admin delete button */}
+            {isAdmin && (
+              <button
+                onClick={async () => {
+                  if (!deleteConfirming) {
+                    setDeleteConfirming(true);
+                    return;
+                  }
+                  const token = localStorage.getItem("token");
+                  setIsDeleting(true);
+                  try {
+                    const response = await fetch(
+                      `/api/v1/universities/${university.id}`,
+                      {
+                        method: "DELETE",
+                        headers: { Authorization: `Bearer ${token}` },
+                      },
+                    );
+                    if (!response.ok) throw new Error();
+                    onDeleteUniversity();
+                  } catch {
+                    setIsDeleting(false);
+                    setDeleteConfirming(false);
+                  }
+                }}
+                disabled={isDeleting}
+                className={`flex cursor-pointer items-center gap-1.5 rounded-full px-3 py-2 text-sm font-medium transition-all disabled:opacity-60 ${
+                  deleteConfirming
+                    ? "bg-red-500 text-white hover:bg-red-600"
+                    : "border border-red-200 text-red-500 hover:bg-red-50"
+                }`}
+              >
+                <Trash2 size={14} />
+                {isDeleting
+                  ? "Removendo..."
+                  : deleteConfirming
+                    ? "Confirmar"
+                    : ""}
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Tabs */}
@@ -416,10 +478,12 @@ function FilterBar({ activeFilter, onFilterChange }) {
 
 // ─── Review Card ──────────────────────────────────────────────────────────────
 
-function ReviewCard({ review }) {
+function ReviewCard({ review, isAdmin, onDelete }) {
   const [expanded, setExpanded] = useState(false);
   const [helpfulCount, setHelpfulCount] = useState(0);
   const [liked, setLiked] = useState(false);
+  const [deleteConfirming, setDeleteConfirming] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const authorInitials = getAuthorInitials(review.author);
   const isAnonymous = !review.author;
@@ -556,6 +620,38 @@ function ReviewCard({ review }) {
         <button className="cursor-pointer rounded-full p-2 text-gray-300 transition-colors hover:bg-gray-50 hover:text-gray-500">
           <Flag size={14} />
         </button>
+        {isAdmin && (
+          <button
+            onClick={async () => {
+              if (!deleteConfirming) {
+                setDeleteConfirming(true);
+                return;
+              }
+              const token = localStorage.getItem("token");
+              setIsDeleting(true);
+              try {
+                const response = await fetch(`/api/v1/reviews/${review.id}`, {
+                  method: "DELETE",
+                  headers: { Authorization: `Bearer ${token}` },
+                });
+                if (!response.ok) throw new Error();
+                onDelete(review.id);
+              } catch {
+                setIsDeleting(false);
+                setDeleteConfirming(false);
+              }
+            }}
+            disabled={isDeleting}
+            className={`flex cursor-pointer items-center gap-1.5 rounded-full px-3 py-1.5 text-[0.8rem] font-medium transition-all disabled:opacity-60 ${
+              deleteConfirming
+                ? "bg-red-500 text-white hover:bg-red-600"
+                : "text-red-400 hover:bg-red-50 hover:text-red-500"
+            }`}
+          >
+            <Trash2 size={13} />
+            {isDeleting ? "Removendo..." : deleteConfirming ? "Confirmar" : ""}
+          </button>
+        )}
       </div>
     </div>
   );
@@ -591,6 +687,7 @@ export default function UniversityDetailPage() {
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState("Avaliações ⭐");
   const [activeFilter, setActiveFilter] = useState("Mais recentes");
+  const [userRole, setUserRole] = useState(null);
 
   useEffect(() => {
     async function fetchAll() {
@@ -623,6 +720,20 @@ export default function UniversityDetailPage() {
     }
     fetchAll();
   }, [id]);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      const decoded = decodeJwtPayload(token);
+      if (decoded?.role) setUserRole(decoded.role);
+    }
+  }, []);
+
+  const isAdmin = userRole === "ADMIN";
+
+  function handleReviewDelete(reviewId) {
+    setReviews((prev) => prev.filter((review) => review.id !== reviewId));
+  }
 
   async function loadMoreReviews() {
     if (!reviewsPagination || isLoadingMore) return;
@@ -719,6 +830,8 @@ export default function UniversityDetailPage() {
             university={university}
             activeTab={activeTab}
             onTabChange={setActiveTab}
+            isAdmin={isAdmin}
+            onDeleteUniversity={() => router.push("/universities")}
           />
         </div>
 
@@ -751,7 +864,12 @@ export default function UniversityDetailPage() {
                 <>
                   <div className="space-y-3">
                     {sortedReviews.map((review) => (
-                      <ReviewCard key={review.id} review={review} />
+                      <ReviewCard
+                        key={review.id}
+                        review={review}
+                        isAdmin={isAdmin}
+                        onDelete={handleReviewDelete}
+                      />
                     ))}
                   </div>
 
