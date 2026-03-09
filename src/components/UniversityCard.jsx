@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { MapPin, Star, Trash2 } from "lucide-react";
+import { fetchWithAuth } from "@/lib/fetchWithAuth";
 
 function getInitials(name) {
   return name
@@ -88,15 +89,11 @@ export default function UniversityCard({ university, isAdmin, onDelete }) {
                 setDeleteConfirming(true);
                 return;
               }
-              const token = localStorage.getItem("token");
               setIsDeleting(true);
               try {
-                const response = await fetch(
+                const response = await fetchWithAuth(
                   `/api/v1/universities/${university.id}`,
-                  {
-                    method: "DELETE",
-                    headers: { Authorization: `Bearer ${token}` },
-                  },
+                  { method: "DELETE" },
                 );
                 if (!response.ok) throw new Error();
                 onDelete(university.id);

@@ -14,6 +14,11 @@ import {
   AtSign,
   Building,
 } from "lucide-react";
+import {
+  fetchWithAuth,
+  AuthExpiredError,
+  isAuthenticated as checkAuth,
+} from "@/lib/fetchWithAuth";
 
 function decodeJwtPayload(token) {
   try {
@@ -83,38 +88,39 @@ function StatusBadge({ status }) {
 
 export default function AdminUniversitySubmissionsPage() {
   const router = useRouter();
-  const [token, setToken] = useState(null);
+  const [authorized, setAuthorized] = useState(false);
   const [submissions, setSubmissions] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeStatus, setActiveStatus] = useState("PENDING");
 
   useEffect(() => {
-    const storedToken = localStorage.getItem("token");
-    if (!storedToken) {
+    if (!checkAuth()) {
       router.replace("/login");
       return;
     }
 
-    const decoded = decodeJwtPayload(storedToken);
-    if (!decoded || decoded.role !== "ADMIN") {
-      router.replace("/");
-      return;
+    const storedToken = localStorage.getItem("token");
+    if (storedToken) {
+      const decoded = decodeJwtPayload(storedToken);
+      if (!decoded || decoded.role !== "ADMIN") {
+        router.replace("/");
+        return;
+      }
     }
 
-    setToken(storedToken);
+    setAuthorized(true);
   }, [router]);
 
   useEffect(() => {
-    if (!token) return;
+    if (!authorized) return;
 
     async function fetchSubmissions() {
       setIsLoading(true);
       setError(null);
       try {
-        const response = await fetch(
+        const response = await fetchWithAuth(
           `/api/v1/university-submissions?status=${activeStatus}&limit=50`,
-          { headers: { Authorization: `Bearer ${token}` } },
         );
 
         if (!response.ok) {
@@ -125,6 +131,10 @@ export default function AdminUniversitySubmissionsPage() {
         const data = await response.json();
         setSubmissions(data.data ?? []);
       } catch (err) {
+        if (err instanceof AuthExpiredError) {
+          router.push("/login");
+          return;
+        }
         setError(err.message);
       } finally {
         setIsLoading(false);
@@ -132,9 +142,9 @@ export default function AdminUniversitySubmissionsPage() {
     }
 
     fetchSubmissions();
-  }, [token, activeStatus]);
+  }, [authorized, activeStatus]);
 
-  if (!token) return null;
+  if (!authorized) return null;
 
   return (
     <main className="min-h-screen bg-gray-50">

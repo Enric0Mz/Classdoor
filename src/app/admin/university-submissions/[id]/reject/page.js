@@ -4,6 +4,11 @@ import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, MapPin, Globe, User, Calendar } from "lucide-react";
+import {
+  fetchWithAuth,
+  AuthExpiredError,
+  isAuthenticated as checkAuth,
+} from "@/lib/fetchWithAuth";
 
 function decodeJwtPayload(token) {
   try {
@@ -24,7 +29,7 @@ function formatDate(dateString) {
 export default function RejectSubmissionPage() {
   const router = useRouter();
   const { id: submissionId } = useParams();
-  const [token, setToken] = useState(null);
+  const [authorized, setAuthorized] = useState(false);
   const [submission, setSubmission] = useState(null);
   const [isLoadingSubmission, setIsLoadingSubmission] = useState(true);
 
@@ -34,32 +39,31 @@ export default function RejectSubmissionPage() {
 
   // Auth guard
   useEffect(() => {
-    const storedToken = localStorage.getItem("token");
-    if (!storedToken) {
+    if (!checkAuth()) {
       router.replace("/login");
       return;
     }
 
-    const decoded = decodeJwtPayload(storedToken);
-    if (!decoded || decoded.role !== "ADMIN") {
-      router.replace("/");
-      return;
+    const storedToken = localStorage.getItem("token");
+    if (storedToken) {
+      const decoded = decodeJwtPayload(storedToken);
+      if (!decoded || decoded.role !== "ADMIN") {
+        router.replace("/");
+        return;
+      }
     }
 
-    setToken(storedToken);
+    setAuthorized(true);
   }, [router]);
 
   // Fetch submission
   useEffect(() => {
-    if (!token) return;
+    if (!authorized) return;
 
     async function fetchSubmission() {
       try {
-        const response = await fetch(
+        const response = await fetchWithAuth(
           `/api/v1/university-submissions/${submissionId}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          },
         );
 
         if (!response.ok) throw new Error("Sugestao nao encontrada.");
@@ -74,7 +78,7 @@ export default function RejectSubmissionPage() {
     }
 
     fetchSubmission();
-  }, [token, submissionId]);
+  }, [authorized, submissionId]);
 
   async function handleSubmit(event) {
     event.preventDefault();
@@ -88,14 +92,11 @@ export default function RejectSubmissionPage() {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch(
+      const response = await fetchWithAuth(
         `/api/v1/university-submissions/${submissionId}/reject`,
         {
           method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ reason: reason.trim() }),
         },
       );
@@ -108,13 +109,17 @@ export default function RejectSubmissionPage() {
 
       router.push("/admin/university-submissions");
     } catch (err) {
+      if (err instanceof AuthExpiredError) {
+        router.push("/login");
+        return;
+      }
       setError(err.message);
     } finally {
       setIsSubmitting(false);
     }
   }
 
-  if (!token) return null;
+  if (!authorized) return null;
 
   if (isLoadingSubmission) {
     return (

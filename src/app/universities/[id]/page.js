@@ -16,6 +16,7 @@ import {
   ArrowLeft,
   Trash2,
 } from "lucide-react";
+import { fetchWithAuth } from "@/lib/fetchWithAuth";
 
 // ─── JWT Helper ──────────────────────────────────────────────────────────────
 
@@ -231,15 +232,11 @@ function UniversityHeader({
                     setDeleteConfirming(true);
                     return;
                   }
-                  const token = localStorage.getItem("token");
                   setIsDeleting(true);
                   try {
-                    const response = await fetch(
+                    const response = await fetchWithAuth(
                       `/api/v1/universities/${university.id}`,
-                      {
-                        method: "DELETE",
-                        headers: { Authorization: `Bearer ${token}` },
-                      },
+                      { method: "DELETE" },
                     );
                     if (!response.ok) throw new Error();
                     onDeleteUniversity();
@@ -627,13 +624,12 @@ function ReviewCard({ review, isAdmin, onDelete }) {
                 setDeleteConfirming(true);
                 return;
               }
-              const token = localStorage.getItem("token");
               setIsDeleting(true);
               try {
-                const response = await fetch(`/api/v1/reviews/${review.id}`, {
-                  method: "DELETE",
-                  headers: { Authorization: `Bearer ${token}` },
-                });
+                const response = await fetchWithAuth(
+                  `/api/v1/reviews/${review.id}`,
+                  { method: "DELETE" },
+                );
                 if (!response.ok) throw new Error();
                 onDelete(review.id);
               } catch {
