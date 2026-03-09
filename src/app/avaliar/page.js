@@ -13,6 +13,7 @@ import {
   ShieldX,
   X,
 } from "lucide-react";
+import { fetchWithAuth, AuthExpiredError } from "@/lib/fetchWithAuth";
 
 // ─── Interactive star picker ──────────────────────────────────────────────────
 
@@ -323,16 +324,16 @@ function AvaliarContent() {
   const [rejectionReason, setRejectionReason] = useState(null);
   const [showPendingModeration, setShowPendingModeration] = useState(false);
   const [showApproval, setShowApproval] = useState(false);
-  const [token, setToken] = useState(null);
-
   // Auth guard
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
     if (!storedToken) {
       router.replace("/register");
       return;
     }
-    setToken(storedToken);
+    setIsAuthenticated(true);
   }, [router]);
 
   // Fetch university list for selector
@@ -378,12 +379,9 @@ function AvaliarContent() {
           ? JSON.stringify({ pros: prosText, cons: consText })
           : undefined;
 
-      const response = await fetch("/api/v1/reviews", {
+      const response = await fetchWithAuth("/api/v1/reviews", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           universityId,
           rating,
@@ -410,13 +408,17 @@ function AvaliarContent() {
 
       setShowApproval(true);
     } catch (err) {
+      if (err instanceof AuthExpiredError) {
+        router.push("/login");
+        return;
+      }
       setError(err.message);
     } finally {
       setIsLoading(false);
     }
   }
 
-  if (!token) return null;
+  if (!isAuthenticated) return null;
 
   return (
     <>

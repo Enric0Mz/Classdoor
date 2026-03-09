@@ -21,6 +21,11 @@ import {
   Building2,
   Shield,
 } from "lucide-react";
+import {
+  fetchWithAuth,
+  AuthExpiredError,
+  clearTokens,
+} from "@/lib/fetchWithAuth";
 
 function getInitials(user) {
   if (user.username) return user.username.slice(0, 2).toUpperCase();
@@ -82,16 +87,7 @@ export default function MePage() {
 
     async function fetchUser() {
       try {
-        const response = await fetch("/api/v1/users/me", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        if (response.status === 401) {
-          localStorage.removeItem("token");
-          window.dispatchEvent(new Event("auth-change"));
-          router.push("/login");
-          return;
-        }
+        const response = await fetchWithAuth("/api/v1/users/me");
 
         // Email not verified — show a specific screen with resend option
         if (response.status === 403) {
@@ -102,8 +98,7 @@ export default function MePage() {
 
         // User deleted — token still valid but account is gone
         if (response.status === 404) {
-          localStorage.removeItem("token");
-          window.dispatchEvent(new Event("auth-change"));
+          clearTokens();
           setPageState("not_found");
           setIsLoading(false);
           return;
@@ -120,6 +115,10 @@ export default function MePage() {
         setUser(data);
         setPageState("loaded");
       } catch (err) {
+        if (err instanceof AuthExpiredError) {
+          router.push("/login");
+          return;
+        }
         setErrorMessage(err.message);
         setPageState("error");
       } finally {
@@ -133,12 +132,10 @@ export default function MePage() {
   async function handleResendVerification() {
     if (resendStatus === "sending" || resendStatus === "sent") return;
 
-    const token = localStorage.getItem("token");
     setResendStatus("sending");
     try {
-      const response = await fetch("/api/v1/users/me/email/verify", {
+      const response = await fetchWithAuth("/api/v1/users/me/email/verify", {
         method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
       });
       if (!response.ok) throw new Error();
       setResendStatus("sent");
@@ -155,20 +152,17 @@ export default function MePage() {
     }
 
     // Second click: execute deletion
-    const token = localStorage.getItem("token");
     setIsDeleting(true);
     setDeleteError(null);
     try {
-      const response = await fetch("/api/v1/users/me", {
+      const response = await fetchWithAuth("/api/v1/users/me", {
         method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
       });
       if (!response.ok) {
         const data = await response.json().catch(() => ({}));
         throw new Error(data.error?.message || "Erro ao deletar conta.");
       }
-      localStorage.removeItem("token");
-      window.dispatchEvent(new Event("auth-change"));
+      clearTokens();
       router.push("/");
     } catch (err) {
       setDeleteError(err.message);
@@ -587,11 +581,8 @@ function UniversitySubmissionsSection() {
       if (!token) return;
 
       try {
-        const response = await fetch(
+        const response = await fetchWithAuth(
           "/api/v1/users/me/university-submissions",
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          },
         );
         if (response.ok) {
           const data = await response.json();

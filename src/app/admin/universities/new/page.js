@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { GraduationCap, ArrowLeft, Building2 } from "lucide-react";
+import { fetchWithAuth, AuthExpiredError } from "@/lib/fetchWithAuth";
 
 function decodeJwtPayload(token) {
   try {
@@ -82,12 +83,9 @@ export default function CreateUniversityPage() {
       if (courses.length > 0) body.courses = courses;
       if (domain.trim()) body.domain = domain.trim();
 
-      const response = await fetch("/api/v1/universities", {
+      const response = await fetchWithAuth("/api/v1/universities", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
       });
 
@@ -99,6 +97,10 @@ export default function CreateUniversityPage() {
 
       router.push(`/universities/${data.id}`);
     } catch (err) {
+      if (err instanceof AuthExpiredError) {
+        router.push("/login");
+        return;
+      }
       setError(err.message);
     } finally {
       setIsLoading(false);

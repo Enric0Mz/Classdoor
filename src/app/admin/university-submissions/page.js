@@ -14,6 +14,7 @@ import {
   AtSign,
   Building,
 } from "lucide-react";
+import { fetchWithAuth, AuthExpiredError } from "@/lib/fetchWithAuth";
 
 function decodeJwtPayload(token) {
   try {
@@ -112,9 +113,8 @@ export default function AdminUniversitySubmissionsPage() {
       setIsLoading(true);
       setError(null);
       try {
-        const response = await fetch(
+        const response = await fetchWithAuth(
           `/api/v1/university-submissions?status=${activeStatus}&limit=50`,
-          { headers: { Authorization: `Bearer ${token}` } },
         );
 
         if (!response.ok) {
@@ -125,6 +125,10 @@ export default function AdminUniversitySubmissionsPage() {
         const data = await response.json();
         setSubmissions(data.data ?? []);
       } catch (err) {
+        if (err instanceof AuthExpiredError) {
+          router.push("/login");
+          return;
+        }
         setError(err.message);
       } finally {
         setIsLoading(false);

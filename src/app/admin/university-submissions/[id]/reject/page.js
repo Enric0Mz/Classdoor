@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, MapPin, Globe, User, Calendar } from "lucide-react";
+import { fetchWithAuth, AuthExpiredError } from "@/lib/fetchWithAuth";
 
 function decodeJwtPayload(token) {
   try {
@@ -55,11 +56,8 @@ export default function RejectSubmissionPage() {
 
     async function fetchSubmission() {
       try {
-        const response = await fetch(
+        const response = await fetchWithAuth(
           `/api/v1/university-submissions/${submissionId}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          },
         );
 
         if (!response.ok) throw new Error("Sugestao nao encontrada.");
@@ -88,14 +86,11 @@ export default function RejectSubmissionPage() {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch(
+      const response = await fetchWithAuth(
         `/api/v1/university-submissions/${submissionId}/reject`,
         {
           method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ reason: reason.trim() }),
         },
       );
@@ -108,6 +103,10 @@ export default function RejectSubmissionPage() {
 
       router.push("/admin/university-submissions");
     } catch (err) {
+      if (err instanceof AuthExpiredError) {
+        router.push("/login");
+        return;
+      }
       setError(err.message);
     } finally {
       setIsSubmitting(false);

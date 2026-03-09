@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { GraduationCap, ArrowLeft, Lightbulb } from "lucide-react";
+import { fetchWithAuth, AuthExpiredError } from "@/lib/fetchWithAuth";
 
 const BRAZILIAN_STATES = [
   "AC",
@@ -77,12 +78,9 @@ export default function SugerirUniversidadePage() {
     setIsLoading(true);
 
     try {
-      const response = await fetch("/api/v1/university-submissions", {
+      const response = await fetchWithAuth("/api/v1/university-submissions", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: name.trim(),
           type,
@@ -100,6 +98,10 @@ export default function SugerirUniversidadePage() {
 
       setSuccess(true);
     } catch (err) {
+      if (err instanceof AuthExpiredError) {
+        router.push("/login");
+        return;
+      }
       setError(err.message);
     } finally {
       setIsLoading(false);
