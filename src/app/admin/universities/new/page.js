@@ -4,7 +4,11 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { GraduationCap, ArrowLeft, Building2 } from "lucide-react";
-import { fetchWithAuth, AuthExpiredError } from "@/lib/fetchWithAuth";
+import {
+  fetchWithAuth,
+  AuthExpiredError,
+  isAuthenticated as checkAuth,
+} from "@/lib/fetchWithAuth";
 
 function decodeJwtPayload(token) {
   try {
@@ -21,7 +25,7 @@ const UNIVERSITY_TYPES = [
 
 export default function CreateUniversityPage() {
   const router = useRouter();
-  const [token, setToken] = useState(null);
+  const [authorized, setAuthorized] = useState(false);
 
   const [name, setName] = useState("");
   const [location, setLocation] = useState("");
@@ -35,17 +39,19 @@ export default function CreateUniversityPage() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const storedToken = localStorage.getItem("token");
-    if (!storedToken) {
+    if (!checkAuth()) {
       router.replace("/login");
       return;
     }
-    const decoded = decodeJwtPayload(storedToken);
-    if (decoded?.role !== "ADMIN") {
-      router.replace("/me");
-      return;
+    const storedToken = localStorage.getItem("token");
+    if (storedToken) {
+      const decoded = decodeJwtPayload(storedToken);
+      if (decoded?.role !== "ADMIN") {
+        router.replace("/me");
+        return;
+      }
     }
-    setToken(storedToken);
+    setAuthorized(true);
   }, [router]);
 
   function validate() {
@@ -107,7 +113,7 @@ export default function CreateUniversityPage() {
     }
   }
 
-  if (!token) return null;
+  if (!authorized) return null;
 
   return (
     <main
