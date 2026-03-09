@@ -59,7 +59,10 @@ export async function fetchWithAuth(url, options = {}) {
     throw new AuthExpiredError();
   }
 
-  const headers = { ...options.headers, Authorization: `Bearer ${accessToken}` };
+  const headers = {
+    ...options.headers,
+    Authorization: `Bearer ${accessToken}`,
+  };
   const response = await fetch(url, { ...options, headers });
 
   if (response.status !== 401) {
