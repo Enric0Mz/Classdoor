@@ -1,5 +1,6 @@
 import { AppError } from "@/errors/AppError";
 import * as universityRepository from "@/repositories/universityRepository";
+import * as universityDomainRepository from "@/repositories/universityDomainRepository";
 
 const VALID_TYPES = ["PUBLIC", "PRIVATE"];
 
@@ -11,6 +12,7 @@ export async function createUniversity({
   type,
   courses,
   rating,
+  domain,
 }) {
   if (!name) {
     throw new AppError("Name is required", 400);
@@ -33,7 +35,18 @@ export async function createUniversity({
     throw new AppError("A university with this name already exists", 409);
   }
 
-  return universityRepository.create({
+  if (domain) {
+    const existingDomain =
+      await universityDomainRepository.findByDomain(domain);
+    if (existingDomain) {
+      throw new AppError(
+        "This domain is already linked to another university",
+        409,
+      );
+    }
+  }
+
+  const university = await universityRepository.create({
     name,
     location,
     website,
@@ -42,6 +55,12 @@ export async function createUniversity({
     courses,
     rating,
   });
+
+  if (domain) {
+    await universityDomainRepository.create(domain, university.id);
+  }
+
+  return university;
 }
 
 export async function listUniversities({ skip, take } = {}) {

@@ -28,6 +28,7 @@ export default function CreateUniversityPage() {
   const [website, setWebsite] = useState("");
   const [image, setImage] = useState("");
   const [coursesInput, setCoursesInput] = useState("");
+  const [domain, setDomain] = useState("");
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -79,6 +80,7 @@ export default function CreateUniversityPage() {
       if (website.trim()) body.website = website.trim();
       if (image.trim()) body.image = image.trim();
       if (courses.length > 0) body.courses = courses;
+      if (domain.trim()) body.domain = domain.trim();
 
       const response = await fetch("/api/v1/universities", {
         method: "POST",
@@ -239,6 +241,24 @@ export default function CreateUniversityPage() {
                   placeholder="https://www.universidade.edu.br"
                   className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-800 outline-none transition-colors placeholder:text-gray-400 focus:border-indigo-300 focus:bg-white focus:ring-2 focus:ring-indigo-100"
                 />
+              </div>
+
+              {/* Domain */}
+              <div className="flex flex-col gap-2">
+                <label className="text-sm font-semibold text-gray-700">
+                  Dominio de e-mail{" "}
+                  <span className="font-normal text-gray-400">(opcional)</span>
+                </label>
+                <input
+                  type="text"
+                  value={domain}
+                  onChange={(event) => setDomain(event.target.value)}
+                  placeholder="Ex: usp.br"
+                  className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-800 outline-none transition-colors placeholder:text-gray-400 focus:border-indigo-300 focus:bg-white focus:ring-2 focus:ring-indigo-100"
+                />
+                <span className="text-xs text-gray-400">
+                  Dominio usado para verificar alunos (ex: usp.br, unicamp.br)
+                </span>
               </div>
 
               {/* Image URL */}
