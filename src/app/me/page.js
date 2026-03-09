@@ -25,6 +25,7 @@ import {
   fetchWithAuth,
   AuthExpiredError,
   clearTokens,
+  isAuthenticated as checkAuth,
 } from "@/lib/fetchWithAuth";
 
 function getInitials(user) {
@@ -76,14 +77,16 @@ export default function MePage() {
   }
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) {
+    if (!checkAuth()) {
       router.push("/login");
       return;
     }
 
-    const decoded = decodeJwtPayload(token);
-    if (decoded?.role) setUserRole(decoded.role);
+    const token = localStorage.getItem("token");
+    if (token) {
+      const decoded = decodeJwtPayload(token);
+      if (decoded?.role) setUserRole(decoded.role);
+    }
 
     async function fetchUser() {
       try {

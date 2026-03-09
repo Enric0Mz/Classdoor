@@ -4,7 +4,11 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, BookOpen } from "lucide-react";
-import { fetchWithAuth, AuthExpiredError } from "@/lib/fetchWithAuth";
+import {
+  fetchWithAuth,
+  AuthExpiredError,
+  isAuthenticated as checkAuth,
+} from "@/lib/fetchWithAuth";
 
 function getRoleFromToken(token) {
   try {
@@ -30,15 +34,17 @@ export default function NewCoursePage() {
   });
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) {
+    if (!checkAuth()) {
       router.replace("/login");
       return;
     }
-    const role = getRoleFromToken(token);
-    if (role !== "ADMIN") {
-      router.replace("/courses");
-      return;
+    const token = localStorage.getItem("token");
+    if (token) {
+      const role = getRoleFromToken(token);
+      if (role !== "ADMIN") {
+        router.replace("/courses");
+        return;
+      }
     }
     setAuthorized(true);
   }, [router]);

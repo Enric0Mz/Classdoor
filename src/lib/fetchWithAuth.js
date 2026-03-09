@@ -119,4 +119,13 @@ export class AuthExpiredError extends Error {
   }
 }
 
-export { getTokens, setTokens, clearTokens };
+/**
+ * Returns true if the user has any valid auth tokens (access or refresh).
+ * Use this in auth guards instead of checking only for the access token.
+ */
+function isAuthenticated() {
+  const { accessToken, refreshToken } = getTokens();
+  return Boolean(accessToken || refreshToken);
+}
+
+export { getTokens, setTokens, clearTokens, isAuthenticated };

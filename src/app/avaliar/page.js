@@ -13,7 +13,11 @@ import {
   ShieldX,
   X,
 } from "lucide-react";
-import { fetchWithAuth, AuthExpiredError } from "@/lib/fetchWithAuth";
+import {
+  fetchWithAuth,
+  AuthExpiredError,
+  isAuthenticated as checkAuth,
+} from "@/lib/fetchWithAuth";
 
 // ─── Interactive star picker ──────────────────────────────────────────────────
 
@@ -325,15 +329,14 @@ function AvaliarContent() {
   const [showPendingModeration, setShowPendingModeration] = useState(false);
   const [showApproval, setShowApproval] = useState(false);
   // Auth guard
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthed, setIsAuthed] = useState(false);
 
   useEffect(() => {
-    const storedToken = localStorage.getItem("token");
-    if (!storedToken) {
+    if (!checkAuth()) {
       router.replace("/register");
       return;
     }
-    setIsAuthenticated(true);
+    setIsAuthed(true);
   }, [router]);
 
   // Fetch university list for selector
@@ -418,7 +421,7 @@ function AvaliarContent() {
     }
   }
 
-  if (!isAuthenticated) return null;
+  if (!isAuthed) return null;
 
   return (
     <>
