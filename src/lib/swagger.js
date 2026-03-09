@@ -125,6 +125,13 @@ const swaggerSpec = {
                     nullable: true,
                     example: 4.5,
                   },
+                  domain: {
+                    type: "string",
+                    nullable: true,
+                    description:
+                      "Email domain to link to this university (used for student verification)",
+                    example: "mit.edu",
+                  },
                 },
               },
             },
