@@ -52,11 +52,26 @@ async function refreshAccessToken() {
  *   const response = await fetchWithAuth("/api/v1/reviews", { method: "POST", body: ... });
  */
 export async function fetchWithAuth(url, options = {}) {
-  const { accessToken } = getTokens();
+  const { accessToken, refreshToken } = getTokens();
 
+  // No access token — try to refresh if we have a refresh token
   if (!accessToken) {
-    clearTokens();
-    throw new AuthExpiredError();
+    if (!refreshToken) {
+      clearTokens();
+      throw new AuthExpiredError();
+    }
+
+    try {
+      const newAccessToken = await refreshAccessToken();
+      const headers = {
+        ...options.headers,
+        Authorization: `Bearer ${newAccessToken}`,
+      };
+      return fetch(url, { ...options, headers });
+    } catch {
+      clearTokens();
+      throw new AuthExpiredError();
+    }
   }
 
   const headers = {
