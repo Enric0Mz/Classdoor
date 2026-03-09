@@ -6,8 +6,23 @@ import { GraduationCap, LogOut, Zap } from "lucide-react";
 
 export default function LogoutPage() {
   useEffect(() => {
+    const token = localStorage.getItem("token");
+    const refreshToken = localStorage.getItem("refreshToken");
+
     localStorage.removeItem("token");
+    localStorage.removeItem("refreshToken");
     window.dispatchEvent(new Event("auth-change"));
+
+    if (token && refreshToken) {
+      fetch("/api/v1/users/logout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ refreshToken }),
+      }).catch(() => {});
+    }
   }, []);
 
   return (

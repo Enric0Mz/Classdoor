@@ -4,6 +4,11 @@ import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import {
+  fetchWithAuth,
+  AuthExpiredError,
+  isAuthenticated as checkAuth,
+} from "@/lib/fetchWithAuth";
 
 function decodeJwtPayload(token) {
   try {
@@ -16,7 +21,7 @@ function decodeJwtPayload(token) {
 export default function CreateUniversityFromSubmissionPage() {
   const router = useRouter();
   const { id: submissionId } = useParams();
-  const [token, setToken] = useState(null);
+  const [authorized, setAuthorized] = useState(false);
   const [submission, setSubmission] = useState(null);
   const [isLoadingSubmission, setIsLoadingSubmission] = useState(true);
 
@@ -34,32 +39,31 @@ export default function CreateUniversityFromSubmissionPage() {
 
   // Auth guard
   useEffect(() => {
-    const storedToken = localStorage.getItem("token");
-    if (!storedToken) {
+    if (!checkAuth()) {
       router.replace("/login");
       return;
     }
 
-    const decoded = decodeJwtPayload(storedToken);
-    if (!decoded || decoded.role !== "ADMIN") {
-      router.replace("/");
-      return;
+    const storedToken = localStorage.getItem("token");
+    if (storedToken) {
+      const decoded = decodeJwtPayload(storedToken);
+      if (!decoded || decoded.role !== "ADMIN") {
+        router.replace("/");
+        return;
+      }
     }
 
-    setToken(storedToken);
+    setAuthorized(true);
   }, [router]);
 
   // Fetch submission data
   useEffect(() => {
-    if (!token) return;
+    if (!authorized) return;
 
     async function fetchSubmission() {
       try {
-        const response = await fetch(
+        const response = await fetchWithAuth(
           `/api/v1/university-submissions/${submissionId}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          },
         );
 
         if (!response.ok) {
@@ -81,7 +85,7 @@ export default function CreateUniversityFromSubmissionPage() {
     }
 
     fetchSubmission();
-  }, [token, submissionId]);
+  }, [authorized, submissionId]);
 
   async function handleSubmit(event) {
     event.preventDefault();
@@ -96,12 +100,9 @@ export default function CreateUniversityFromSubmissionPage() {
         .filter(Boolean);
 
       // Step 1: Create the university
-      const createResponse = await fetch("/api/v1/universities", {
+      const createResponse = await fetchWithAuth("/api/v1/universities", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: name.trim(),
           location: location.trim(),
@@ -121,14 +122,11 @@ export default function CreateUniversityFromSubmissionPage() {
       }
 
       // Step 2: Approve the submission and link it to the created university
-      const approveResponse = await fetch(
+      const approveResponse = await fetchWithAuth(
         `/api/v1/university-submissions/${submissionId}/approve`,
         {
           method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             universityId: createData.id,
             emailDomain: emailDomain.trim() || undefined,
@@ -145,13 +143,17 @@ export default function CreateUniversityFromSubmissionPage() {
 
       router.push("/admin/university-submissions");
     } catch (err) {
+      if (err instanceof AuthExpiredError) {
+        router.push("/login");
+        return;
+      }
       setError(err.message);
     } finally {
       setIsSubmitting(false);
     }
   }
 
-  if (!token) return null;
+  if (!authorized) return null;
 
   if (isLoadingSubmission) {
     return (
