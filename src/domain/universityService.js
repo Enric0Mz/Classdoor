@@ -44,6 +44,56 @@ export async function createUniversity({
   });
 }
 
+export async function bulkCreateUniversities(universities) {
+  if (!Array.isArray(universities) || universities.length === 0) {
+    throw new AppError("Request body must be a non-empty array", 400);
+  }
+
+  const validatedUniversities = [];
+
+  for (const [index, university] of universities.entries()) {
+    const { name, location, website, image, type, courses, rating, domain } =
+      university;
+
+    if (!name) {
+      throw new AppError(`Item ${index}: Name is required`, 400);
+    }
+
+    if (!location) {
+      throw new AppError(`Item ${index}: Location is required`, 400);
+    }
+
+    if (!type) {
+      throw new AppError(`Item ${index}: Type is required`, 400);
+    }
+
+    if (!VALID_TYPES.includes(type)) {
+      throw new AppError(`Item ${index}: Type must be PUBLIC or PRIVATE`, 400);
+    }
+
+    const existingUniversity = await universityRepository.findByName(name);
+    if (existingUniversity) {
+      throw new AppError(
+        `Item ${index}: A university with the name "${name}" already exists`,
+        409,
+      );
+    }
+
+    validatedUniversities.push({
+      name,
+      location,
+      website,
+      image,
+      type,
+      courses,
+      rating,
+      domain,
+    });
+  }
+
+  return universityRepository.createManyWithDomains(validatedUniversities);
+}
+
 export async function listUniversities({ skip, take } = {}) {
   return universityRepository.findAll({ skip, take });
 }

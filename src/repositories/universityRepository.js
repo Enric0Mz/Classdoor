@@ -52,6 +52,28 @@ export async function remove(id) {
   });
 }
 
+export async function createManyWithDomains(universitiesData) {
+  return prisma.$transaction(async (tx) => {
+    const createdUniversities = [];
+
+    for (const universityData of universitiesData) {
+      const { domain, ...universityFields } = universityData;
+
+      const university = await tx.university.create({ data: universityFields });
+
+      if (domain) {
+        await tx.universityDomain.create({
+          data: { domain, universityId: university.id },
+        });
+      }
+
+      createdUniversities.push(university);
+    }
+
+    return createdUniversities;
+  });
+}
+
 export async function findByEmailDomain(domain) {
   const universityDomain = await prisma.universityDomain.findUnique({
     where: { domain },
