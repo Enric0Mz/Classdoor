@@ -147,7 +147,8 @@ describe("universityService.bulkCreateUniversities", () => {
         { name: "University A", location: "City", type: "PUBLIC" },
       ]),
     ).rejects.toMatchObject({
-      message: 'Item 0: A university with the name "University A" already exists',
+      message:
+        'Item 0: A university with the name "University A" already exists',
       statusCode: 409,
     });
 
