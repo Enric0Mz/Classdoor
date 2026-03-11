@@ -8,6 +8,6 @@ export const POST = withErrorHandler(async (request) => {
   const decoded = await requireVerifiedUser(request);
   requireRole(decoded, ["ADMIN"]);
   const body = await request.json();
-  const universities = await universityService.bulkCreateUniversities(body);
-  return NextResponse.json(universities, { status: 201 });
+  const result = await universityService.bulkCreateUniversities(body);
+  return NextResponse.json(result, { status: 201 });
 });

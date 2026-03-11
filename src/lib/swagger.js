@@ -179,7 +179,7 @@ const swaggerSpec = {
         tags: ["Universities"],
         summary: "Bulk create universities",
         description:
-          "Creates multiple universities at once, including their email domains. Requires ADMIN role. The operation is atomic — if any university fails validation, none are created.",
+          "Creates multiple universities at once, including their email domains. Requires ADMIN role. Duplicate universities (by name) and domains are automatically skipped. Returns the count of newly created universities.",
         security: [{ BearerAuth: [] }],
         requestBody: {
           required: true,
@@ -241,8 +241,26 @@ const swaggerSpec = {
             content: {
               "application/json": {
                 schema: {
-                  type: "array",
-                  items: { $ref: "#/components/schemas/University" },
+                  type: "object",
+                  properties: {
+                    created: {
+                      type: "integer",
+                      description: "Number of universities created",
+                      example: 10,
+                    },
+                    skipped: {
+                      type: "object",
+                      properties: {
+                        names: {
+                          type: "array",
+                          items: { type: "string" },
+                          description:
+                            "Names of universities that were skipped because they already exist",
+                          example: ["MIT"],
+                        },
+                      },
+                    },
+                  },
                 },
               },
             },
@@ -265,14 +283,6 @@ const swaggerSpec = {
           },
           403: {
             description: "Forbidden: ADMIN role required",
-            content: {
-              "application/json": {
-                schema: { $ref: "#/components/schemas/Error" },
-              },
-            },
-          },
-          409: {
-            description: "One of the universities already exists",
             content: {
               "application/json": {
                 schema: { $ref: "#/components/schemas/Error" },

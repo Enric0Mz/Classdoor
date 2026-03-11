@@ -14,6 +14,8 @@ import {
   Lightbulb,
 } from "lucide-react";
 
+const UNIVERSITIES_PER_PAGE = 20;
+
 const STATE_FILTERS = [
   "Todos",
   "SP",
@@ -34,7 +36,9 @@ const TYPE_FILTERS = [
 
 export default function UniversitiesPage() {
   const [universities, setUniversities] = useState([]);
+  const [pagination, setPagination] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [error, setError] = useState(null);
 
   const [userRole, setUserRole] = useState(null);
@@ -69,10 +73,13 @@ export default function UniversitiesPage() {
   useEffect(() => {
     async function fetchUniversities() {
       try {
-        const res = await fetch("/api/v1/universities");
+        const res = await fetch(
+          `/api/v1/universities?limit=${UNIVERSITIES_PER_PAGE}&page=1`,
+        );
         if (!res.ok) throw new Error("Falha ao carregar universidades");
         const data = await res.json();
         setUniversities(data.data ?? []);
+        setPagination(data.pagination ?? null);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -81,6 +88,25 @@ export default function UniversitiesPage() {
     }
     fetchUniversities();
   }, []);
+
+  async function loadMoreUniversities() {
+    if (!pagination || isLoadingMore) return;
+    const nextPage = pagination.page + 1;
+    setIsLoadingMore(true);
+    try {
+      const res = await fetch(
+        `/api/v1/universities?limit=${UNIVERSITIES_PER_PAGE}&page=${nextPage}`,
+      );
+      const data = await res.json();
+      setUniversities((prev) => [...prev, ...(data.data ?? [])]);
+      setPagination(data.pagination ?? null);
+    } finally {
+      setIsLoadingMore(false);
+    }
+  }
+
+  const hasMoreUniversities =
+    pagination && pagination.page < pagination.totalPages;
 
   const filtered = useMemo(() => {
     let result = universities;
@@ -150,8 +176,8 @@ export default function UniversitiesPage() {
           <div className="stagger-1 mb-6 inline-flex items-center gap-2 rounded-full border border-indigo-400/30 bg-indigo-500/20 px-4 py-1.5 text-xs font-semibold text-white backdrop-blur-sm">
             <TrendingUp size={13} />
             <span>
-              +{universities.length > 0 ? universities.length : "500"}{" "}
-              universidades avaliadas
+              +{pagination?.total || universities.length || "500"} universidades
+              avaliadas
             </span>
           </div>
 
@@ -190,7 +216,7 @@ export default function UniversitiesPage() {
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <div className="flex flex-col items-center rounded-2xl border border-white/10 bg-white/5 px-5 py-3 backdrop-blur-sm">
               <span className="text-xl font-bold text-white">
-                {loading ? "..." : universities.length}
+                {loading ? "..." : (pagination?.total ?? universities.length)}
               </span>
               <span className="text-xs text-gray-400">universidades</span>
             </div>
@@ -412,16 +438,64 @@ export default function UniversitiesPage() {
             </Link>
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {filtered.map((university) => (
-              <UniversityCard
-                key={university.id}
-                university={university}
-                isAdmin={isAdmin}
-                onDelete={handleUniversityDelete}
-              />
-            ))}
-          </div>
+          <>
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {filtered.map((university) => (
+                <UniversityCard
+                  key={university.id}
+                  university={university}
+                  isAdmin={isAdmin}
+                  onDelete={handleUniversityDelete}
+                />
+              ))}
+            </div>
+
+            {hasMoreUniversities && (
+              <button
+                onClick={loadMoreUniversities}
+                disabled={isLoadingMore}
+                className="mt-8 flex w-full cursor-pointer items-center justify-center gap-2 rounded-2xl border border-gray-100 bg-white py-3.5 text-sm font-medium text-gray-500 shadow-sm transition-colors hover:border-indigo-200 hover:text-indigo-600 disabled:opacity-60"
+              >
+                {isLoadingMore ? (
+                  <>
+                    <svg
+                      className="h-4 w-4 animate-spin"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      />
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 0 1 8-8v4a4 4 0 0 0-4 4H4z"
+                      />
+                    </svg>
+                    Carregando...
+                  </>
+                ) : (
+                  <>
+                    Carregar mais universidades
+                    <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-400">
+                      {pagination.total - universities.length} restantes
+                    </span>
+                  </>
+                )}
+              </button>
+            )}
+
+            {!hasMoreUniversities && universities.length > 0 && (
+              <p className="mt-4 py-2 text-center text-xs text-gray-300">
+                Todas as {universities.length} universidades carregadas
+              </p>
+            )}
+          </>
         )}
 
         {/* CTA for suggesting a university */}

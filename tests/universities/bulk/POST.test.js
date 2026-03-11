@@ -1,12 +1,17 @@
 import { bulkCreateUniversities } from "@/domain/universityService";
 import * as universityRepository from "@/repositories/universityRepository";
+import * as universityDomainRepository from "@/repositories/universityDomainRepository";
 import { requireVerifiedUser } from "@/lib/auth";
 import { requireRole } from "@/lib/authorization";
 import { POST } from "@/app/api/v1/universities/bulk/route";
 
 jest.mock("@/repositories/universityRepository", () => ({
-  findByName: jest.fn(),
+  findManyByNames: jest.fn(),
   createManyWithDomains: jest.fn(),
+}));
+
+jest.mock("@/repositories/universityDomainRepository", () => ({
+  findManyByDomains: jest.fn(),
 }));
 
 jest.mock("@/lib/auth", () => ({
@@ -64,24 +69,26 @@ describe("universityService.bulkCreateUniversities", () => {
       createdAt: new Date(),
     }));
 
-    universityRepository.findByName.mockResolvedValue(null);
+    universityRepository.findManyByNames.mockResolvedValue([]);
+    universityDomainRepository.findManyByDomains.mockResolvedValue([]);
     universityRepository.createManyWithDomains.mockResolvedValue(
       createdUniversities,
     );
 
     const result = await bulkCreateUniversities(validUniversities);
 
-    expect(universityRepository.findByName).toHaveBeenCalledTimes(2);
-    expect(universityRepository.findByName).toHaveBeenCalledWith(
+    expect(universityRepository.findManyByNames).toHaveBeenCalledWith([
       "University A",
-    );
-    expect(universityRepository.findByName).toHaveBeenCalledWith(
       "University B",
-    );
+    ]);
+    expect(universityDomainRepository.findManyByDomains).toHaveBeenCalledWith([
+      "a.edu.br",
+      "b.edu.br",
+    ]);
     expect(universityRepository.createManyWithDomains).toHaveBeenCalledWith(
       validUniversities,
     );
-    expect(result).toEqual(createdUniversities);
+    expect(result).toEqual({ created: 2, skipped: { names: [] } });
   });
 
   it("throws 400 when body is not an array", async () => {
@@ -136,40 +143,128 @@ describe("universityService.bulkCreateUniversities", () => {
     });
   });
 
-  it("throws 409 when a university name already exists", async () => {
-    universityRepository.findByName.mockResolvedValue({
-      id: "existing-id",
-      name: "University A",
-    });
+  it("skips universities that already exist and inserts new ones", async () => {
+    universityRepository.findManyByNames.mockResolvedValue([
+      { id: "existing-id", name: "University A" },
+    ]);
+    universityDomainRepository.findManyByDomains.mockResolvedValue([]);
+    universityRepository.createManyWithDomains.mockResolvedValue([
+      { id: "uuid-1", name: "University B" },
+    ]);
 
-    await expect(
-      bulkCreateUniversities([
-        { name: "University A", location: "City", type: "PUBLIC" },
-      ]),
-    ).rejects.toMatchObject({
-      message:
-        'Item 0: A university with the name "University A" already exists',
-      statusCode: 409,
-    });
+    const result = await bulkCreateUniversities(validUniversities);
 
+    expect(universityRepository.createManyWithDomains).toHaveBeenCalledWith([
+      validUniversities[1],
+    ]);
+    expect(result).toEqual({
+      created: 1,
+      skipped: { names: ["University A"] },
+    });
+  });
+
+  it("returns 0 when all universities already exist", async () => {
+    universityRepository.findManyByNames.mockResolvedValue([
+      { id: "id-1", name: "University A" },
+      { id: "id-2", name: "University B" },
+    ]);
+
+    const result = await bulkCreateUniversities(validUniversities);
+
+    expect(result).toEqual({
+      created: 0,
+      skipped: { names: ["University A", "University B"] },
+    });
     expect(universityRepository.createManyWithDomains).not.toHaveBeenCalled();
   });
 
-  it("includes the correct item index in validation errors", async () => {
-    universityRepository.findByName
-      .mockResolvedValueOnce(null)
-      .mockResolvedValueOnce({ id: "existing-id", name: "University B" });
+  it("deduplicates names within the payload", async () => {
+    universityRepository.findManyByNames.mockResolvedValue([]);
+    universityDomainRepository.findManyByDomains.mockResolvedValue([]);
+    universityRepository.createManyWithDomains.mockResolvedValue([
+      { id: "uuid-0", name: "University A" },
+    ]);
 
-    await expect(
-      bulkCreateUniversities([
-        { name: "University A", location: "City A", type: "PUBLIC" },
-        { name: "University B", location: "City B", type: "PRIVATE" },
-      ]),
-    ).rejects.toMatchObject({
-      message:
-        'Item 1: A university with the name "University B" already exists',
-      statusCode: 409,
-    });
+    const result = await bulkCreateUniversities([
+      {
+        name: "University A",
+        location: "City A",
+        type: "PUBLIC",
+        domain: "a.edu.br",
+      },
+      {
+        name: "University A",
+        location: "City A",
+        type: "PUBLIC",
+        domain: "a.edu.br",
+      },
+    ]);
+
+    expect(universityRepository.createManyWithDomains).toHaveBeenCalledWith([
+      {
+        name: "University A",
+        location: "City A",
+        type: "PUBLIC",
+        domain: "a.edu.br",
+        website: undefined,
+        image: undefined,
+        courses: undefined,
+        rating: undefined,
+      },
+    ]);
+    expect(result).toEqual({ created: 1, skipped: { names: [] } });
+  });
+
+  it("skips duplicate domains within the payload keeping only the first", async () => {
+    universityRepository.findManyByNames.mockResolvedValue([]);
+    universityDomainRepository.findManyByDomains.mockResolvedValue([]);
+    universityRepository.createManyWithDomains.mockResolvedValue([
+      { id: "uuid-0", name: "University A" },
+      { id: "uuid-1", name: "University B" },
+    ]);
+
+    await bulkCreateUniversities([
+      {
+        name: "University A",
+        location: "City A",
+        type: "PUBLIC",
+        domain: "same.edu.br",
+      },
+      {
+        name: "University B",
+        location: "City B",
+        type: "PRIVATE",
+        domain: "same.edu.br",
+      },
+    ]);
+
+    const calledWith =
+      universityRepository.createManyWithDomains.mock.calls[0][0];
+    expect(calledWith[0].domain).toBe("same.edu.br");
+    expect(calledWith[1].domain).toBeUndefined();
+  });
+
+  it("skips domains that already exist in the database", async () => {
+    universityRepository.findManyByNames.mockResolvedValue([]);
+    universityDomainRepository.findManyByDomains.mockResolvedValue([
+      { domain: "a.edu.br", universityId: "existing-id" },
+    ]);
+    universityRepository.createManyWithDomains.mockResolvedValue([
+      { id: "uuid-0", name: "University A" },
+    ]);
+
+    await bulkCreateUniversities([
+      {
+        name: "University A",
+        location: "City A",
+        type: "PUBLIC",
+        domain: "a.edu.br",
+      },
+    ]);
+
+    const calledWith =
+      universityRepository.createManyWithDomains.mock.calls[0][0];
+    expect(calledWith[0].domain).toBeUndefined();
   });
 });
 
@@ -189,30 +284,37 @@ describe("POST /api/v1/universities/bulk", () => {
     },
   ];
 
-  it("returns 201 with created universities when authenticated as ADMIN", async () => {
-    const createdUniversities = [
-      {
-        id: "uuid-0",
-        name: "University A",
-        location: "City A, Brazil",
-        type: "PRIVATE",
-        createdAt: "2024-01-01T00:00:00.000Z",
-      },
-    ];
-
+  it("returns 201 with count when authenticated as ADMIN", async () => {
     requireVerifiedUser.mockReturnValue(adminToken);
     requireRole.mockReturnValue(undefined);
-    universityRepository.findByName.mockResolvedValue(null);
-    universityRepository.createManyWithDomains.mockResolvedValue(
-      createdUniversities,
-    );
+    universityRepository.findManyByNames.mockResolvedValue([]);
+    universityDomainRepository.findManyByDomains.mockResolvedValue([]);
+    universityRepository.createManyWithDomains.mockResolvedValue([
+      { id: "uuid-0", name: "University A" },
+    ]);
 
     const response = await POST(makeRequest(validPayload));
 
     expect(requireVerifiedUser).toHaveBeenCalled();
     expect(requireRole).toHaveBeenCalledWith(adminToken, ["ADMIN"]);
     expect(response.status).toBe(201);
-    expect(response.body).toEqual(createdUniversities);
+    expect(response.body).toEqual({ created: 1, skipped: { names: [] } });
+  });
+
+  it("returns 201 with skipped names when all universities already exist", async () => {
+    requireVerifiedUser.mockReturnValue(adminToken);
+    requireRole.mockReturnValue(undefined);
+    universityRepository.findManyByNames.mockResolvedValue([
+      { id: "existing-id", name: "University A" },
+    ]);
+
+    const response = await POST(makeRequest(validPayload));
+
+    expect(response.status).toBe(201);
+    expect(response.body).toEqual({
+      created: 0,
+      skipped: { names: ["University A"] },
+    });
   });
 
   it("returns 401 when no token provided", async () => {
@@ -280,30 +382,11 @@ describe("POST /api/v1/universities/bulk", () => {
     });
   });
 
-  it("returns 409 when a university already exists", async () => {
-    requireVerifiedUser.mockReturnValue(adminToken);
-    requireRole.mockReturnValue(undefined);
-    universityRepository.findByName.mockResolvedValue({
-      id: "existing-id",
-      name: "University A",
-    });
-
-    const response = await POST(makeRequest(validPayload));
-
-    expect(response.status).toBe(409);
-    expect(response.body).toEqual({
-      error: {
-        message:
-          'Item 0: A university with the name "University A" already exists',
-        statusCode: 409,
-      },
-    });
-  });
-
   it("returns 500 on unexpected repository error", async () => {
     requireVerifiedUser.mockReturnValue(adminToken);
     requireRole.mockReturnValue(undefined);
-    universityRepository.findByName.mockResolvedValue(null);
+    universityRepository.findManyByNames.mockResolvedValue([]);
+    universityDomainRepository.findManyByDomains.mockResolvedValue([]);
     universityRepository.createManyWithDomains.mockRejectedValue(
       new Error("DB down"),
     );
