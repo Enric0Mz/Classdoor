@@ -30,6 +30,10 @@ export async function findByName(name) {
   return prisma.university.findUnique({ where: { name } });
 }
 
+export async function findManyByNames(names) {
+  return prisma.university.findMany({ where: { name: { in: names } } });
+}
+
 export async function create(data) {
   return prisma.university.create({ data });
 }
@@ -50,6 +54,47 @@ export async function remove(id) {
     });
     return tx.university.delete({ where: { id } });
   });
+}
+
+export async function createManyWithDomains(universitiesData) {
+  const universityFields = universitiesData.map(
+    ({ domain, ...fields }) => fields,
+  );
+  const names = universitiesData.map((university) => university.name);
+
+  return prisma.$transaction(
+    async (tx) => {
+      await tx.university.createMany({ data: universityFields });
+
+      const createdUniversities = await tx.university.findMany({
+        where: { name: { in: names } },
+      });
+
+      const universityNameToIdMap = new Map(
+        createdUniversities.map((university) => [
+          university.name,
+          university.id,
+        ]),
+      );
+
+      const domainRecords = universitiesData
+        .filter((university) => university.domain)
+        .map((university) => ({
+          domain: university.domain,
+          universityId: universityNameToIdMap.get(university.name),
+        }));
+
+      if (domainRecords.length > 0) {
+        await tx.universityDomain.createMany({ data: domainRecords });
+      }
+
+      return createdUniversities;
+    },
+    {
+      maxWait: 5000,
+      timeout: 10000,
+    },
+  );
 }
 
 export async function findByEmailDomain(domain) {

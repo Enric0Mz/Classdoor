@@ -181,6 +181,124 @@ const swaggerSpec = {
         },
       },
     },
+    "/api/v1/universities/bulk": {
+      post: {
+        tags: ["Universities"],
+        summary: "Bulk create universities",
+        description:
+          "Creates multiple universities at once, including their email domains. Requires ADMIN role. Duplicate universities (by name) and domains are automatically skipped. Returns the count of newly created universities.",
+        security: [{ BearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: {
+                type: "array",
+                items: {
+                  type: "object",
+                  required: ["name", "location", "type"],
+                  properties: {
+                    name: { type: "string", example: "MIT" },
+                    location: {
+                      type: "string",
+                      example: "Cambridge, MA, USA",
+                    },
+                    website: {
+                      type: "string",
+                      nullable: true,
+                      example: "https://mit.edu",
+                    },
+                    image: {
+                      type: "string",
+                      nullable: true,
+                      example: "https://example.com/mit.jpg",
+                    },
+                    type: {
+                      type: "string",
+                      enum: ["PUBLIC", "PRIVATE"],
+                      example: "PRIVATE",
+                    },
+                    courses: {
+                      type: "array",
+                      items: { type: "string" },
+                      example: ["Business", "Economics"],
+                    },
+                    rating: {
+                      type: "number",
+                      format: "float",
+                      nullable: true,
+                      example: 0,
+                    },
+                    domain: {
+                      type: "string",
+                      nullable: true,
+                      description:
+                        "Email domain to link to this university (used for student verification)",
+                      example: "mit.edu",
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          201: {
+            description: "Universities created",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    created: {
+                      type: "integer",
+                      description: "Number of universities created",
+                      example: 10,
+                    },
+                    skipped: {
+                      type: "object",
+                      properties: {
+                        names: {
+                          type: "array",
+                          items: { type: "string" },
+                          description:
+                            "Names of universities that were skipped because they already exist",
+                          example: ["MIT"],
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+          400: {
+            description: "Validation error",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
+          401: {
+            description: "Authentication required",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
+          403: {
+            description: "Forbidden: ADMIN role required",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
+        },
+      },
+    },
     "/api/v1/universities/{id}": {
       parameters: [
         {

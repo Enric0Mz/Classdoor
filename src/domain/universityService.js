@@ -63,6 +63,108 @@ export async function createUniversity({
   return university;
 }
 
+export async function bulkCreateUniversities(universities) {
+  if (!Array.isArray(universities) || universities.length === 0) {
+    throw new AppError("Request body must be a non-empty array", 400);
+  }
+
+  const validatedUniversities = [];
+
+  for (const [index, university] of universities.entries()) {
+    const { name, location, website, image, type, courses, rating, domain } =
+      university;
+
+    if (!name) {
+      throw new AppError(`Item ${index}: Name is required`, 400);
+    }
+
+    if (!location) {
+      throw new AppError(`Item ${index}: Location is required`, 400);
+    }
+
+    if (!type) {
+      throw new AppError(`Item ${index}: Type is required`, 400);
+    }
+
+    if (!VALID_TYPES.includes(type)) {
+      throw new AppError(`Item ${index}: Type must be PUBLIC or PRIVATE`, 400);
+    }
+
+    validatedUniversities.push({
+      name,
+      location,
+      website,
+      image,
+      type,
+      courses,
+      rating,
+      domain,
+    });
+  }
+
+  const seenNames = new Set();
+  const uniqueUniversities = validatedUniversities.filter((university) => {
+    if (seenNames.has(university.name)) return false;
+    seenNames.add(university.name);
+    return true;
+  });
+
+  const names = uniqueUniversities.map((university) => university.name);
+  const existingUniversities =
+    await universityRepository.findManyByNames(names);
+  const existingNameSet = new Set(
+    existingUniversities.map((university) => university.name),
+  );
+
+  const skippedNames = uniqueUniversities
+    .filter((university) => existingNameSet.has(university.name))
+    .map((university) => university.name);
+
+  const newUniversities = uniqueUniversities.filter(
+    (university) => !existingNameSet.has(university.name),
+  );
+
+  if (newUniversities.length === 0) {
+    return { created: 0, skipped: { names: skippedNames } };
+  }
+
+  const domains = newUniversities
+    .filter((university) => university.domain)
+    .map((university) => university.domain);
+
+  const seenDomains = new Set();
+  const deduplicatedUniversities = newUniversities.map((university) => {
+    if (!university.domain || seenDomains.has(university.domain)) {
+      return { ...university, domain: undefined };
+    }
+    seenDomains.add(university.domain);
+    return university;
+  });
+
+  if (domains.length > 0) {
+    const uniqueDomains = [...new Set(domains)];
+    const existingDomains =
+      await universityDomainRepository.findManyByDomains(uniqueDomains);
+    const existingDomainSet = new Set(
+      existingDomains.map((domainRecord) => domainRecord.domain),
+    );
+
+    for (const university of deduplicatedUniversities) {
+      if (university.domain && existingDomainSet.has(university.domain)) {
+        university.domain = undefined;
+      }
+    }
+  }
+
+  const createdUniversities = await universityRepository.createManyWithDomains(
+    deduplicatedUniversities,
+  );
+  return {
+    created: createdUniversities.length,
+    skipped: { names: skippedNames },
+  };
+}
+
 export async function listUniversities({ skip, take } = {}) {
   return universityRepository.findAll({ skip, take });
 }
