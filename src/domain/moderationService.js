@@ -38,7 +38,6 @@ const DEFAULT_PENDING_RESULT = {
  * @returns {Promise<{moderationStatus: string, moderationReason: string|null}>}
  */
 export async function moderateComment(comment) {
-  console.log("ENTROU", comment);
   try {
     const response = await getAnthropicClient().messages.create({
       model: "claude-haiku-4-5-20251001",
@@ -53,7 +52,6 @@ export async function moderateComment(comment) {
     const rawText = response.content[0].text.trim();
     const responseText = rawText.replace(/^```(?:json)?\s*|\s*```$/g, "");
     const parsed = JSON.parse(responseText);
-    console.log("RESPOSTA DA IA", parsed);
 
     const validStatuses = [
       "APPROVED",
