@@ -6,10 +6,34 @@ const REVIEW_AUTHOR_SELECT = {
   verified: true,
 };
 
-export async function findAll({ skip, take } = {}) {
+export async function findAll({ skip, take, search } = {}) {
+  const where = search
+    ? {
+        OR: [
+          { name: { contains: search, mode: "insensitive" } },
+          { location: { contains: search, mode: "insensitive" } },
+        ],
+      }
+    : undefined;
+
   const [data, total] = await prisma.$transaction([
-    prisma.university.findMany({ skip, take }),
-    prisma.university.count(),
+    prisma.university.findMany({
+      where,
+      include: {
+        reviews: {
+          where: {
+            moderationStatus: "APPROVED",
+            NOT: {
+              childReviews: { some: { moderationStatus: "APPROVED" } },
+            },
+          },
+          select: { rating: true },
+        },
+      },
+      skip,
+      take,
+    }),
+    prisma.university.count({ where }),
   ]);
   return { data, total };
 }

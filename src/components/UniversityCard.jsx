@@ -124,6 +124,16 @@ export default function UniversityCard({ university, isAdmin, onDelete }) {
           </div>
         )}
 
+        {/* Review Count Badge */}
+        {university.reviewCount > 0 && !university.rating && (
+          <div className="absolute top-3 right-3 flex items-center gap-1.5 rounded-full border border-white/20 bg-black/40 px-2.5 py-1 backdrop-blur-sm">
+            <span className="text-xs font-bold text-white">
+              {university.reviewCount}{" "}
+              {university.reviewCount === 1 ? "avaliação" : "avaliações"}
+            </span>
+          </div>
+        )}
+
         {/* Content Overlay */}
         <div className="absolute bottom-0 left-0 right-0 p-4">
           <div className="flex items-end gap-3">
@@ -148,22 +158,15 @@ export default function UniversityCard({ university, isAdmin, onDelete }) {
       {/* Body Content */}
       <div className="flex flex-1 flex-col justify-between p-5">
         <div>
-          {/* Rating Section */}
-          <div className="mb-4 flex items-center gap-2">
-            {university.rating != null ? (
-              <>
-                <span className="text-lg font-bold leading-none text-gray-900">
-                  {university.rating.toFixed(1)}
-                </span>
-                <StarRating rating={university.rating} />
-                {university.reviewCount && (
-                  <span className="ml-auto text-xs text-gray-400">
-                    ({university.reviewCount} avaliações)
-                  </span>
-                )}
-              </>
+          {/* Review Count */}
+          <div className="mb-4">
+            {university.reviewCount > 0 ? (
+              <span className="text-sm font-semibold text-gray-700">
+                {university.reviewCount}{" "}
+                {university.reviewCount === 1 ? "avaliação" : "avaliações"}
+              </span>
             ) : (
-              <span className="text-xs font-medium text-gray-400">
+              <span className="text-sm font-medium text-gray-400">
                 Sem avaliações ainda
               </span>
             )}

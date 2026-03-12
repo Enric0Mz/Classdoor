@@ -165,8 +165,28 @@ export async function bulkCreateUniversities(universities) {
   };
 }
 
-export async function listUniversities({ skip, take } = {}) {
-  return universityRepository.findAll({ skip, take });
+export async function listUniversities({ skip, take, search } = {}) {
+  const { data, total } = await universityRepository.findAll({
+    skip,
+    take,
+    search,
+  });
+  const enriched = data
+    .map((university) => {
+      const approvedReviews = university.reviews || [];
+      const reviewCount = approvedReviews.length;
+      const computedRating =
+        reviewCount > 0
+          ? +(
+              approvedReviews.reduce((sum, r) => sum + r.rating, 0) /
+              reviewCount
+            ).toFixed(1)
+          : null;
+      const { reviews, ...rest } = university;
+      return { ...rest, reviewCount, rating: computedRating };
+    })
+    .sort((a, b) => b.reviewCount - a.reviewCount);
+  return { data: enriched, total };
 }
 
 function computeStats(reviews) {

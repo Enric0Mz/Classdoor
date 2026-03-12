@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import UniversityCard from "@/components/UniversityCard";
 import Link from "next/link";
 import {
@@ -70,39 +70,56 @@ export default function UniversitiesPage() {
     );
   }
 
-  useEffect(() => {
-    async function fetchUniversities() {
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const debounceTimer = useRef(null);
+
+  function handleSearchChange(value) {
+    setSearchQuery(value);
+    clearTimeout(debounceTimer.current);
+    debounceTimer.current = setTimeout(() => setDebouncedSearch(value), 300);
+  }
+
+  const fetchUniversities = useCallback(
+    async (page = 1, append = false) => {
+      if (append) {
+        setIsLoadingMore(true);
+      } else {
+        setLoading(true);
+      }
       try {
-        const res = await fetch(
-          `/api/v1/universities?limit=${UNIVERSITIES_PER_PAGE}&page=1`,
-        );
+        const params = new URLSearchParams({
+          limit: String(UNIVERSITIES_PER_PAGE),
+          page: String(page),
+        });
+        if (debouncedSearch.trim()) {
+          params.set("search", debouncedSearch.trim());
+        }
+        const res = await fetch(`/api/v1/universities?${params}`);
         if (!res.ok) throw new Error("Falha ao carregar universidades");
         const data = await res.json();
-        setUniversities(data.data ?? []);
+        if (append) {
+          setUniversities((prev) => [...prev, ...(data.data ?? [])]);
+        } else {
+          setUniversities(data.data ?? []);
+        }
         setPagination(data.pagination ?? null);
       } catch (err) {
         setError(err.message);
       } finally {
         setLoading(false);
+        setIsLoadingMore(false);
       }
-    }
-    fetchUniversities();
-  }, []);
+    },
+    [debouncedSearch],
+  );
+
+  useEffect(() => {
+    fetchUniversities(1);
+  }, [fetchUniversities]);
 
   async function loadMoreUniversities() {
     if (!pagination || isLoadingMore) return;
-    const nextPage = pagination.page + 1;
-    setIsLoadingMore(true);
-    try {
-      const res = await fetch(
-        `/api/v1/universities?limit=${UNIVERSITIES_PER_PAGE}&page=${nextPage}`,
-      );
-      const data = await res.json();
-      setUniversities((prev) => [...prev, ...(data.data ?? [])]);
-      setPagination(data.pagination ?? null);
-    } finally {
-      setIsLoadingMore(false);
-    }
+    fetchUniversities(pagination.page + 1, true);
   }
 
   const hasMoreUniversities =
@@ -121,21 +138,12 @@ export default function UniversitiesPage() {
       result = result.filter((u) => u.type === activeType);
     }
 
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
-      result = result.filter(
-        (u) =>
-          u.name.toLowerCase().includes(query) ||
-          u.location.toLowerCase().includes(query),
-      );
-    }
-
     if (sortByRating) {
       result = [...result].sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0));
     }
 
     return result;
-  }, [universities, activeState, activeType, searchQuery, sortByRating]);
+  }, [universities, activeState, activeType, sortByRating]);
 
   const avgRating = useMemo(() => {
     const ratedUniversities = universities.filter((u) => u.rating != null);
@@ -203,7 +211,7 @@ export default function UniversitiesPage() {
                 type="text"
                 placeholder="Busque por universidade, cidade ou curso..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => handleSearchChange(e.target.value)}
                 className="flex-1 bg-transparent text-base text-white outline-none placeholder:text-gray-500"
               />
               <button className="brand-gradient ml-2 hidden rounded-xl px-6 py-2 text-sm font-semibold text-white transition-transform hover:scale-105 active:scale-95 sm:block">
