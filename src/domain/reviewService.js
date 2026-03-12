@@ -130,7 +130,11 @@ export async function listReviewsByAuthor({ authorId, skip, take } = {}) {
     skip,
     take,
   });
-  return { data: data.map(withIsVerified), total };
+  const enriched = data.map((review) => ({
+    ...withIsVerified(review),
+    childReviews: (review.childReviews || []).map(withIsVerified),
+  }));
+  return { data: enriched, total };
 }
 
 export async function getReviewById(id) {
@@ -155,51 +159,52 @@ export async function updateReview(id, data, requesterId, requesterRole) {
   }
 
   const { rating, difficultyLevel, comment } = data;
-  const updateData = {};
 
-  if (rating !== undefined) {
-    validateRating(rating);
-    updateData.rating = rating;
-  }
-  if (difficultyLevel !== undefined) {
-    validateDifficultyLevel(difficultyLevel);
-    updateData.difficultyLevel = difficultyLevel;
-  }
+  const newRating = rating !== undefined ? rating : review.rating;
+  const newDifficultyLevel =
+    difficultyLevel !== undefined ? difficultyLevel : review.difficultyLevel;
+
+  if (rating !== undefined) validateRating(rating);
+  if (difficultyLevel !== undefined) validateDifficultyLevel(difficultyLevel);
+
+  let newComment = review.comment;
+  let moderationStatus = "APPROVED";
+  let moderationReason = null;
+
   if (comment !== undefined) {
     const sanitizedComment = sanitizeString(comment);
     validateComment(sanitizedComment);
-    updateData.comment = sanitizedComment;
+    newComment = sanitizedComment;
 
-    const { moderationStatus, moderationReason } =
-      await moderateComment(sanitizedComment);
-    updateData.moderationStatus = moderationStatus;
-    updateData.moderationReason = moderationReason;
-    console.log("MOD Status", moderationStatus);
+    const moderation = await moderateComment(sanitizedComment);
+    moderationStatus = moderation.moderationStatus;
+    moderationReason = moderation.moderationReason;
   }
 
-  const updatedReview = await reviewRepository.update(id, updateData);
-  const result = withIsVerified(updatedReview);
+  const rootId = review.parentReviewId || review.id;
 
-  if (updateData.moderationStatus === "PENDING_MODERATION") {
-    return {
-      ...result,
-      moderation: {
-        status: "PENDING_MODERATION",
-        reason: "Sua avaliação foi recebida e será publicada em breve.",
-      },
+  const newReview = await reviewRepository.create({
+    rating: newRating,
+    difficultyLevel: newDifficultyLevel,
+    comment: newComment,
+    universityId: review.universityId,
+    authorId: review.authorId,
+    moderationStatus,
+    moderationReason,
+    parentReviewId: rootId,
+  });
+
+  const result = { review: withIsVerified(newReview) };
+
+  if (moderationStatus === "PENDING_MODERATION") {
+    result.moderation = {
+      status: "PENDING_MODERATION",
+      reason: "Sua avaliação foi recebida e será publicada em breve.",
     };
-  }
-
-  if (
-    updateData.moderationStatus &&
-    updateData.moderationStatus !== "APPROVED"
-  ) {
-    return {
-      ...result,
-      moderation: {
-        status: updateData.moderationStatus,
-        reason: updateData.moderationReason,
-      },
+  } else if (moderationStatus !== "APPROVED") {
+    result.moderation = {
+      status: moderationStatus,
+      reason: moderationReason,
     };
   }
 
@@ -219,5 +224,6 @@ export async function deleteReview(id, requesterId, requesterRole) {
     throw new AppError("Forbidden", 403);
   }
 
-  return reviewRepository.remove(id);
+  const rootId = review.parentReviewId || review.id;
+  return reviewRepository.remove(rootId);
 }

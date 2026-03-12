@@ -25,6 +25,7 @@ import {
   X,
   ShieldX,
   ChevronDown,
+  History,
 } from "lucide-react";
 import {
   fetchWithAuth,
@@ -808,7 +809,9 @@ function MyReviewCard({ review, onUpdate, onRemove }) {
   const [deleteConfirming, setDeleteConfirming] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [expanded, setExpanded] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
 
+  const childReviews = review.childReviews || [];
   const parsedComment = parseComment(review.comment);
   const TRUNCATE_LENGTH = 120;
 
@@ -870,17 +873,18 @@ function MyReviewCard({ review, onUpdate, onRemove }) {
 
       if (data.moderation?.status === "PENDING_MODERATION") {
         setIsEditing(false);
-        onUpdate(review.id, data);
+        onUpdate(review.id, data.review);
         return;
       }
 
       if (data.moderation) {
         setEditRejectionReason(data.moderation.reason);
+        onUpdate(review.id, data.review);
         return;
       }
 
       setIsEditing(false);
-      onUpdate(review.id, data);
+      onUpdate(review.id, data.review);
     } catch (err) {
       setEditError(err.message);
     } finally {
@@ -1130,6 +1134,55 @@ function MyReviewCard({ review, onUpdate, onRemove }) {
         </div>
       )}
 
+      {/* Edit history */}
+      {childReviews.length > 0 && (
+        <div className="mt-3 border-t border-gray-50 pt-2.5">
+          <button
+            onClick={() => setShowHistory(!showHistory)}
+            className="flex cursor-pointer items-center gap-1.5 text-xs font-medium text-gray-400 transition-colors hover:text-indigo-600"
+          >
+            <History size={12} />
+            Histórico de edições ({childReviews.length})
+            <ChevronDown
+              size={11}
+              className={`transition-transform ${showHistory ? "rotate-180" : ""}`}
+            />
+          </button>
+          {showHistory && (
+            <ul className="mt-2 space-y-2">
+              {childReviews.map((child) => {
+                const childComment = parseComment(child.comment);
+                const preview = childComment?.structured
+                  ? [childComment.pros, childComment.cons]
+                      .filter(Boolean)
+                      .join(" / ")
+                  : childComment?.text || "";
+                return (
+                  <li
+                    key={child.id}
+                    className="rounded-lg border border-gray-100 bg-gray-50/60 px-3 py-2"
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="text-[0.65rem] text-gray-400">
+                        {formatDate(child.createdAt)}
+                      </span>
+                      <ModerationStatusBadge status={child.moderationStatus} />
+                    </div>
+                    {preview && (
+                      <p className="mt-1 text-xs leading-relaxed text-gray-500">
+                        {preview.length > 100
+                          ? preview.slice(0, 100) + "..."
+                          : preview}
+                      </p>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
+      )}
+
       {/* Action buttons */}
       <div className="mt-3 flex items-center gap-2 border-t border-gray-50 pt-2.5">
         <button
@@ -1197,7 +1250,26 @@ function MyReviewsSection() {
 
   function handleReviewUpdate(reviewId, updatedReview) {
     setReviews((prev) =>
-      prev.map((review) => (review.id === reviewId ? updatedReview : review)),
+      prev.map((review) => {
+        if (review.id !== reviewId) return review;
+        const existingChildren = review.childReviews || [];
+        return {
+          ...review,
+          rating:
+            updatedReview.moderationStatus === "APPROVED"
+              ? updatedReview.rating
+              : review.rating,
+          difficultyLevel:
+            updatedReview.moderationStatus === "APPROVED"
+              ? updatedReview.difficultyLevel
+              : review.difficultyLevel,
+          comment:
+            updatedReview.moderationStatus === "APPROVED"
+              ? updatedReview.comment
+              : review.comment,
+          childReviews: [updatedReview, ...existingChildren],
+        };
+      }),
     );
   }
 

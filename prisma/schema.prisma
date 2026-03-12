@@ -68,6 +68,9 @@ model Review {
   editToken         String?
   moderationStatus  ModerationStatus @default(PENDING_MODERATION)
   moderationReason  String?
+  parentReviewId    String?
+  parentReview      Review?  @relation("ReviewEditHistory", fields: [parentReviewId], references: [id], onDelete: Cascade)
+  childReviews      Review[] @relation("ReviewEditHistory")
   createdAt         DateTime         @default(now())
 }
 

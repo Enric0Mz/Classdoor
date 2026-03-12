@@ -19,6 +19,10 @@ export async function findById(id) {
     where: { id },
     include: {
       reviews: {
+        where: {
+          moderationStatus: "APPROVED",
+          NOT: { childReviews: { some: { moderationStatus: "APPROVED" } } },
+        },
         include: { author: { select: REVIEW_AUTHOR_SELECT } },
         orderBy: { createdAt: "desc" },
       },

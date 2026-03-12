@@ -579,7 +579,7 @@ function ReviewCard({ review, isAdmin, isOwner, onDelete, onEdit }) {
       }
 
       setIsEditing(false);
-      onEdit(review.id, data);
+      onEdit(review.id, data.review);
     } catch (err) {
       setEditError(err.message);
     } finally {
