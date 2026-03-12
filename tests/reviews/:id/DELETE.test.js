@@ -61,6 +61,24 @@ describe("reviewService.deleteReview", () => {
       statusCode: 404,
     });
   });
+
+  it("allows ADMIN to delete another user's review", async () => {
+    reviewRepository.findById.mockResolvedValue(REVIEW);
+    reviewRepository.remove.mockResolvedValue(REVIEW);
+
+    await deleteReview("review-1", "admin-user", "ADMIN");
+
+    expect(reviewRepository.remove).toHaveBeenCalledWith("review-1");
+  });
+
+  it("allows MODERATOR to delete another user's review", async () => {
+    reviewRepository.findById.mockResolvedValue(REVIEW);
+    reviewRepository.remove.mockResolvedValue(REVIEW);
+
+    await deleteReview("review-1", "mod-user", "MODERATOR");
+
+    expect(reviewRepository.remove).toHaveBeenCalledWith("review-1");
+  });
 });
 
 describe("DELETE /api/v1/reviews/:id", () => {

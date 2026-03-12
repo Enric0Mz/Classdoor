@@ -124,6 +124,15 @@ export async function listReviews({ universityId, skip, take } = {}) {
   return { data: data.map(withIsVerified), total };
 }
 
+export async function listReviewsByAuthor({ authorId, skip, take } = {}) {
+  const { data, total } = await reviewRepository.findByAuthorId({
+    authorId,
+    skip,
+    take,
+  });
+  return { data: data.map(withIsVerified), total };
+}
+
 export async function getReviewById(id) {
   const review = await reviewRepository.findById(id);
   if (!review || review.moderationStatus !== "APPROVED") {
@@ -165,6 +174,7 @@ export async function updateReview(id, data, requesterId, requesterRole) {
       await moderateComment(sanitizedComment);
     updateData.moderationStatus = moderationStatus;
     updateData.moderationReason = moderationReason;
+    console.log("MOD Status", moderationStatus);
   }
 
   const updatedReview = await reviewRepository.update(id, updateData);

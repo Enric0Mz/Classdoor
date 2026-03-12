@@ -47,6 +47,24 @@ export async function update(id, data) {
   });
 }
 
+export async function findByAuthorId({ authorId, skip, take } = {}) {
+  const where = { authorId };
+  const [data, total] = await prisma.$transaction([
+    prisma.review.findMany({
+      where,
+      include: {
+        author: { select: AUTHOR_SELECT },
+        university: { select: { id: true, name: true } },
+      },
+      orderBy: { createdAt: "desc" },
+      skip,
+      take,
+    }),
+    prisma.review.count({ where }),
+  ]);
+  return { data, total };
+}
+
 export async function findPendingModeration(limit = 50) {
   return prisma.review.findMany({
     where: { moderationStatus: "PENDING_MODERATION" },

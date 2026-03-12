@@ -79,6 +79,106 @@ describe("reviewService.updateReview", () => {
       statusCode: 404,
     });
   });
+
+  it("allows ADMIN to update another user's review", async () => {
+    const updatedReview = { ...REVIEW, ...UPDATE_DATA };
+    reviewRepository.findById.mockResolvedValue(REVIEW);
+    reviewRepository.update.mockResolvedValue(updatedReview);
+
+    const result = await updateReview(
+      "review-1",
+      UPDATE_DATA,
+      "admin-user",
+      "ADMIN",
+    );
+
+    expect(reviewRepository.update).toHaveBeenCalledWith(
+      "review-1",
+      expect.objectContaining({ rating: 5 }),
+    );
+    expect(result).toEqual({ ...updatedReview, isVerified: false });
+  });
+
+  it("allows MODERATOR to update another user's review", async () => {
+    const updatedReview = { ...REVIEW, ...UPDATE_DATA };
+    reviewRepository.findById.mockResolvedValue(REVIEW);
+    reviewRepository.update.mockResolvedValue(updatedReview);
+
+    const result = await updateReview(
+      "review-1",
+      UPDATE_DATA,
+      "mod-user",
+      "MODERATOR",
+    );
+
+    expect(reviewRepository.update).toHaveBeenCalled();
+    expect(result).toEqual({ ...updatedReview, isVerified: false });
+  });
+
+  it("returns moderation info when comment update is pending moderation", async () => {
+    const { moderateComment } = require("@/domain/moderationService");
+    moderateComment.mockResolvedValueOnce({
+      moderationStatus: "PENDING_MODERATION",
+      moderationReason: "Needs review",
+    });
+
+    const updatedReview = {
+      ...REVIEW,
+      comment: "Some suspicious text",
+      moderationStatus: "PENDING_MODERATION",
+    };
+    reviewRepository.findById.mockResolvedValue(REVIEW);
+    reviewRepository.update.mockResolvedValue(updatedReview);
+
+    const result = await updateReview(
+      "review-1",
+      { comment: "Some suspicious text" },
+      "user-1",
+    );
+
+    expect(result.moderation).toEqual({
+      status: "PENDING_MODERATION",
+      reason: "Sua avaliação foi recebida e será publicada em breve.",
+    });
+  });
+
+  it("returns rejection info when comment update is rejected", async () => {
+    const { moderateComment } = require("@/domain/moderationService");
+    moderateComment.mockResolvedValueOnce({
+      moderationStatus: "REJECTED_OFFENSIVE",
+      moderationReason: "Conteúdo ofensivo detectado.",
+    });
+
+    const updatedReview = {
+      ...REVIEW,
+      comment: "Offensive content",
+      moderationStatus: "REJECTED_OFFENSIVE",
+    };
+    reviewRepository.findById.mockResolvedValue(REVIEW);
+    reviewRepository.update.mockResolvedValue(updatedReview);
+
+    const result = await updateReview(
+      "review-1",
+      { comment: "Offensive content" },
+      "user-1",
+    );
+
+    expect(result.moderation).toEqual({
+      status: "REJECTED_OFFENSIVE",
+      reason: "Conteúdo ofensivo detectado.",
+    });
+  });
+
+  it("updates only provided fields without affecting others", async () => {
+    reviewRepository.findById.mockResolvedValue(REVIEW);
+    reviewRepository.update.mockResolvedValue({ ...REVIEW, rating: 4 });
+
+    await updateReview("review-1", { rating: 4 }, "user-1");
+
+    expect(reviewRepository.update).toHaveBeenCalledWith("review-1", {
+      rating: 4,
+    });
+  });
 });
 
 describe("PUT /api/v1/reviews/:id", () => {

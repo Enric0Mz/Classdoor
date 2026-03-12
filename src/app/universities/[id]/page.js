@@ -15,8 +15,13 @@ import {
   ChevronDown,
   ArrowLeft,
   Trash2,
+  Pencil,
+  X,
+  ShieldX,
 } from "lucide-react";
 import { fetchWithAuth } from "@/lib/fetchWithAuth";
+import StarPicker from "@/components/StarPicker";
+import DifficultyPicker from "@/components/DifficultyPicker";
 
 // ─── JWT Helper ──────────────────────────────────────────────────────────────
 
@@ -475,21 +480,129 @@ function FilterBar({ activeFilter, onFilterChange }) {
 
 // ─── Review Card ──────────────────────────────────────────────────────────────
 
-function ReviewCard({ review, isAdmin, onDelete }) {
+function ReviewCard({ review, isAdmin, isOwner, onDelete, onEdit }) {
   const [expanded, setExpanded] = useState(false);
   const [helpfulCount, setHelpfulCount] = useState(0);
   const [liked, setLiked] = useState(false);
   const [deleteConfirming, setDeleteConfirming] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
+  // Edit state
+  const [isEditing, setIsEditing] = useState(false);
+  const [editRating, setEditRating] = useState(review.rating);
+  const [editDifficultyLevel, setEditDifficultyLevel] = useState(
+    review.difficultyLevel,
+  );
+  const [editPros, setEditPros] = useState("");
+  const [editCons, setEditCons] = useState("");
+  const [editError, setEditError] = useState(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [editRejectionReason, setEditRejectionReason] = useState(null);
+  const [showPendingModeration, setShowPendingModeration] = useState(false);
+
   const authorInitials = getAuthorInitials(review.author);
   const isAnonymous = !review.author;
   const parsedComment = parseComment(review.comment);
   const TRUNCATE_LENGTH = 180;
+  const canModify = isOwner || isAdmin;
 
   function handleLike() {
     setHelpfulCount((count) => (liked ? count - 1 : count + 1));
     setLiked((prev) => !prev);
+  }
+
+  function startEditing() {
+    setEditRating(review.rating);
+    setEditDifficultyLevel(review.difficultyLevel);
+    if (parsedComment?.structured) {
+      setEditPros(parsedComment.pros);
+      setEditCons(parsedComment.cons);
+    } else {
+      setEditPros(parsedComment?.text || "");
+      setEditCons("");
+    }
+    setEditError(null);
+    setIsEditing(true);
+  }
+
+  function cancelEditing() {
+    setIsEditing(false);
+    setEditError(null);
+  }
+
+  async function handleSaveEdit() {
+    if (!editRating) {
+      setEditError("Escolha uma nota de 1 a 5.");
+      return;
+    }
+    if (!editDifficultyLevel) {
+      setEditError("Escolha o nível de dificuldade.");
+      return;
+    }
+
+    setIsSaving(true);
+    setEditError(null);
+
+    try {
+      const prosText = editPros.trim();
+      const consText = editCons.trim();
+      const comment =
+        prosText || consText
+          ? JSON.stringify({ pros: prosText, cons: consText })
+          : undefined;
+
+      const response = await fetchWithAuth(`/api/v1/reviews/${review.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          rating: editRating,
+          difficultyLevel: editDifficultyLevel,
+          comment,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error?.message || "Erro ao atualizar avaliação.");
+      }
+
+      if (data.moderation?.status === "PENDING_MODERATION") {
+        setIsEditing(false);
+        setShowPendingModeration(true);
+        return;
+      }
+
+      if (data.moderation) {
+        setEditRejectionReason(data.moderation.reason);
+        return;
+      }
+
+      setIsEditing(false);
+      onEdit(review.id, data);
+    } catch (err) {
+      setEditError(err.message);
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  async function handleDelete() {
+    if (!deleteConfirming) {
+      setDeleteConfirming(true);
+      return;
+    }
+    setIsDeleting(true);
+    try {
+      const response = await fetchWithAuth(`/api/v1/reviews/${review.id}`, {
+        method: "DELETE",
+      });
+      if (!response.ok) throw new Error();
+      onDelete(review.id);
+    } catch {
+      setIsDeleting(false);
+      setDeleteConfirming(false);
+    }
   }
 
   const needsExpand = parsedComment?.structured
@@ -498,6 +611,218 @@ function ReviewCard({ review, isAdmin, onDelete }) {
         parsedComment.cons.length > TRUNCATE_LENGTH)
     : !expanded && parsedComment?.text?.length > TRUNCATE_LENGTH;
 
+  // ── Edit mode rendering ──
+  if (isEditing) {
+    return (
+      <div className="rounded-2xl border-2 border-indigo-200 bg-white p-5 shadow-sm">
+        {/* Rejection modal for edit */}
+        {editRejectionReason && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+            <div className="relative mx-4 flex w-full max-w-sm flex-col items-center gap-5 rounded-2xl border border-white/10 bg-white p-8 text-center shadow-2xl">
+              <button
+                onClick={() => setEditRejectionReason(null)}
+                className="absolute right-4 top-4 cursor-pointer rounded-lg p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
+              >
+                <X size={18} />
+              </button>
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-red-50">
+                <ShieldX size={32} className="text-red-500" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-800">
+                  Edição não publicada
+                </h3>
+                <p className="mt-2 text-sm text-gray-600">
+                  {editRejectionReason}
+                </p>
+              </div>
+              <p className="text-xs text-gray-400">
+                Você pode editar novamente e tentar outra vez.
+              </p>
+              <button
+                onClick={() => setEditRejectionReason(null)}
+                className="brand-gradient w-full cursor-pointer rounded-xl py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+              >
+                Entendi, vou revisar
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Header */}
+        <div className="mb-4 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Pencil size={14} className="text-indigo-500" />
+            <span className="text-sm font-semibold text-gray-700">
+              Editando avaliação
+            </span>
+          </div>
+          <button
+            onClick={cancelEditing}
+            className="cursor-pointer rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
+          >
+            <X size={16} />
+          </button>
+        </div>
+
+        {editError && (
+          <div className="mb-4 flex items-start gap-2.5 rounded-xl border border-red-100 bg-red-50 p-3">
+            <svg
+              className="mt-0.5 h-4 w-4 shrink-0 text-red-500"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fillRule="evenodd"
+                d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm-1-5a1 1 0 1 0 2 0V9a1 1 0 1 0-2 0v4zm1-7.5a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5z"
+                clipRule="evenodd"
+              />
+            </svg>
+            <p className="text-sm text-red-600">{editError}</p>
+          </div>
+        )}
+
+        <div className="space-y-5">
+          {/* Rating */}
+          <div className="flex flex-col gap-2">
+            <label className="text-sm font-semibold text-gray-700">
+              Nota geral
+            </label>
+            <div className="flex flex-col items-center gap-1 rounded-xl border border-gray-100 bg-gray-50 py-4">
+              <StarPicker
+                value={editRating}
+                onChange={setEditRating}
+                size="sm"
+              />
+            </div>
+          </div>
+
+          {/* Difficulty */}
+          <div className="flex flex-col gap-2">
+            <div className="flex items-baseline justify-between">
+              <label className="text-sm font-semibold text-gray-700">
+                Nível de dificuldade
+              </label>
+              <span className="text-xs text-gray-400">
+                1 = mais fácil, 5 = mais difícil
+              </span>
+            </div>
+            <DifficultyPicker
+              value={editDifficultyLevel}
+              onChange={setEditDifficultyLevel}
+            />
+          </div>
+
+          {/* Prós */}
+          <div className="flex flex-col gap-1.5">
+            <div className="flex items-center gap-1.5">
+              <span className="text-xs">✅</span>
+              <span className="text-sm font-semibold text-green-700">Prós</span>
+              <span className="ml-auto text-xs text-gray-400">
+                {editPros.length}/500
+              </span>
+            </div>
+            <textarea
+              rows={3}
+              maxLength={500}
+              value={editPros}
+              onChange={(event) => setEditPros(event.target.value)}
+              placeholder="Pontos positivos..."
+              className="w-full resize-none rounded-xl border border-green-200 bg-green-50/50 px-4 py-3 text-sm text-gray-800 outline-none transition-colors placeholder:text-gray-400 focus:border-green-300 focus:bg-white focus:ring-2 focus:ring-green-100"
+            />
+          </div>
+
+          {/* Contras */}
+          <div className="flex flex-col gap-1.5">
+            <div className="flex items-center gap-1.5">
+              <span className="text-xs">⚠️</span>
+              <span className="text-sm font-semibold text-amber-700">
+                Contras
+              </span>
+              <span className="ml-auto text-xs text-gray-400">
+                {editCons.length}/500
+              </span>
+            </div>
+            <textarea
+              rows={3}
+              maxLength={500}
+              value={editCons}
+              onChange={(event) => setEditCons(event.target.value)}
+              placeholder="Pontos negativos..."
+              className="w-full resize-none rounded-xl border border-amber-200 bg-amber-50/50 px-4 py-3 text-sm text-gray-800 outline-none transition-colors placeholder:text-gray-400 focus:border-amber-300 focus:bg-white focus:ring-2 focus:ring-amber-100"
+            />
+          </div>
+
+          {/* Action buttons */}
+          <div className="flex items-center gap-3 pt-1">
+            <button
+              onClick={cancelEditing}
+              disabled={isSaving}
+              className="flex-1 cursor-pointer rounded-xl border border-gray-200 py-2.5 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50 disabled:opacity-60"
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={handleSaveEdit}
+              disabled={isSaving}
+              className="brand-gradient flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-60"
+            >
+              {isSaving ? (
+                <>
+                  <svg
+                    className="h-4 w-4 animate-spin"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    />
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 0 1 8-8v4a4 4 0 0 0-4 4H4z"
+                    />
+                  </svg>
+                  Salvando...
+                </>
+              ) : (
+                "Salvar alterações"
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Pending moderation after edit ──
+  if (showPendingModeration) {
+    return (
+      <div className="rounded-2xl border border-amber-200 bg-amber-50/50 p-5 shadow-sm">
+        <div className="flex items-start gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-600">
+            <ShieldCheck size={20} />
+          </div>
+          <div className="flex-1">
+            <p className="text-sm font-semibold text-gray-800">
+              Avaliação em análise
+            </p>
+            <p className="mt-1 text-[0.82rem] text-gray-600">
+              Sua edição foi recebida e será publicada após a verificação dos
+              nossos moderadores.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Normal display mode ──
   return (
     <div className="card-glow rounded-2xl border border-gray-100 bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-px hover:shadow-md">
       {/* Top row: avatar + rating + verified + difficulty */}
@@ -611,32 +936,29 @@ function ReviewCard({ review, isAdmin, onDelete }) {
           <ThumbsDown size={13} />
         </button>
         <div className="flex-1" />
+
+        {/* Edit button — visible to owner */}
+        {isOwner && (
+          <button
+            onClick={startEditing}
+            className="cursor-pointer rounded-full p-2 text-gray-300 transition-colors hover:bg-indigo-50 hover:text-indigo-500"
+            title="Editar avaliação"
+          >
+            <Pencil size={14} />
+          </button>
+        )}
+
         <button className="cursor-pointer rounded-full p-2 text-gray-300 transition-colors hover:bg-gray-50 hover:text-gray-500">
           <Share2 size={14} />
         </button>
         <button className="cursor-pointer rounded-full p-2 text-gray-300 transition-colors hover:bg-gray-50 hover:text-gray-500">
           <Flag size={14} />
         </button>
-        {isAdmin && (
+
+        {/* Delete button — visible to owner or admin */}
+        {canModify && (
           <button
-            onClick={async () => {
-              if (!deleteConfirming) {
-                setDeleteConfirming(true);
-                return;
-              }
-              setIsDeleting(true);
-              try {
-                const response = await fetchWithAuth(
-                  `/api/v1/reviews/${review.id}`,
-                  { method: "DELETE" },
-                );
-                if (!response.ok) throw new Error();
-                onDelete(review.id);
-              } catch {
-                setIsDeleting(false);
-                setDeleteConfirming(false);
-              }
-            }}
+            onClick={handleDelete}
             disabled={isDeleting}
             className={`flex cursor-pointer items-center gap-1.5 rounded-full px-3 py-1.5 text-[0.8rem] font-medium transition-all disabled:opacity-60 ${
               deleteConfirming
@@ -684,6 +1006,7 @@ export default function UniversityDetailPage() {
   const [activeTab, setActiveTab] = useState("Avaliações ⭐");
   const [activeFilter, setActiveFilter] = useState("Mais recentes");
   const [userRole, setUserRole] = useState(null);
+  const [userId, setUserId] = useState(null);
 
   useEffect(() => {
     async function fetchAll() {
@@ -722,6 +1045,7 @@ export default function UniversityDetailPage() {
     if (token) {
       const decoded = decodeJwtPayload(token);
       if (decoded?.role) setUserRole(decoded.role);
+      if (decoded?.id) setUserId(decoded.id);
     }
   }, []);
 
@@ -729,6 +1053,12 @@ export default function UniversityDetailPage() {
 
   function handleReviewDelete(reviewId) {
     setReviews((prev) => prev.filter((review) => review.id !== reviewId));
+  }
+
+  function handleReviewEdit(reviewId, updatedReview) {
+    setReviews((prev) =>
+      prev.map((review) => (review.id === reviewId ? updatedReview : review)),
+    );
   }
 
   async function loadMoreReviews() {
@@ -864,7 +1194,9 @@ export default function UniversityDetailPage() {
                         key={review.id}
                         review={review}
                         isAdmin={isAdmin}
+                        isOwner={userId !== null && review.authorId === userId}
                         onDelete={handleReviewDelete}
+                        onEdit={handleReviewEdit}
                       />
                     ))}
                   </div>
