@@ -738,7 +738,11 @@ function parseComment(raw) {
   try {
     const parsed = JSON.parse(raw);
     if (parsed && (parsed.pros || parsed.cons)) {
-      return { structured: true, pros: parsed.pros || "", cons: parsed.cons || "" };
+      return {
+        structured: true,
+        pros: parsed.pros || "",
+        cons: parsed.cons || "",
+      };
     }
   } catch {
     // not JSON
@@ -774,7 +778,11 @@ function ModerationStatusBadge({ status }) {
       className: "bg-red-50 text-red-700 border-red-200",
     },
   };
-  const { label, icon: Icon, className } = config[status] || config.PENDING_MODERATION;
+  const {
+    label,
+    icon: Icon,
+    className,
+  } = config[status] || config.PENDING_MODERATION;
 
   return (
     <span
@@ -789,7 +797,9 @@ function ModerationStatusBadge({ status }) {
 function MyReviewCard({ review, onUpdate, onRemove }) {
   const [isEditing, setIsEditing] = useState(false);
   const [editRating, setEditRating] = useState(review.rating);
-  const [editDifficultyLevel, setEditDifficultyLevel] = useState(review.difficultyLevel);
+  const [editDifficultyLevel, setEditDifficultyLevel] = useState(
+    review.difficultyLevel,
+  );
   const [editPros, setEditPros] = useState("");
   const [editCons, setEditCons] = useState("");
   const [editError, setEditError] = useState(null);
@@ -920,8 +930,12 @@ function MyReviewCard({ review, onUpdate, onRemove }) {
                 <ShieldX size={32} className="text-red-500" />
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-gray-800">Edição não publicada</h3>
-                <p className="mt-2 text-sm text-gray-600">{editRejectionReason}</p>
+                <h3 className="text-lg font-semibold text-gray-800">
+                  Edição não publicada
+                </h3>
+                <p className="mt-2 text-sm text-gray-600">
+                  {editRejectionReason}
+                </p>
               </div>
               <button
                 onClick={() => setEditRejectionReason(null)}
@@ -936,7 +950,9 @@ function MyReviewCard({ review, onUpdate, onRemove }) {
         <div className="mb-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Pencil size={13} className="text-indigo-500" />
-            <span className="text-sm font-semibold text-gray-700">Editando avaliação</span>
+            <span className="text-sm font-semibold text-gray-700">
+              Editando avaliação
+            </span>
           </div>
           <button
             onClick={cancelEditing}
@@ -954,22 +970,35 @@ function MyReviewCard({ review, onUpdate, onRemove }) {
 
         <div className="space-y-4">
           <div className="flex flex-col gap-2">
-            <label className="text-xs font-semibold text-gray-600">Nota geral</label>
+            <label className="text-xs font-semibold text-gray-600">
+              Nota geral
+            </label>
             <div className="flex justify-center rounded-xl border border-gray-100 bg-gray-50 py-3">
-              <StarPicker value={editRating} onChange={setEditRating} size="sm" />
+              <StarPicker
+                value={editRating}
+                onChange={setEditRating}
+                size="sm"
+              />
             </div>
           </div>
 
           <div className="flex flex-col gap-2">
-            <label className="text-xs font-semibold text-gray-600">Dificuldade</label>
-            <DifficultyPicker value={editDifficultyLevel} onChange={setEditDifficultyLevel} />
+            <label className="text-xs font-semibold text-gray-600">
+              Dificuldade
+            </label>
+            <DifficultyPicker
+              value={editDifficultyLevel}
+              onChange={setEditDifficultyLevel}
+            />
           </div>
 
           <div className="flex flex-col gap-1.5">
             <div className="flex items-center gap-1.5">
               <span className="text-xs">✅</span>
               <span className="text-xs font-semibold text-green-700">Prós</span>
-              <span className="ml-auto text-xs text-gray-400">{editPros.length}/500</span>
+              <span className="ml-auto text-xs text-gray-400">
+                {editPros.length}/500
+              </span>
             </div>
             <textarea
               rows={2}
@@ -984,8 +1013,12 @@ function MyReviewCard({ review, onUpdate, onRemove }) {
           <div className="flex flex-col gap-1.5">
             <div className="flex items-center gap-1.5">
               <span className="text-xs">⚠️</span>
-              <span className="text-xs font-semibold text-amber-700">Contras</span>
-              <span className="ml-auto text-xs text-gray-400">{editCons.length}/500</span>
+              <span className="text-xs font-semibold text-amber-700">
+                Contras
+              </span>
+              <span className="ml-auto text-xs text-gray-400">
+                {editCons.length}/500
+              </span>
             </div>
             <textarea
               rows={2}
@@ -1036,9 +1069,13 @@ function MyReviewCard({ review, onUpdate, onRemove }) {
               {review.rating.toFixed(1)}
             </span>
             <span className="text-gray-300">•</span>
-            <span className="text-xs text-gray-400">dif. {review.difficultyLevel}/5</span>
+            <span className="text-xs text-gray-400">
+              dif. {review.difficultyLevel}/5
+            </span>
             <span className="text-gray-300">•</span>
-            <span className="text-xs text-gray-400">{formatDate(review.createdAt)}</span>
+            <span className="text-xs text-gray-400">
+              {formatDate(review.createdAt)}
+            </span>
           </div>
         </div>
         <ModerationStatusBadge status={review.moderationStatus} />
@@ -1121,7 +1158,11 @@ function MyReviewCard({ review, onUpdate, onRemove }) {
           }`}
         >
           <Trash2 size={12} />
-          {isDeleting ? "Removendo..." : deleteConfirming ? "Confirmar" : "Excluir"}
+          {isDeleting
+            ? "Removendo..."
+            : deleteConfirming
+              ? "Confirmar"
+              : "Excluir"}
         </button>
       </div>
     </li>
@@ -1137,7 +1178,9 @@ function MyReviewsSection() {
   useEffect(() => {
     async function fetchMyReviews() {
       try {
-        const response = await fetchWithAuth("/api/v1/users/me/reviews?limit=50");
+        const response = await fetchWithAuth(
+          "/api/v1/users/me/reviews?limit=50",
+        );
         if (response.ok) {
           const data = await response.json();
           setReviews(data.data ?? []);
