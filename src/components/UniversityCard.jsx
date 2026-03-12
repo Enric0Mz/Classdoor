@@ -124,16 +124,6 @@ export default function UniversityCard({ university, isAdmin, onDelete }) {
           </div>
         )}
 
-        {/* Review Count Badge */}
-        {university.reviewCount > 0 && !university.rating && (
-          <div className="absolute top-3 right-3 flex items-center gap-1.5 rounded-full border border-white/20 bg-black/40 px-2.5 py-1 backdrop-blur-sm">
-            <span className="text-xs font-bold text-white">
-              {university.reviewCount}{" "}
-              {university.reviewCount === 1 ? "avaliação" : "avaliações"}
-            </span>
-          </div>
-        )}
-
         {/* Content Overlay */}
         <div className="absolute bottom-0 left-0 right-0 p-4">
           <div className="flex items-end gap-3">
