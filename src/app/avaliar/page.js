@@ -266,20 +266,32 @@ function AvaliarContent() {
     setIsAuthed(true);
   }, [router]);
 
-  // Fetch university list for selector
+  // Fetch all universities for selector (paginated, max 100 per page)
   useEffect(() => {
-    async function fetchUniversities() {
+    async function fetchAllUniversities() {
       try {
-        const res = await fetch("/api/v1/universities");
-        if (res.ok) {
+        let allUniversities = [];
+        let page = 1;
+        let totalPages = 1;
+
+        while (page <= totalPages) {
+          const res = await fetch(
+            `/api/v1/universities?limit=100&page=${page}`,
+          );
+          if (!res.ok) break;
+
           const data = await res.json();
-          setUniversities(data.data ?? []);
+          allUniversities = [...allUniversities, ...(data.data ?? [])];
+          totalPages = data.pagination?.totalPages ?? 1;
+          page++;
         }
+
+        setUniversities(allUniversities);
       } catch {
         // non-blocking — university list is a convenience
       }
     }
-    fetchUniversities();
+    fetchAllUniversities();
   }, []);
 
   function validate() {
