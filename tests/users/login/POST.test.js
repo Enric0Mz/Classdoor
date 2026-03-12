@@ -124,6 +124,27 @@ describe("userService.loginUser", () => {
       statusCode: 401,
     });
   });
+
+  it("throws 400 when user has Google-only auth and tries password login", async () => {
+    const googleOnlyUser = {
+      id: "user-3",
+      email: "google@test.com",
+      password: null,
+      authProvider: "google",
+      role: "USER",
+      createdAt: new Date(),
+    };
+    userRepository.findByEmail.mockResolvedValue(googleOnlyUser);
+
+    await expect(
+      loginUser({ identifier: "google@test.com", password: "secret" }),
+    ).rejects.toMatchObject({
+      message: "This account uses Google sign-in. Please log in with Google.",
+      statusCode: 400,
+    });
+
+    expect(bcrypt.compare).not.toHaveBeenCalled();
+  });
 });
 
 describe("POST /api/v1/users/login", () => {

@@ -2228,6 +2228,49 @@ const swaggerSpec = {
         },
       },
     },
+    "/api/v1/auth/google": {
+      get: {
+        tags: ["Authentication"],
+        summary: "Initiate Google OAuth login",
+        description:
+          "Redirects the user to Google's consent screen. After authorization, Google redirects back to the callback endpoint.",
+        responses: {
+          302: {
+            description: "Redirect to Google OAuth consent screen",
+          },
+        },
+      },
+    },
+    "/api/v1/auth/google/callback": {
+      get: {
+        tags: ["Authentication"],
+        summary: "Google OAuth callback",
+        description:
+          "Handles the callback from Google after user authorization. Exchanges the authorization code for tokens, creates or links user accounts, and redirects to the frontend with JWT tokens.",
+        parameters: [
+          {
+            name: "code",
+            in: "query",
+            required: true,
+            schema: { type: "string" },
+            description: "Authorization code from Google",
+          },
+          {
+            name: "state",
+            in: "query",
+            required: true,
+            schema: { type: "string" },
+            description: "CSRF state parameter for validation",
+          },
+        ],
+        responses: {
+          302: {
+            description:
+              "Redirect to frontend success page with tokens, or to login page on error",
+          },
+        },
+      },
+    },
   },
   components: {
     securitySchemes: {
@@ -2404,6 +2447,13 @@ const swaggerSpec = {
           verified: { type: "boolean", example: false },
           emailVerified: { type: "boolean", example: false },
           role: { type: "string", enum: ["USER", "MODERATOR", "ADMIN"] },
+          authProvider: {
+            type: "string",
+            enum: ["local", "google", "local_and_google"],
+            example: "local",
+            description:
+              "How the account was created. 'local' = email/password, 'google' = Google OAuth, 'local_and_google' = both linked.",
+          },
           createdAt: { type: "string", format: "date-time" },
         },
       },
