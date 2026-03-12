@@ -1,17 +1,41 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState, useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { GraduationCap, AtSign, Lock, Eye, EyeOff, Zap } from "lucide-react";
+import GoogleAuthButton from "@/components/GoogleAuthButton";
+
+const GOOGLE_AUTH_ERRORS = {
+  google_auth_denied: "Login com Google foi cancelado.",
+  google_auth_failed: "Falha ao autenticar com Google. Tente novamente.",
+  google_no_account:
+    "Nenhuma conta encontrada com esse email Google. Cadastre-se primeiro.",
+};
 
 export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginPageContent />
+    </Suspense>
+  );
+}
+
+function LoginPageContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    const googleError = searchParams.get("error");
+    if (googleError && GOOGLE_AUTH_ERRORS[googleError]) {
+      setError(GOOGLE_AUTH_ERRORS[googleError]);
+    }
+  }, [searchParams]);
 
   async function handleSubmit(event) {
     event.preventDefault();
@@ -147,6 +171,17 @@ export default function LoginPage() {
                 <p className="text-sm text-red-600">{error}</p>
               </div>
             )}
+
+            <GoogleAuthButton label="Entrar com Google" intent="login" />
+
+            <div className="relative my-1">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-200" />
+              </div>
+              <div className="relative flex justify-center text-xs">
+                <span className="bg-white px-3 text-gray-400">ou</span>
+              </div>
+            </div>
 
             <form onSubmit={handleSubmit} className="flex flex-col gap-5">
               {/* Identifier */}
