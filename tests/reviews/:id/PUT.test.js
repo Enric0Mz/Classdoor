@@ -5,6 +5,7 @@ import { PUT } from "@/app/api/v1/reviews/[id]/route";
 
 jest.mock("@/repositories/reviewRepository", () => ({
   findById: jest.fn(),
+  create: jest.fn(),
   update: jest.fn(),
 }));
 
@@ -31,6 +32,7 @@ const REVIEW = {
   id: "review-1",
   rating: 3,
   difficultyLevel: 2,
+  comment: "Original comment",
   universityId: "uni-1",
   authorId: "user-1",
   author: { id: "user-1", username: "AgilOnca123", verified: false },
@@ -43,18 +45,22 @@ function makeParams(id) {
 }
 
 describe("reviewService.updateReview", () => {
-  it("updates the review when requester is the author", async () => {
-    const updatedReview = { ...REVIEW, ...UPDATE_DATA };
+  it("creates a child review instead of updating in place", async () => {
+    const createdReview = { ...REVIEW, ...UPDATE_DATA, id: "review-2" };
     reviewRepository.findById.mockResolvedValue(REVIEW);
-    reviewRepository.update.mockResolvedValue(updatedReview);
+    reviewRepository.create.mockResolvedValue(createdReview);
 
     const result = await updateReview("review-1", UPDATE_DATA, "user-1");
 
-    expect(reviewRepository.update).toHaveBeenCalledWith(
-      "review-1",
-      expect.objectContaining({ rating: 5, comment: "Updated comment" }),
+    expect(reviewRepository.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        parentReviewId: "review-1",
+        rating: 5,
+        comment: "Updated comment",
+      }),
     );
-    expect(result).toEqual({ ...updatedReview, isVerified: false });
+    expect(reviewRepository.update).not.toHaveBeenCalled();
+    expect(result.review.isVerified).toBe(false);
   });
 
   it("throws 403 when requester is not the author", async () => {
@@ -66,7 +72,7 @@ describe("reviewService.updateReview", () => {
       message: "Forbidden",
       statusCode: 403,
     });
-    expect(reviewRepository.update).not.toHaveBeenCalled();
+    expect(reviewRepository.create).not.toHaveBeenCalled();
   });
 
   it("throws 404 when review does not exist", async () => {
@@ -79,6 +85,112 @@ describe("reviewService.updateReview", () => {
       statusCode: 404,
     });
   });
+
+  it("allows ADMIN to update another user's review", async () => {
+    const createdReview = { ...REVIEW, ...UPDATE_DATA, id: "review-2" };
+    reviewRepository.findById.mockResolvedValue(REVIEW);
+    reviewRepository.create.mockResolvedValue(createdReview);
+
+    const result = await updateReview(
+      "review-1",
+      UPDATE_DATA,
+      "admin-user",
+      "ADMIN",
+    );
+
+    expect(reviewRepository.create).toHaveBeenCalledWith(
+      expect.objectContaining({ rating: 5 }),
+    );
+    expect(result.review.isVerified).toBe(false);
+  });
+
+  it("allows MODERATOR to update another user's review", async () => {
+    const createdReview = { ...REVIEW, ...UPDATE_DATA, id: "review-2" };
+    reviewRepository.findById.mockResolvedValue(REVIEW);
+    reviewRepository.create.mockResolvedValue(createdReview);
+
+    const result = await updateReview(
+      "review-1",
+      UPDATE_DATA,
+      "mod-user",
+      "MODERATOR",
+    );
+
+    expect(reviewRepository.create).toHaveBeenCalled();
+    expect(result.review.isVerified).toBe(false);
+  });
+
+  it("returns moderation info when comment update is pending moderation", async () => {
+    const { moderateComment } = require("@/domain/moderationService");
+    moderateComment.mockResolvedValueOnce({
+      moderationStatus: "PENDING_MODERATION",
+      moderationReason: "Needs review",
+    });
+
+    const createdReview = {
+      ...REVIEW,
+      comment: "Some suspicious text",
+      moderationStatus: "PENDING_MODERATION",
+      id: "review-2",
+    };
+    reviewRepository.findById.mockResolvedValue(REVIEW);
+    reviewRepository.create.mockResolvedValue(createdReview);
+
+    const result = await updateReview(
+      "review-1",
+      { comment: "Some suspicious text" },
+      "user-1",
+    );
+
+    expect(result.moderation).toEqual({
+      status: "PENDING_MODERATION",
+      reason: "Sua avaliação foi recebida e será publicada em breve.",
+    });
+  });
+
+  it("returns rejection info when comment update is rejected", async () => {
+    const { moderateComment } = require("@/domain/moderationService");
+    moderateComment.mockResolvedValueOnce({
+      moderationStatus: "REJECTED_OFFENSIVE",
+      moderationReason: "Conteúdo ofensivo detectado.",
+    });
+
+    const createdReview = {
+      ...REVIEW,
+      comment: "Offensive content",
+      moderationStatus: "REJECTED_OFFENSIVE",
+      id: "review-2",
+    };
+    reviewRepository.findById.mockResolvedValue(REVIEW);
+    reviewRepository.create.mockResolvedValue(createdReview);
+
+    const result = await updateReview(
+      "review-1",
+      { comment: "Offensive content" },
+      "user-1",
+    );
+
+    expect(result.moderation).toEqual({
+      status: "REJECTED_OFFENSIVE",
+      reason: "Conteúdo ofensivo detectado.",
+    });
+  });
+
+  it("merges unchanged fields from original when only rating is updated", async () => {
+    const createdReview = { ...REVIEW, rating: 4, id: "review-2" };
+    reviewRepository.findById.mockResolvedValue(REVIEW);
+    reviewRepository.create.mockResolvedValue(createdReview);
+
+    await updateReview("review-1", { rating: 4 }, "user-1");
+
+    expect(reviewRepository.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        rating: 4,
+        difficultyLevel: 2,
+        comment: "Original comment",
+      }),
+    );
+  });
 });
 
 describe("PUT /api/v1/reviews/:id", () => {
@@ -88,9 +200,9 @@ describe("PUT /api/v1/reviews/:id", () => {
       email: "user@test.com",
       role: "USER",
     });
-    const updatedReview = { ...REVIEW, rating: 5 };
+    const createdReview = { ...REVIEW, rating: 5, id: "review-2" };
     reviewRepository.findById.mockResolvedValue(REVIEW);
-    reviewRepository.update.mockResolvedValue(updatedReview);
+    reviewRepository.create.mockResolvedValue(createdReview);
 
     const request = {
       json: jest.fn().mockResolvedValue(UPDATE_DATA),

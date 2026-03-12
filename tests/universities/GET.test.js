@@ -12,7 +12,7 @@ jest.mock("next/server", () => ({
   },
 }));
 
-const UNIVERSITIES = [
+const UNIVERSITIES_FROM_DB = [
   {
     id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
     name: "MIT",
@@ -20,6 +20,7 @@ const UNIVERSITIES = [
     type: "PRIVATE",
     courses: ["Business"],
     rating: 4.5,
+    reviews: [{ rating: 5 }, { rating: 4 }],
   },
   {
     id: "b2c3d4e5-f6a7-8901-bcde-f12345678901",
@@ -28,10 +29,32 @@ const UNIVERSITIES = [
     type: "PUBLIC",
     courses: ["Research"],
     rating: 4.3,
+    reviews: [{ rating: 4 }, { rating: 5 }],
   },
 ];
 
-const PAGINATED_UNIVERSITIES = { data: UNIVERSITIES, total: 2 };
+const ENRICHED_UNIVERSITIES = [
+  {
+    id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    name: "MIT",
+    location: "Cambridge",
+    type: "PRIVATE",
+    courses: ["Business"],
+    rating: 4.5,
+    reviewCount: 2,
+  },
+  {
+    id: "b2c3d4e5-f6a7-8901-bcde-f12345678901",
+    name: "USP",
+    location: "São Paulo",
+    type: "PUBLIC",
+    courses: ["Research"],
+    rating: 4.5,
+    reviewCount: 2,
+  },
+];
+
+const PAGINATED_UNIVERSITIES = { data: UNIVERSITIES_FROM_DB, total: 2 };
 
 function makeGetRequest(searchParams = "") {
   return { url: `http://localhost/api/v1/universities${searchParams}` };
@@ -40,13 +63,14 @@ function makeGetRequest(searchParams = "") {
 beforeEach(() => jest.clearAllMocks());
 
 describe("universityService.listUniversities", () => {
-  it("returns paginated universities from the repository", async () => {
+  it("enriches universities with reviewCount and computed rating", async () => {
     universityRepository.findAll.mockResolvedValue(PAGINATED_UNIVERSITIES);
 
     const result = await listUniversities();
 
     expect(universityRepository.findAll).toHaveBeenCalledTimes(1);
-    expect(result).toEqual(PAGINATED_UNIVERSITIES);
+    expect(result.data).toEqual(ENRICHED_UNIVERSITIES);
+    expect(result.total).toBe(2);
   });
 
   it("returns empty data when no universities exist", async () => {
@@ -66,7 +90,7 @@ describe("GET /api/v1/universities", () => {
 
     expect(response.status).toBe(200);
     expect(response.body).toEqual({
-      data: UNIVERSITIES,
+      data: ENRICHED_UNIVERSITIES,
       pagination: { page: 1, limit: 10, total: 2, totalPages: 1 },
     });
   });

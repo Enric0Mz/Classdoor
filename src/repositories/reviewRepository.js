@@ -15,7 +15,10 @@ export async function create(data) {
 }
 
 export async function findAll({ universityId, skip, take } = {}) {
-  const where = { moderationStatus: "APPROVED" };
+  const where = {
+    moderationStatus: "APPROVED",
+    NOT: { childReviews: { some: { moderationStatus: "APPROVED" } } },
+  };
   if (universityId) {
     where.universityId = universityId;
   }
@@ -45,6 +48,28 @@ export async function update(id, data) {
     data,
     include: { author: { select: AUTHOR_SELECT } },
   });
+}
+
+export async function findByAuthorId({ authorId, skip, take } = {}) {
+  const where = { authorId, parentReviewId: null };
+  const [data, total] = await prisma.$transaction([
+    prisma.review.findMany({
+      where,
+      include: {
+        author: { select: AUTHOR_SELECT },
+        university: { select: { id: true, name: true } },
+        childReviews: {
+          include: { author: { select: AUTHOR_SELECT } },
+          orderBy: { createdAt: "desc" },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+      skip,
+      take,
+    }),
+    prisma.review.count({ where }),
+  ]);
+  return { data, total };
 }
 
 export async function findPendingModeration(limit = 50) {

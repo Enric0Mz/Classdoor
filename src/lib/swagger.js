@@ -2035,6 +2035,60 @@ const swaggerSpec = {
         },
       },
     },
+    "/api/v1/users/me/reviews": {
+      get: {
+        tags: ["Reviews"],
+        summary: "List current user's reviews",
+        description:
+          "Returns a paginated list of reviews made by the authenticated user, including all moderation statuses. Each review includes the university name.",
+        security: [{ BearerAuth: [] }],
+        parameters: [
+          {
+            name: "page",
+            in: "query",
+            required: false,
+            schema: { type: "integer", default: 1 },
+            description: "Page number",
+          },
+          {
+            name: "limit",
+            in: "query",
+            required: false,
+            schema: { type: "integer", default: 10, maximum: 100 },
+            description: "Number of items per page",
+          },
+        ],
+        responses: {
+          200: {
+            description: "List of user's reviews",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    data: {
+                      type: "array",
+                      items: { $ref: "#/components/schemas/Review" },
+                    },
+                    pagination: {
+                      $ref: "#/components/schemas/Pagination",
+                    },
+                  },
+                },
+              },
+            },
+          },
+          401: {
+            description: "Authentication required",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
+        },
+      },
+    },
     "/api/v1/users/{id}": {
       parameters: [
         {
