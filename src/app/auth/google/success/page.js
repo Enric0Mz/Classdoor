@@ -1,15 +1,18 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState, useRef } from "react";
+import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 
 function GoogleSuccessContent() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const [error, setError] = useState(null);
+  const hasProcessed = useRef(false);
 
   useEffect(() => {
+    if (hasProcessed.current) return;
+    hasProcessed.current = true;
+
     const token = searchParams.get("token");
     const refreshToken = searchParams.get("refreshToken");
 
@@ -22,8 +25,8 @@ function GoogleSuccessContent() {
     localStorage.setItem("refreshToken", refreshToken);
     window.dispatchEvent(new Event("auth-change"));
 
-    router.push("/universities");
-  }, [searchParams, router]);
+    window.location.href = "/universities";
+  }, [searchParams]);
 
   if (error) {
     return (

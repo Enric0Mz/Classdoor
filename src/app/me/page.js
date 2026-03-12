@@ -29,6 +29,7 @@ import {
 } from "@/lib/fetchWithAuth";
 
 function getInitials(user) {
+  if (!user) return "?";
   if (user.username) return user.username.slice(0, 2).toUpperCase();
   if (user.email) return user.email.slice(0, 2).toUpperCase();
   return "?";
@@ -124,9 +125,8 @@ export default function MePage() {
         }
         setErrorMessage(err.message);
         setPageState("error");
-      } finally {
-        setIsLoading(false);
       }
+      setIsLoading(false);
     }
 
     fetchUser();
