@@ -76,7 +76,10 @@ export async function handleGoogleCallback(code, intent) {
     googleUser.googleId,
   );
   if (existingByGoogleId) {
-    return { type: "authenticated", ...(await loginExistingUser(existingByGoogleId)) };
+    return {
+      type: "authenticated",
+      ...(await loginExistingUser(existingByGoogleId)),
+    };
   }
 
   const existingByEmail = await userRepository.findByEmail(googleUser.email);

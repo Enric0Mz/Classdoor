@@ -38,7 +38,9 @@ export async function GET(request) {
     const result = await handleGoogleCallback(code, intent);
 
     if (result.type === "needs_username") {
-      const chooseUsernameUrl = new URL(`${baseUrl}/auth/google/choose-username`);
+      const chooseUsernameUrl = new URL(
+        `${baseUrl}/auth/google/choose-username`,
+      );
       chooseUsernameUrl.searchParams.set("token", result.pendingToken);
       return NextResponse.redirect(chooseUsernameUrl.toString());
     }
@@ -53,9 +55,7 @@ export async function GET(request) {
 
     const errorPage = intent === "login" ? "/login" : "/register";
     const errorCode =
-      err.statusCode === 404
-        ? "google_no_account"
-        : "google_auth_failed";
+      err.statusCode === 404 ? "google_no_account" : "google_auth_failed";
 
     return NextResponse.redirect(`${baseUrl}${errorPage}?error=${errorCode}`);
   }
