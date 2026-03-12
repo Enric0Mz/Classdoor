@@ -23,9 +23,11 @@ function getGoogleClientSecret() {
 }
 
 function getRedirectUri() {
-  const baseUrl = process.env.VERCEL_URL
-    ? `https://${process.env.VERCEL_URL}`
-    : process.env.APP_URL || "http://localhost:3000";
+  const baseUrl =
+    process.env.APP_URL ||
+    (process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
+      : "http://localhost:3000");
   return `${baseUrl}/api/v1/auth/google/callback`;
 }
 
