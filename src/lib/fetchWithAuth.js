@@ -62,13 +62,23 @@ export async function fetchWithAuth(url, options = {}) {
     }
 
     try {
-      const newAccessToken = await refreshAccessToken();
+      if (!isRefreshing) {
+        isRefreshing = true;
+        refreshPromise = refreshAccessToken();
+      }
+
+      const newAccessToken = await refreshPromise;
+      isRefreshing = false;
+      refreshPromise = null;
+
       const headers = {
         ...options.headers,
         Authorization: `Bearer ${newAccessToken}`,
       };
       return fetch(url, { ...options, headers });
     } catch {
+      isRefreshing = false;
+      refreshPromise = null;
       clearTokens();
       throw new AuthExpiredError();
     }

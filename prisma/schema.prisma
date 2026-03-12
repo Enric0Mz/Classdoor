@@ -77,6 +77,8 @@ model User {
   password                     String?
   username                     String                        @unique
   role                         Role                          @default(USER)
+  googleId                     String?                       @unique
+  authProvider                 String                        @default("local")
   universityEmail              String?                       @unique
   verified                     Boolean                       @default(false)
   emailVerified                Boolean                       @default(false)
