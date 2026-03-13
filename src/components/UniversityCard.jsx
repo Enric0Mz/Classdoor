@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { MapPin, Star, Trash2 } from "lucide-react";
 import { fetchWithAuth } from "@/lib/fetchWithAuth";
+import ImageCarousel from "@/components/ImageCarousel";
 
 function getInitials(name) {
   return name
@@ -51,7 +52,7 @@ function StarRating({ rating }) {
 export default function UniversityCard({ university, isAdmin, onDelete }) {
   const [deleteConfirming, setDeleteConfirming] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const initials = getInitials(university.name);
+  const initials = university.abbreviation || getInitials(university.name);
   const typeLabel = university.type === "PUBLIC" ? "Pública" : "Privada";
 
   const typeStyles =
@@ -66,15 +67,16 @@ export default function UniversityCard({ university, isAdmin, onDelete }) {
     >
       {/* Image Header */}
       <div className="relative h-48 w-full shrink-0 overflow-hidden">
-        {university.image ? (
-          <img
-            src={university.image}
-            alt={university.name}
-            className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
-          />
-        ) : (
-          <div className="h-full w-full bg-gradient-to-br from-slate-800 via-indigo-900 to-violet-900" />
-        )}
+        <ImageCarousel
+          images={university.images}
+          alt={university.name}
+          className="transition-transform duration-700 group-hover:scale-105"
+          showArrows={university.images?.length > 1}
+          showDots={university.images?.length > 1}
+          fallback={
+            <div className="h-full w-full bg-gradient-to-br from-slate-800 via-indigo-900 to-violet-900" />
+          }
+        />
 
         {/* Gradient Overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-90 transition-opacity group-hover:opacity-100" />

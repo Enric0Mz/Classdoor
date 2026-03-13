@@ -203,11 +203,12 @@ describe("universityService.bulkCreateUniversities", () => {
     expect(universityRepository.createManyWithDomains).toHaveBeenCalledWith([
       {
         name: "University A",
+        abbreviation: undefined,
         location: "City A",
         type: "PUBLIC",
         domain: "a.edu.br",
         website: undefined,
-        image: undefined,
+        images: undefined,
         courses: undefined,
         rating: undefined,
       },

@@ -22,6 +22,7 @@ import {
 import { fetchWithAuth } from "@/lib/fetchWithAuth";
 import StarPicker from "@/components/StarPicker";
 import DifficultyPicker from "@/components/DifficultyPicker";
+import ImageCarousel from "@/components/ImageCarousel";
 
 // ─── JWT Helper ──────────────────────────────────────────────────────────────
 
@@ -155,22 +156,23 @@ function UniversityHeader({
   const [following, setFollowing] = useState(false);
   const [deleteConfirming, setDeleteConfirming] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const initials = getUniversityInitials(university.name);
+  const initials =
+    university.abbreviation || getUniversityInitials(university.name);
   const typeLabel = university.type === "PUBLIC" ? "Pública" : "Privada";
 
   return (
     <div className="overflow-hidden rounded-2xl border border-white/10 bg-white shadow-lg">
       {/* Banner — logo + name are both inside, white on dark = perfect readability */}
       <div className="relative h-44 sm:h-52 overflow-hidden">
-        {university.image ? (
-          <img
-            src={university.image}
-            alt={university.name}
-            className="h-full w-full object-cover"
-          />
-        ) : (
-          <div className="h-full w-full bg-gradient-to-br from-slate-800 via-indigo-900 to-violet-900" />
-        )}
+        <ImageCarousel
+          images={university.images}
+          alt={university.name}
+          showArrows={university.images?.length > 1}
+          showDots={university.images?.length > 1}
+          fallback={
+            <div className="h-full w-full bg-gradient-to-br from-slate-800 via-indigo-900 to-violet-900" />
+          }
+        />
         {/* Bottom-heavy gradient so logo + name are always readable */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
 

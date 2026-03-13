@@ -6,9 +6,10 @@ const VALID_TYPES = ["PUBLIC", "PRIVATE"];
 
 export async function createUniversity({
   name,
+  abbreviation,
   location,
   website,
-  image,
+  images,
   type,
   courses,
   rating,
@@ -48,9 +49,10 @@ export async function createUniversity({
 
   const university = await universityRepository.create({
     name,
+    abbreviation,
     location,
     website,
-    image,
+    images,
     type,
     courses,
     rating,
@@ -71,8 +73,17 @@ export async function bulkCreateUniversities(universities) {
   const validatedUniversities = [];
 
   for (const [index, university] of universities.entries()) {
-    const { name, location, website, image, type, courses, rating, domain } =
-      university;
+    const {
+      name,
+      abbreviation,
+      location,
+      website,
+      images,
+      type,
+      courses,
+      rating,
+      domain,
+    } = university;
 
     if (!name) {
       throw new AppError(`Item ${index}: Name is required`, 400);
@@ -92,9 +103,10 @@ export async function bulkCreateUniversities(universities) {
 
     validatedUniversities.push({
       name,
+      abbreviation,
       location,
       website,
-      image,
+      images,
       type,
       courses,
       rating,
