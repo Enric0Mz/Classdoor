@@ -95,6 +95,11 @@ const swaggerSpec = {
                 required: ["name", "location", "type"],
                 properties: {
                   name: { type: "string", example: "MIT" },
+                  abbreviation: {
+                    type: "string",
+                    nullable: true,
+                    example: "MIT",
+                  },
                   location: {
                     type: "string",
                     example: "Cambridge, MA",
@@ -104,10 +109,13 @@ const swaggerSpec = {
                     nullable: true,
                     example: "https://mit.edu",
                   },
-                  image: {
-                    type: "string",
-                    nullable: true,
-                    example: "https://example.com/mit.jpg",
+                  images: {
+                    type: "array",
+                    items: { type: "string" },
+                    example: [
+                      "https://example.com/mit1.jpg",
+                      "https://example.com/mit2.jpg",
+                    ],
                   },
                   type: {
                     type: "string",
@@ -199,6 +207,11 @@ const swaggerSpec = {
                   required: ["name", "location", "type"],
                   properties: {
                     name: { type: "string", example: "MIT" },
+                    abbreviation: {
+                      type: "string",
+                      nullable: true,
+                      example: "MIT",
+                    },
                     location: {
                       type: "string",
                       example: "Cambridge, MA, USA",
@@ -208,10 +221,13 @@ const swaggerSpec = {
                       nullable: true,
                       example: "https://mit.edu",
                     },
-                    image: {
-                      type: "string",
-                      nullable: true,
-                      example: "https://example.com/mit.jpg",
+                    images: {
+                      type: "array",
+                      items: { type: "string" },
+                      example: [
+                        "https://example.com/mit1.jpg",
+                        "https://example.com/mit2.jpg",
+                      ],
                     },
                     type: {
                       type: "string",
@@ -353,9 +369,13 @@ const swaggerSpec = {
                 type: "object",
                 properties: {
                   name: { type: "string" },
+                  abbreviation: { type: "string", nullable: true },
                   location: { type: "string" },
                   website: { type: "string", nullable: true },
-                  image: { type: "string", nullable: true },
+                  images: {
+                    type: "array",
+                    items: { type: "string" },
+                  },
                   type: { type: "string", enum: ["PUBLIC", "PRIVATE"] },
                   courses: { type: "array", items: { type: "string" } },
                   rating: { type: "number", format: "float", nullable: true },
@@ -2321,9 +2341,21 @@ const swaggerSpec = {
         properties: {
           id: { type: "string", format: "uuid" },
           name: { type: "string" },
+          abbreviation: { type: "string", nullable: true },
           location: { type: "string" },
           website: { type: "string", nullable: true },
-          image: { type: "string", nullable: true },
+          images: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                id: { type: "string", format: "uuid" },
+                url: { type: "string" },
+                universityId: { type: "string", format: "uuid" },
+                createdAt: { type: "string", format: "date-time" },
+              },
+            },
+          },
           type: { type: "string", enum: ["PUBLIC", "PRIVATE"] },
           courses: { type: "array", items: { type: "string" } },
           rating: { type: "number", format: "float", nullable: true },

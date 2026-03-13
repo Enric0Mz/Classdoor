@@ -11,6 +11,7 @@ export async function findAll({ skip, take, search } = {}) {
     ? {
         OR: [
           { name: { contains: search, mode: "insensitive" } },
+          { abbreviation: { contains: search, mode: "insensitive" } },
           { location: { contains: search, mode: "insensitive" } },
         ],
       }
@@ -20,6 +21,7 @@ export async function findAll({ skip, take, search } = {}) {
     prisma.university.findMany({
       where,
       include: {
+        images: true,
         reviews: {
           where: {
             moderationStatus: "APPROVED",
@@ -42,6 +44,7 @@ export async function findById(id) {
   return prisma.university.findUnique({
     where: { id },
     include: {
+      images: true,
       reviews: {
         where: {
           moderationStatus: "APPROVED",
@@ -62,8 +65,17 @@ export async function findManyByNames(names) {
   return prisma.university.findMany({ where: { name: { in: names } } });
 }
 
-export async function create(data) {
-  return prisma.university.create({ data });
+export async function create({ images, ...data }) {
+  return prisma.university.create({
+    data: {
+      ...data,
+      images:
+        images && images.length > 0
+          ? { create: images.map((url) => ({ url })) }
+          : undefined,
+    },
+    include: { images: true },
+  });
 }
 
 /**
@@ -76,6 +88,7 @@ export async function remove(id) {
   return prisma.$transaction(async (tx) => {
     await tx.review.deleteMany({ where: { universityId: id } });
     await tx.universityDomain.deleteMany({ where: { universityId: id } });
+    await tx.universityImage.deleteMany({ where: { universityId: id } });
     await tx.user.updateMany({
       where: { universityId: id },
       data: { universityId: null },
@@ -86,7 +99,7 @@ export async function remove(id) {
 
 export async function createManyWithDomains(universitiesData) {
   const universityFields = universitiesData.map(
-    ({ domain, ...fields }) => fields,
+    ({ domain, images, ...fields }) => fields,
   );
   const names = universitiesData.map((university) => university.name);
 
@@ -96,6 +109,7 @@ export async function createManyWithDomains(universitiesData) {
 
       const createdUniversities = await tx.university.findMany({
         where: { name: { in: names } },
+        include: { images: true },
       });
 
       const universityNameToIdMap = new Map(
@@ -114,6 +128,21 @@ export async function createManyWithDomains(universitiesData) {
 
       if (domainRecords.length > 0) {
         await tx.universityDomain.createMany({ data: domainRecords });
+      }
+
+      const imageRecords = universitiesData
+        .filter(
+          (university) => university.images && university.images.length > 0,
+        )
+        .flatMap((university) =>
+          university.images.map((url) => ({
+            url,
+            universityId: universityNameToIdMap.get(university.name),
+          })),
+        );
+
+      if (imageRecords.length > 0) {
+        await tx.universityImage.createMany({ data: imageRecords });
       }
 
       return createdUniversities;

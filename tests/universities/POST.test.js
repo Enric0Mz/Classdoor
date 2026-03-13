@@ -73,9 +73,10 @@ describe("universityService.createUniversity", () => {
 
     expect(universityRepository.create).toHaveBeenCalledWith({
       name: "MIT",
+      abbreviation: undefined,
       location: "Cambridge",
       website: undefined,
-      image: undefined,
+      images: undefined,
       type: "PUBLIC",
       courses: undefined,
       rating: undefined,

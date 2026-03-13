@@ -34,18 +34,27 @@ enum SubmissionStatus {
 
 model University {
   id        String              @id @default(uuid())
-  name      String              @unique
-  location  String
-  website   String?
-  image     String?
+  name         String              @unique
+  abbreviation String?
+  location     String
+  website      String?
   type      UniversityType
   courses   String[]
   rating    Float?
   createdAt DateTime            @default(now())
+  images      UniversityImage[]
   reviews     Review[]
   domains     UniversityDomain[]
   users       User[]
   submissions UniversitySubmission[]
+}
+
+model UniversityImage {
+  id           String     @id @default(uuid())
+  url          String
+  universityId String
+  university   University @relation(fields: [universityId], references: [id])
+  createdAt    DateTime   @default(now())
 }
 
 model UniversityDomain {
