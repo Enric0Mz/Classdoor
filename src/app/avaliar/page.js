@@ -20,23 +20,21 @@ import {
 } from "@/lib/fetchWithAuth";
 import StarPicker from "@/components/StarPicker";
 import DifficultyPicker from "@/components/DifficultyPicker";
-import { useUniversitySearch } from "@/hooks/useUniversitySearch";
 
 // ─── University selector ──────────────────────────────────────────────────────
 
-function UniversitySelector({ value, onChange }) {
+function UniversitySelector({ value, onChange, universities }) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
-  const [selected, setSelected] = useState(null);
 
-  const { results: filtered, isLoading } = useUniversitySearch({
-    search,
-    debounceMs: 300,
-  });
+  const filtered = universities.filter((u) =>
+    u.name.toLowerCase().includes(search.toLowerCase()),
+  );
+
+  const selected = universities.find((u) => u.id === value);
 
   function select(university) {
     onChange(university.id);
-    setSelected(university);
     setSearch("");
     setOpen(false);
   }
@@ -73,9 +71,7 @@ function UniversitySelector({ value, onChange }) {
             />
           </div>
           <ul className="max-h-56 overflow-y-auto">
-            {isLoading ? (
-              <li className="px-4 py-3 text-sm text-gray-400">Buscando...</li>
-            ) : filtered.length === 0 ? (
+            {filtered.length === 0 ? (
               <li className="px-4 py-3 text-sm text-gray-400">
                 Nenhuma universidade encontrada.
               </li>
@@ -246,6 +242,7 @@ function AvaliarContent() {
   const searchParams = useSearchParams();
   const preselectedUniversityId = searchParams.get("universityId");
 
+  const [universities, setUniversities] = useState([]);
   const [universityId, setUniversityId] = useState(
     preselectedUniversityId || "",
   );
@@ -268,6 +265,34 @@ function AvaliarContent() {
     }
     setIsAuthed(true);
   }, [router]);
+
+  // Fetch all universities for selector (paginated, max 100 per page)
+  useEffect(() => {
+    async function fetchAllUniversities() {
+      try {
+        let allUniversities = [];
+        let page = 1;
+        let totalPages = 1;
+
+        while (page <= totalPages) {
+          const res = await fetch(
+            `/api/v1/universities?limit=100&page=${page}`,
+          );
+          if (!res.ok) break;
+
+          const data = await res.json();
+          allUniversities = [...allUniversities, ...(data.data ?? [])];
+          totalPages = data.pagination?.totalPages ?? 1;
+          page++;
+        }
+
+        setUniversities(allUniversities);
+      } catch {
+        // non-blocking — university list is a convenience
+      }
+    }
+    fetchAllUniversities();
+  }, []);
 
   function validate() {
     if (!universityId) return "Selecione uma universidade.";
@@ -427,6 +452,7 @@ function AvaliarContent() {
                   <UniversitySelector
                     value={universityId}
                     onChange={setUniversityId}
+                    universities={universities}
                   />
                 </div>
 

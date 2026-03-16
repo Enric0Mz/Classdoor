@@ -103,7 +103,6 @@ describe("GET /api/v1/universities", () => {
     expect(universityRepository.findAll).toHaveBeenCalledWith({
       skip: 1,
       take: 1,
-      where: undefined,
     });
     expect(response.status).toBe(200);
     expect(response.body.pagination).toEqual({
@@ -123,107 +122,6 @@ describe("GET /api/v1/universities", () => {
     expect(response.body).toEqual({
       data: [],
       pagination: { page: 1, limit: 10, total: 0, totalPages: 0 },
-    });
-  });
-
-  it("passes search param to repository as where clause", async () => {
-    universityRepository.findAll.mockResolvedValue({
-      data: [UNIVERSITIES_FROM_DB[1]],
-      total: 1,
-    });
-
-    const response = await GET(makeGetRequest("?search=USP"));
-
-    expect(response.status).toBe(200);
-    expect(universityRepository.findAll).toHaveBeenCalledWith({
-      skip: 0,
-      take: 10,
-      where: {
-        AND: [
-          {
-            OR: [
-              { name: { contains: "USP", mode: "insensitive" } },
-              { abbreviation: { contains: "USP", mode: "insensitive" } },
-              { location: { contains: "USP", mode: "insensitive" } },
-              { courses: { hasSome: ["USP"] } },
-            ],
-          },
-        ],
-      },
-    });
-  });
-
-  it("passes type filter to repository as where clause", async () => {
-    universityRepository.findAll.mockResolvedValue({
-      data: [UNIVERSITIES_FROM_DB[1]],
-      total: 1,
-    });
-
-    const response = await GET(makeGetRequest("?type=PUBLIC"));
-
-    expect(response.status).toBe(200);
-    expect(universityRepository.findAll).toHaveBeenCalledWith({
-      skip: 0,
-      take: 10,
-      where: { AND: [{ type: "PUBLIC" }] },
-    });
-  });
-
-  it("passes state filter to repository as where clause", async () => {
-    universityRepository.findAll.mockResolvedValue({
-      data: [UNIVERSITIES_FROM_DB[1]],
-      total: 1,
-    });
-
-    const response = await GET(makeGetRequest("?state=SP"));
-
-    expect(response.status).toBe(200);
-    expect(universityRepository.findAll).toHaveBeenCalledWith({
-      skip: 0,
-      take: 10,
-      where: {
-        AND: [{ location: { contains: "SP", mode: "insensitive" } }],
-      },
-    });
-  });
-
-  it("combines search, type, and state filters", async () => {
-    universityRepository.findAll.mockResolvedValue({ data: [], total: 0 });
-
-    const response = await GET(
-      makeGetRequest("?search=São&type=PUBLIC&state=SP"),
-    );
-
-    expect(response.status).toBe(200);
-    expect(universityRepository.findAll).toHaveBeenCalledWith({
-      skip: 0,
-      take: 10,
-      where: {
-        AND: [
-          {
-            OR: [
-              { name: { contains: "São", mode: "insensitive" } },
-              { abbreviation: { contains: "São", mode: "insensitive" } },
-              { location: { contains: "São", mode: "insensitive" } },
-              { courses: { hasSome: ["São"] } },
-            ],
-          },
-          { type: "PUBLIC" },
-          { location: { contains: "SP", mode: "insensitive" } },
-        ],
-      },
-    });
-  });
-
-  it("passes no where clause when no filters are provided", async () => {
-    universityRepository.findAll.mockResolvedValue(PAGINATED_UNIVERSITIES);
-
-    await GET(makeGetRequest());
-
-    expect(universityRepository.findAll).toHaveBeenCalledWith({
-      skip: 0,
-      take: 10,
-      where: undefined,
     });
   });
 
