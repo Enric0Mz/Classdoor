@@ -74,9 +74,7 @@ function UniversitySelector({ value, onChange }) {
           </div>
           <ul className="max-h-56 overflow-y-auto">
             {isLoading ? (
-              <li className="px-4 py-3 text-sm text-gray-400">
-                Buscando...
-              </li>
+              <li className="px-4 py-3 text-sm text-gray-400">Buscando...</li>
             ) : filtered.length === 0 ? (
               <li className="px-4 py-3 text-sm text-gray-400">
                 Nenhuma universidade encontrada.

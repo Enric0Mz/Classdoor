@@ -127,7 +127,10 @@ describe("GET /api/v1/universities", () => {
   });
 
   it("passes search param to repository as where clause", async () => {
-    universityRepository.findAll.mockResolvedValue({ data: [UNIVERSITIES_FROM_DB[1]], total: 1 });
+    universityRepository.findAll.mockResolvedValue({
+      data: [UNIVERSITIES_FROM_DB[1]],
+      total: 1,
+    });
 
     const response = await GET(makeGetRequest("?search=USP"));
 
@@ -151,7 +154,10 @@ describe("GET /api/v1/universities", () => {
   });
 
   it("passes type filter to repository as where clause", async () => {
-    universityRepository.findAll.mockResolvedValue({ data: [UNIVERSITIES_FROM_DB[1]], total: 1 });
+    universityRepository.findAll.mockResolvedValue({
+      data: [UNIVERSITIES_FROM_DB[1]],
+      total: 1,
+    });
 
     const response = await GET(makeGetRequest("?type=PUBLIC"));
 
@@ -164,7 +170,10 @@ describe("GET /api/v1/universities", () => {
   });
 
   it("passes state filter to repository as where clause", async () => {
-    universityRepository.findAll.mockResolvedValue({ data: [UNIVERSITIES_FROM_DB[1]], total: 1 });
+    universityRepository.findAll.mockResolvedValue({
+      data: [UNIVERSITIES_FROM_DB[1]],
+      total: 1,
+    });
 
     const response = await GET(makeGetRequest("?state=SP"));
 
@@ -181,7 +190,9 @@ describe("GET /api/v1/universities", () => {
   it("combines search, type, and state filters", async () => {
     universityRepository.findAll.mockResolvedValue({ data: [], total: 0 });
 
-    const response = await GET(makeGetRequest("?search=São&type=PUBLIC&state=SP"));
+    const response = await GET(
+      makeGetRequest("?search=São&type=PUBLIC&state=SP"),
+    );
 
     expect(response.status).toBe(200);
     expect(universityRepository.findAll).toHaveBeenCalledWith({

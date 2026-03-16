@@ -177,7 +177,13 @@ export async function bulkCreateUniversities(universities) {
   };
 }
 
-export async function listUniversities({ skip, take, search, type, state } = {}) {
+export async function listUniversities({
+  skip,
+  take,
+  search,
+  type,
+  state,
+} = {}) {
   const where = buildUniversityWhereClause({ search, type, state });
   const { data, total } = await universityRepository.findAll({
     skip,

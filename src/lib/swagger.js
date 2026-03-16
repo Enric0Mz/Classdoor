@@ -57,8 +57,7 @@ const swaggerSpec = {
             in: "query",
             required: false,
             schema: { type: "string" },
-            description:
-              "Search universities by name, location, or course",
+            description: "Search universities by name, location, or course",
           },
           {
             name: "type",
@@ -72,8 +71,7 @@ const swaggerSpec = {
             in: "query",
             required: false,
             schema: { type: "string" },
-            description:
-              "Filter by state abbreviation (e.g., SP, RJ)",
+            description: "Filter by state abbreviation (e.g., SP, RJ)",
           },
         ],
         responses: {

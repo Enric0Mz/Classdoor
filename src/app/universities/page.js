@@ -45,7 +45,11 @@ export default function UniversitiesPage() {
 
   const searchState = activeState !== "Todos" ? activeState : null;
 
-  const { results: universities, total, isLoading: loading } = useUniversitySearch({
+  const {
+    results: universities,
+    total,
+    isLoading: loading,
+  } = useUniversitySearch({
     search: searchQuery,
     type: activeType,
     state: searchState,
@@ -120,8 +124,7 @@ export default function UniversitiesPage() {
           <div className="stagger-1 mb-6 inline-flex items-center gap-2 rounded-full border border-indigo-400/30 bg-indigo-500/20 px-4 py-1.5 text-xs font-semibold text-white backdrop-blur-sm">
             <TrendingUp size={13} />
             <span>
-              +{total || universities.length || "500"} universidades
-              avaliadas
+              +{total || universities.length || "500"} universidades avaliadas
             </span>
           </div>
 
