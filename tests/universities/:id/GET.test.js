@@ -1,9 +1,14 @@
 import { getUniversityById } from "@/domain/universityService";
 import * as universityRepository from "@/repositories/universityRepository";
+import * as externalReviewService from "@/domain/externalReviewService";
 import { GET } from "@/app/api/v1/universities/[id]/route";
 
 jest.mock("@/repositories/universityRepository", () => ({
   findById: jest.fn(),
+}));
+
+jest.mock("@/domain/externalReviewService", () => ({
+  getStats: jest.fn().mockResolvedValue(null),
 }));
 
 jest.mock("next/server", () => ({
@@ -12,7 +17,10 @@ jest.mock("next/server", () => ({
   },
 }));
 
-beforeEach(() => jest.clearAllMocks());
+beforeEach(() => {
+  jest.clearAllMocks();
+  externalReviewService.getStats.mockResolvedValue(null);
+});
 
 const SAMPLE_REVIEWS = [
   {
@@ -108,6 +116,55 @@ describe("universityService.getUniversityById", () => {
       message: "University not found",
       statusCode: 404,
     });
+  });
+
+  it("returns externalStats as null when no external reviews exist", async () => {
+    universityRepository.findById.mockResolvedValue(UNIVERSITY_IN_DB);
+    externalReviewService.getStats.mockResolvedValue(null);
+
+    const result = await getUniversityById("uni-1");
+
+    expect(result.externalStats).toBeNull();
+  });
+
+  it("includes externalStats when external reviews exist", async () => {
+    universityRepository.findById.mockResolvedValue(UNIVERSITY_IN_DB);
+    externalReviewService.getStats.mockResolvedValue({
+      averageRating: 4.5,
+      reviewCount: 10,
+      recommendedCount: 8,
+      source: "GOOGLE_MAPS",
+    });
+
+    const result = await getUniversityById("uni-1");
+
+    expect(result.externalStats).toEqual({
+      averageRating: 4.5,
+      reviewCount: 10,
+      recommendedCount: 8,
+      source: "GOOGLE_MAPS",
+    });
+  });
+
+  it("merges internal and external stats correctly", async () => {
+    universityRepository.findById.mockResolvedValue(UNIVERSITY_IN_DB);
+    externalReviewService.getStats.mockResolvedValue({
+      averageRating: 4.5,
+      reviewCount: 10,
+      recommendedCount: 8,
+      source: "GOOGLE_MAPS",
+    });
+
+    const result = await getUniversityById("uni-1");
+
+    // Internal: 3 reviews, avg 3.7, 2 recommended (67%)
+    // External: 10 reviews, avg 4.5, 8 recommended
+    // Merged: 13 reviews, avg (3.7*3 + 4.5*10)/13 = (11.1+45)/13 = 56.1/13 = 4.3
+    // Recommended: (2+8)/13 = 77%
+    expect(result.stats.reviewCount).toBe(13);
+    expect(result.stats.averageRating).toBe(4.3);
+    expect(result.stats.recommendationPercentage).toBe(77);
+    expect(result.stats.averageDifficultyLevel).toBe(3.0);
   });
 });
 

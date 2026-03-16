@@ -77,6 +77,7 @@ export async function create({ images, ...data }) {
 export async function remove(id) {
   return prisma.$transaction(async (tx) => {
     await tx.review.deleteMany({ where: { universityId: id } });
+    await tx.externalReview.deleteMany({ where: { universityId: id } });
     await tx.universityDomain.deleteMany({ where: { universityId: id } });
     await tx.universityImage.deleteMany({ where: { universityId: id } });
     await tx.user.updateMany({

@@ -8,4 +8,5 @@ module.exports = createJestConfig({
     "^@/(.*)$": "<rootDir>/src/$1",
   },
   roots: ["<rootDir>/tests"],
+  setupFiles: ["<rootDir>/tests/setup.js"],
 });

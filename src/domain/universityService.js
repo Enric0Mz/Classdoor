@@ -1,6 +1,7 @@
 import { AppError } from "@/errors/AppError";
 import * as universityRepository from "@/repositories/universityRepository";
 import * as universityDomainRepository from "@/repositories/universityDomainRepository";
+import * as externalReviewService from "@/domain/externalReviewService";
 
 const VALID_TYPES = ["PUBLIC", "PRIVATE"];
 
@@ -285,9 +286,57 @@ export async function getUniversityById(id) {
   }
 
   const { reviews, ...universityData } = university;
+  const internalStats = computeStats(reviews);
+
+  let externalStats = null;
+  try {
+    externalStats = await externalReviewService.getStats(id);
+  } catch (error) {
+    console.warn("Failed to fetch external review stats:", error.message);
+  }
+
+  const mergedStats = mergeStats(internalStats, externalStats);
 
   return {
     ...universityData,
-    stats: computeStats(reviews),
+    stats: mergedStats,
+    externalStats,
+  };
+}
+
+function mergeStats(internalStats, externalStats) {
+  if (!externalStats) {
+    return internalStats;
+  }
+
+  const internalCount = internalStats.reviewCount;
+  const externalCount = externalStats.reviewCount;
+  const totalCount = internalCount + externalCount;
+
+  if (totalCount === 0) {
+    return internalStats;
+  }
+
+  const internalRatingSum = internalStats.averageRating
+    ? internalStats.averageRating * internalCount
+    : 0;
+  const externalRatingSum = externalStats.averageRating * externalCount;
+  const mergedAverageRating = +(
+    (internalRatingSum + externalRatingSum) /
+    totalCount
+  ).toFixed(1);
+
+  const internalRecommended = internalStats.recommendationPercentage
+    ? Math.round((internalStats.recommendationPercentage / 100) * internalCount)
+    : 0;
+  const externalRecommended = externalStats.recommendedCount;
+
+  return {
+    averageRating: mergedAverageRating,
+    averageDifficultyLevel: internalStats.averageDifficultyLevel,
+    recommendationPercentage: Math.round(
+      ((internalRecommended + externalRecommended) / totalCount) * 100,
+    ),
+    reviewCount: totalCount,
   };
 }
