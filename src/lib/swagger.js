@@ -52,6 +52,28 @@ const swaggerSpec = {
             schema: { type: "integer", default: 10, maximum: 100 },
             description: "Number of items per page",
           },
+          {
+            name: "search",
+            in: "query",
+            required: false,
+            schema: { type: "string" },
+            description:
+              "Search universities by name, abbreviation, location, or course",
+          },
+          {
+            name: "type",
+            in: "query",
+            required: false,
+            schema: { type: "string", enum: ["PUBLIC", "PRIVATE"] },
+            description: "Filter by university type",
+          },
+          {
+            name: "state",
+            in: "query",
+            required: false,
+            schema: { type: "string" },
+            description: "Filter by state abbreviation (e.g., SP, RJ)",
+          },
         ],
         responses: {
           200: {

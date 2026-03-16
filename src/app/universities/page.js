@@ -94,6 +94,12 @@ export default function UniversitiesPage() {
         if (debouncedSearch.trim()) {
           params.set("search", debouncedSearch.trim());
         }
+        if (activeType) {
+          params.set("type", activeType);
+        }
+        if (activeState !== "Todos") {
+          params.set("state", activeState);
+        }
         const res = await fetch(`/api/v1/universities?${params}`);
         if (!res.ok) throw new Error("Falha ao carregar universidades");
         const data = await res.json();
@@ -110,7 +116,7 @@ export default function UniversitiesPage() {
         setIsLoadingMore(false);
       }
     },
-    [debouncedSearch],
+    [debouncedSearch, activeType, activeState],
   );
 
   useEffect(() => {
@@ -126,24 +132,9 @@ export default function UniversitiesPage() {
     pagination && pagination.page < pagination.totalPages;
 
   const filtered = useMemo(() => {
-    let result = universities;
-
-    if (activeState !== "Todos") {
-      result = result.filter((u) =>
-        u.location.toUpperCase().includes(activeState.toUpperCase()),
-      );
-    }
-
-    if (activeType) {
-      result = result.filter((u) => u.type === activeType);
-    }
-
-    if (sortByRating) {
-      result = [...result].sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0));
-    }
-
-    return result;
-  }, [universities, activeState, activeType, sortByRating]);
+    if (!sortByRating) return universities;
+    return [...universities].sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0));
+  }, [universities, sortByRating]);
 
   const avgRating = useMemo(() => {
     const ratedUniversities = universities.filter((u) => u.rating != null);
