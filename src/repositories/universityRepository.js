@@ -6,17 +6,7 @@ const REVIEW_AUTHOR_SELECT = {
   verified: true,
 };
 
-export async function findAll({ skip, take, search } = {}) {
-  const where = search
-    ? {
-        OR: [
-          { name: { contains: search, mode: "insensitive" } },
-          { abbreviation: { contains: search, mode: "insensitive" } },
-          { location: { contains: search, mode: "insensitive" } },
-        ],
-      }
-    : undefined;
-
+export async function findAll({ skip, take, where } = {}) {
   const [data, total] = await prisma.$transaction([
     prisma.university.findMany({
       where,

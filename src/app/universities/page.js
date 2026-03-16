@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import { useState, useEffect, useMemo } from "react";
 import UniversityCard from "@/components/UniversityCard";
+import { useUniversitySearch } from "@/hooks/useUniversitySearch";
 import Link from "next/link";
 import {
   Search,
@@ -13,8 +14,6 @@ import {
   Zap,
   Lightbulb,
 } from "lucide-react";
-
-const UNIVERSITIES_PER_PAGE = 20;
 
 const STATE_FILTERS = [
   "Todos",
@@ -35,12 +34,6 @@ const TYPE_FILTERS = [
 ];
 
 export default function UniversitiesPage() {
-  const [universities, setUniversities] = useState([]);
-  const [pagination, setPagination] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [error, setError] = useState(null);
-
   const [userRole, setUserRole] = useState(null);
 
   // Filters
@@ -49,6 +42,23 @@ export default function UniversitiesPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [sortByRating, setSortByRating] = useState(false);
+
+  const searchState = activeState !== "Todos" ? activeState : null;
+
+  const {
+    results: universities,
+    total,
+    isLoading: loading,
+  } = useUniversitySearch({
+    search: searchQuery,
+    type: activeType,
+    state: searchState,
+  });
+
+  const filtered = useMemo(() => {
+    if (!sortByRating) return universities;
+    return [...universities].sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0));
+  }, [universities, sortByRating]);
 
   useEffect(() => {
     try {
@@ -64,86 +74,16 @@ export default function UniversitiesPage() {
 
   const isAdmin = userRole === "ADMIN";
 
+  const [deletedIds, setDeletedIds] = useState([]);
+
   function handleUniversityDelete(universityId) {
-    setUniversities((prev) =>
-      prev.filter((university) => university.id !== universityId),
-    );
+    setDeletedIds((prev) => [...prev, universityId]);
   }
 
-  const [debouncedSearch, setDebouncedSearch] = useState("");
-  const debounceTimer = useRef(null);
-
-  function handleSearchChange(value) {
-    setSearchQuery(value);
-    clearTimeout(debounceTimer.current);
-    debounceTimer.current = setTimeout(() => setDebouncedSearch(value), 300);
-  }
-
-  const fetchUniversities = useCallback(
-    async (page = 1, append = false) => {
-      if (append) {
-        setIsLoadingMore(true);
-      } else {
-        setLoading(true);
-      }
-      try {
-        const params = new URLSearchParams({
-          limit: String(UNIVERSITIES_PER_PAGE),
-          page: String(page),
-        });
-        if (debouncedSearch.trim()) {
-          params.set("search", debouncedSearch.trim());
-        }
-        const res = await fetch(`/api/v1/universities?${params}`);
-        if (!res.ok) throw new Error("Falha ao carregar universidades");
-        const data = await res.json();
-        if (append) {
-          setUniversities((prev) => [...prev, ...(data.data ?? [])]);
-        } else {
-          setUniversities(data.data ?? []);
-        }
-        setPagination(data.pagination ?? null);
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-        setIsLoadingMore(false);
-      }
-    },
-    [debouncedSearch],
-  );
-
-  useEffect(() => {
-    fetchUniversities(1);
-  }, [fetchUniversities]);
-
-  async function loadMoreUniversities() {
-    if (!pagination || isLoadingMore) return;
-    fetchUniversities(pagination.page + 1, true);
-  }
-
-  const hasMoreUniversities =
-    pagination && pagination.page < pagination.totalPages;
-
-  const filtered = useMemo(() => {
-    let result = universities;
-
-    if (activeState !== "Todos") {
-      result = result.filter((u) =>
-        u.location.toUpperCase().includes(activeState.toUpperCase()),
-      );
-    }
-
-    if (activeType) {
-      result = result.filter((u) => u.type === activeType);
-    }
-
-    if (sortByRating) {
-      result = [...result].sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0));
-    }
-
-    return result;
-  }, [universities, activeState, activeType, sortByRating]);
+  const visibleUniversities = useMemo(() => {
+    if (deletedIds.length === 0) return filtered;
+    return filtered.filter((u) => !deletedIds.includes(u.id));
+  }, [filtered, deletedIds]);
 
   const avgRating = useMemo(() => {
     const ratedUniversities = universities.filter((u) => u.rating != null);
@@ -184,8 +124,7 @@ export default function UniversitiesPage() {
           <div className="stagger-1 mb-6 inline-flex items-center gap-2 rounded-full border border-indigo-400/30 bg-indigo-500/20 px-4 py-1.5 text-xs font-semibold text-white backdrop-blur-sm">
             <TrendingUp size={13} />
             <span>
-              +{pagination?.total || universities.length || "500"} universidades
-              avaliadas
+              +{total || universities.length || "500"} universidades avaliadas
             </span>
           </div>
 
@@ -211,7 +150,7 @@ export default function UniversitiesPage() {
                 type="text"
                 placeholder="Busque por universidade, cidade ou curso..."
                 value={searchQuery}
-                onChange={(e) => handleSearchChange(e.target.value)}
+                onChange={(e) => setSearchQuery(e.target.value)}
                 className="flex-1 bg-transparent text-base text-white outline-none placeholder:text-gray-500"
               />
               <button className="brand-gradient ml-2 hidden rounded-xl px-6 py-2 text-sm font-semibold text-white transition-transform hover:scale-105 active:scale-95 sm:block">
@@ -224,7 +163,7 @@ export default function UniversitiesPage() {
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <div className="flex flex-col items-center rounded-2xl border border-white/10 bg-white/5 px-5 py-3 backdrop-blur-sm">
               <span className="text-xl font-bold text-white">
-                {loading ? "..." : (pagination?.total ?? universities.length)}
+                {loading ? "..." : (total ?? universities.length)}
               </span>
               <span className="text-xs text-gray-400">universidades</span>
             </div>
@@ -271,7 +210,7 @@ export default function UniversitiesPage() {
         <div className="mb-8 flex flex-col gap-4 py-5 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-4 text-sm text-gray-500">
             <span className="text-sm font-semibold text-gray-700">
-              {loading ? "..." : filtered.length} resultados
+              {loading ? "..." : visibleUniversities.length} resultados
             </span>
             <div className="h-4 w-px bg-gray-200" />
             <span className="hidden sm:inline text-gray-400">
@@ -406,17 +345,7 @@ export default function UniversitiesPage() {
               </div>
             ))}
           </div>
-        ) : error ? (
-          <div className="mx-auto max-w-lg rounded-2xl border border-red-100 bg-red-50 p-8 text-center">
-            <p className="mb-4 text-red-600">{error}</p>
-            <button
-              onClick={() => window.location.reload()}
-              className="rounded-xl bg-white px-6 py-2 text-sm font-bold text-red-600 shadow-sm transition-transform hover:scale-105"
-            >
-              Tentar novamente
-            </button>
-          </div>
-        ) : filtered.length === 0 ? (
+        ) : visibleUniversities.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-24 text-center">
             <div className="mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-gray-100 text-gray-400">
               <Search size={32} />
@@ -446,64 +375,16 @@ export default function UniversitiesPage() {
             </Link>
           </div>
         ) : (
-          <>
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {filtered.map((university) => (
-                <UniversityCard
-                  key={university.id}
-                  university={university}
-                  isAdmin={isAdmin}
-                  onDelete={handleUniversityDelete}
-                />
-              ))}
-            </div>
-
-            {hasMoreUniversities && (
-              <button
-                onClick={loadMoreUniversities}
-                disabled={isLoadingMore}
-                className="mt-8 flex w-full cursor-pointer items-center justify-center gap-2 rounded-2xl border border-gray-100 bg-white py-3.5 text-sm font-medium text-gray-500 shadow-sm transition-colors hover:border-indigo-200 hover:text-indigo-600 disabled:opacity-60"
-              >
-                {isLoadingMore ? (
-                  <>
-                    <svg
-                      className="h-4 w-4 animate-spin"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                    >
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                      />
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 0 1 8-8v4a4 4 0 0 0-4 4H4z"
-                      />
-                    </svg>
-                    Carregando...
-                  </>
-                ) : (
-                  <>
-                    Carregar mais universidades
-                    <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-400">
-                      {pagination.total - universities.length} restantes
-                    </span>
-                  </>
-                )}
-              </button>
-            )}
-
-            {!hasMoreUniversities && universities.length > 0 && (
-              <p className="mt-4 py-2 text-center text-xs text-gray-300">
-                Todas as {universities.length} universidades carregadas
-              </p>
-            )}
-          </>
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {visibleUniversities.map((university) => (
+              <UniversityCard
+                key={university.id}
+                university={university}
+                isAdmin={isAdmin}
+                onDelete={handleUniversityDelete}
+              />
+            ))}
+          </div>
         )}
 
         {/* CTA for suggesting a university */}

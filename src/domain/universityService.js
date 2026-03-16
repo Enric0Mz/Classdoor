@@ -177,11 +177,18 @@ export async function bulkCreateUniversities(universities) {
   };
 }
 
-export async function listUniversities({ skip, take, search } = {}) {
+export async function listUniversities({
+  skip,
+  take,
+  search,
+  type,
+  state,
+} = {}) {
+  const where = buildUniversityWhereClause({ search, type, state });
   const { data, total } = await universityRepository.findAll({
     skip,
     take,
-    search,
+    where,
   });
   const enriched = data
     .map((university) => {
@@ -199,6 +206,35 @@ export async function listUniversities({ skip, take, search } = {}) {
     })
     .sort((a, b) => b.reviewCount - a.reviewCount);
   return { data: enriched, total };
+}
+
+function buildUniversityWhereClause({ search, type, state }) {
+  const conditions = [];
+
+  if (search && search.trim()) {
+    const searchTerm = search.trim();
+    conditions.push({
+      OR: [
+        { name: { contains: searchTerm, mode: "insensitive" } },
+        { abbreviation: { contains: searchTerm, mode: "insensitive" } },
+        { location: { contains: searchTerm, mode: "insensitive" } },
+        { courses: { hasSome: [searchTerm] } },
+      ],
+    });
+  }
+
+  if (type) {
+    conditions.push({ type });
+  }
+
+  if (state) {
+    conditions.push({
+      location: { contains: state, mode: "insensitive" },
+    });
+  }
+
+  if (conditions.length === 0) return undefined;
+  return { AND: conditions };
 }
 
 function computeStats(reviews) {
