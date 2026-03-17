@@ -32,9 +32,6 @@ export async function importReviews(payload) {
     const university = await universityRepository.findByName(universityName);
 
     if (!university) {
-      console.warn(
-        `[ExternalReview Import] University not found: "${universityName}"`,
-      );
       skippedUniversities.push(universityName);
       continue;
     }
