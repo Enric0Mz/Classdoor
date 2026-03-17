@@ -298,7 +298,24 @@ function UniversityHeader({
 
 // ─── Rating Overview ──────────────────────────────────────────────────────────
 
-function RatingOverview({ stats }) {
+function GoogleMapsIcon({ size = 16 }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      className="shrink-0"
+    >
+      <path
+        d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5z"
+        fill="#4285F4"
+      />
+    </svg>
+  );
+}
+
+function RatingOverview({ stats, externalStats }) {
   if (!stats || stats.reviewCount === 0) {
     return (
       <div className="rounded-2xl border border-gray-100 bg-white p-8 shadow-sm text-center">
@@ -371,6 +388,33 @@ function RatingOverview({ stats }) {
             <span className="text-sm font-semibold text-gray-700">
               {stats.averageDifficultyLevel}/5
             </span>
+          </div>
+        )}
+
+        {/* External reviews stats */}
+        {externalStats && (
+          <div className="mt-4 flex items-center gap-2.5 rounded-xl border border-blue-100 bg-blue-50/60 px-3.5 py-2.5">
+            <GoogleMapsIcon size={18} />
+            <div className="flex-1">
+              <div className="flex items-center gap-2 text-sm">
+                <span className="font-medium text-gray-700">Google Maps</span>
+                <StarRating rating={externalStats.averageRating} size={12} />
+                <span className="font-semibold text-gray-600">
+                  {externalStats.averageRating}
+                </span>
+                <span className="text-gray-400">
+                  ({externalStats.reviewCount}{" "}
+                  {externalStats.reviewCount === 1 ? "avaliação" : "avaliações"}
+                  )
+                </span>
+              </div>
+              <Link
+                href="/sobre/avaliacoes-externas"
+                className="mt-0.5 inline-block text-xs text-blue-500 hover:underline"
+              >
+                Saiba mais sobre avaliações externas
+              </Link>
+            </div>
           </div>
         )}
       </div>
@@ -977,6 +1021,71 @@ function ReviewCard({ review, isAdmin, isOwner, onDelete, onEdit }) {
   );
 }
 
+// ─── External Review Card ─────────────────────────────────────────────────
+
+function ExternalReviewCard({ review }) {
+  return (
+    <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-px hover:shadow-md">
+      <div className="flex items-start gap-3">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-500">
+          <GoogleMapsIcon size={20} />
+        </div>
+
+        <div className="flex-1 min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
+            <StarRating rating={review.rating} size={14} />
+            <span className="text-[0.82rem] font-semibold text-gray-700">
+              {review.rating.toFixed(1)}
+            </span>
+            <span className="flex items-center gap-1 rounded-full bg-blue-50 px-2 py-0.5 text-[0.7rem] font-medium text-blue-600">
+              Google Maps
+            </span>
+          </div>
+
+          <div className="mt-1 flex flex-wrap items-center gap-2 text-[0.75rem] text-gray-400">
+            <span className="font-medium text-gray-600">Avaliador Externo</span>
+            <span className="text-gray-300">•</span>
+            <span>{formatDate(review.originalDate)}</span>
+          </div>
+        </div>
+      </div>
+
+      {review.textSnippet && (
+        <div className="mt-4 pl-[52px]">
+          <p className="text-[0.85rem] leading-relaxed text-gray-700">
+            {review.textSnippet}
+          </p>
+        </div>
+      )}
+
+      <div className="mt-3 pl-[52px]">
+        <a
+          href={review.sourceUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1.5 text-[0.82rem] font-medium text-blue-500 hover:opacity-80"
+        >
+          Ler no Google Maps
+          <svg
+            width="12"
+            height="12"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+            <polyline points="15 3 21 3 21 9" />
+            <line x1="10" y1="14" x2="21" y2="3" />
+          </svg>
+        </a>
+      </div>
+    </div>
+  );
+}
+
 // ─── Skeleton ─────────────────────────────────────────────────────────────────
 
 function PageSkeleton() {
@@ -1002,8 +1111,12 @@ export default function UniversityDetailPage() {
   const [university, setUniversity] = useState(null);
   const [reviews, setReviews] = useState([]);
   const [reviewsPagination, setReviewsPagination] = useState(null);
+  const [externalReviews, setExternalReviews] = useState([]);
+  const [externalReviewsPagination, setExternalReviewsPagination] =
+    useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [isLoadingMoreExternal, setIsLoadingMoreExternal] = useState(false);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState("Avaliações ⭐");
   const [activeFilter, setActiveFilter] = useState("Mais recentes");
@@ -1013,12 +1126,16 @@ export default function UniversityDetailPage() {
   useEffect(() => {
     async function fetchAll() {
       try {
-        const [uniResponse, reviewsResponse] = await Promise.all([
-          fetch(`/api/v1/universities/${id}`),
-          fetch(
-            `/api/v1/reviews?universityId=${id}&limit=${REVIEWS_PER_PAGE}&page=1`,
-          ),
-        ]);
+        const [uniResponse, reviewsResponse, externalResponse] =
+          await Promise.all([
+            fetch(`/api/v1/universities/${id}`),
+            fetch(
+              `/api/v1/reviews?universityId=${id}&limit=${REVIEWS_PER_PAGE}&page=1`,
+            ),
+            fetch(
+              `/api/v1/external-reviews?universityId=${id}&limit=${REVIEWS_PER_PAGE}&page=1`,
+            ),
+          ]);
 
         if (!uniResponse.ok) {
           const data = await uniResponse.json();
@@ -1029,10 +1146,15 @@ export default function UniversityDetailPage() {
 
         const uniData = await uniResponse.json();
         const reviewsData = await reviewsResponse.json();
+        const externalData = externalResponse.ok
+          ? await externalResponse.json()
+          : { data: [], pagination: null };
 
         setUniversity(uniData);
         setReviews(reviewsData.data ?? []);
         setReviewsPagination(reviewsData.pagination ?? null);
+        setExternalReviews(externalData.data ?? []);
+        setExternalReviewsPagination(externalData.pagination ?? null);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -1088,8 +1210,28 @@ export default function UniversityDetailPage() {
     return copy.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
   }, [reviews, activeFilter]);
 
+  async function loadMoreExternalReviews() {
+    if (!externalReviewsPagination || isLoadingMoreExternal) return;
+    const nextPage = externalReviewsPagination.page + 1;
+    setIsLoadingMoreExternal(true);
+    try {
+      const response = await fetch(
+        `/api/v1/external-reviews?universityId=${id}&limit=${REVIEWS_PER_PAGE}&page=${nextPage}`,
+      );
+      const data = await response.json();
+      setExternalReviews((prev) => [...prev, ...(data.data ?? [])]);
+      setExternalReviewsPagination(data.pagination ?? null);
+    } finally {
+      setIsLoadingMoreExternal(false);
+    }
+  }
+
   const hasMoreReviews =
     reviewsPagination && reviewsPagination.page < reviewsPagination.totalPages;
+
+  const hasMoreExternalReviews =
+    externalReviewsPagination &&
+    externalReviewsPagination.page < externalReviewsPagination.totalPages;
 
   if (isLoading) {
     return (
@@ -1172,7 +1314,10 @@ export default function UniversityDetailPage() {
         <div className="space-y-4">
           {activeTab === "Avaliações ⭐" && (
             <>
-              <RatingOverview stats={university.stats} />
+              <RatingOverview
+                stats={university.stats}
+                externalStats={university.externalStats}
+              />
               <FilterBar
                 activeFilter={activeFilter}
                 onFilterChange={setActiveFilter}
@@ -1246,6 +1391,75 @@ export default function UniversityDetailPage() {
                   {!hasMoreReviews && reviews.length > 0 && (
                     <p className="py-2 text-center text-xs text-gray-300">
                       Todas as {reviews.length} avaliações carregadas
+                    </p>
+                  )}
+                </>
+              )}
+
+              {/* External Reviews Section */}
+              {externalReviews.length > 0 && (
+                <>
+                  <div className="mt-6 flex items-center gap-3">
+                    <div className="h-px flex-1 bg-gray-200" />
+                    <div className="flex items-center gap-2 text-sm font-semibold text-gray-500">
+                      <GoogleMapsIcon size={16} />
+                      Avaliações do Google Maps
+                    </div>
+                    <div className="h-px flex-1 bg-gray-200" />
+                  </div>
+
+                  <div className="space-y-3 mt-3">
+                    {externalReviews.map((review) => (
+                      <ExternalReviewCard key={review.id} review={review} />
+                    ))}
+                  </div>
+
+                  {hasMoreExternalReviews && (
+                    <button
+                      onClick={loadMoreExternalReviews}
+                      disabled={isLoadingMoreExternal}
+                      className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-2xl border border-gray-100 bg-white py-3.5 text-sm font-medium text-gray-500 shadow-sm transition-colors hover:border-blue-200 hover:text-blue-600 disabled:opacity-60"
+                    >
+                      {isLoadingMoreExternal ? (
+                        <>
+                          <svg
+                            className="h-4 w-4 animate-spin"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                          >
+                            <circle
+                              className="opacity-25"
+                              cx="12"
+                              cy="12"
+                              r="10"
+                              stroke="currentColor"
+                              strokeWidth="4"
+                            />
+                            <path
+                              className="opacity-75"
+                              fill="currentColor"
+                              d="M4 12a8 8 0 0 1 8-8v4a4 4 0 0 0-4 4H4z"
+                            />
+                          </svg>
+                          Carregando...
+                        </>
+                      ) : (
+                        <>
+                          Carregar mais avaliações externas
+                          <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-400">
+                            {externalReviewsPagination.total -
+                              externalReviews.length}{" "}
+                            restantes
+                          </span>
+                        </>
+                      )}
+                    </button>
+                  )}
+
+                  {!hasMoreExternalReviews && externalReviews.length > 0 && (
+                    <p className="py-2 text-center text-xs text-gray-300">
+                      Todas as {externalReviews.length} avaliações externas
+                      carregadas
                     </p>
                   )}
                 </>

@@ -2312,6 +2312,164 @@ const swaggerSpec = {
         },
       },
     },
+    "/api/v1/external-reviews": {
+      get: {
+        tags: ["External Reviews"],
+        summary: "List external reviews for a university",
+        parameters: [
+          {
+            name: "universityId",
+            in: "query",
+            required: true,
+            schema: { type: "string", format: "uuid" },
+            description: "University ID to filter external reviews",
+          },
+          {
+            name: "page",
+            in: "query",
+            required: false,
+            schema: { type: "integer", default: 1 },
+            description: "Page number",
+          },
+          {
+            name: "limit",
+            in: "query",
+            required: false,
+            schema: { type: "integer", default: 10, maximum: 100 },
+            description: "Items per page",
+          },
+        ],
+        responses: {
+          200: {
+            description: "Paginated list of external reviews",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    data: {
+                      type: "array",
+                      items: { $ref: "#/components/schemas/ExternalReview" },
+                    },
+                    pagination: { $ref: "#/components/schemas/Pagination" },
+                  },
+                },
+              },
+            },
+          },
+          400: {
+            description: "Missing universityId parameter",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
+        },
+      },
+    },
+    "/api/v1/external-reviews/import": {
+      post: {
+        tags: ["External Reviews"],
+        summary: "Import external reviews from scraper data",
+        description:
+          "Admin-only endpoint. Accepts an array of university entries with their Google Maps reviews.",
+        security: [{ BearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: {
+                type: "array",
+                items: {
+                  type: "object",
+                  required: ["universityName", "reviews"],
+                  properties: {
+                    universityName: {
+                      type: "string",
+                      example: "Universidade de São Paulo",
+                    },
+                    reviews: {
+                      type: "array",
+                      items: {
+                        type: "object",
+                        required: ["rating", "url"],
+                        properties: {
+                          rating: {
+                            type: "integer",
+                            minimum: 1,
+                            maximum: 5,
+                          },
+                          text: { type: "string" },
+                          url: {
+                            type: "string",
+                            format: "uri",
+                            example:
+                              "https://maps.google.com/maps/contrib/123/reviews",
+                          },
+                          date: {
+                            type: "string",
+                            format: "date",
+                            example: "2025-01-15",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          201: {
+            description: "Import summary",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    imported: {
+                      type: "integer",
+                      description: "Number of reviews imported",
+                    },
+                    skippedUniversities: {
+                      type: "array",
+                      items: { type: "string" },
+                      description: "University names not found in database",
+                    },
+                  },
+                },
+              },
+            },
+          },
+          400: {
+            description: "Invalid payload",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
+          401: {
+            description: "Unauthorized",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
+          403: {
+            description: "Forbidden — admin role required",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
+        },
+      },
+    },
   },
   components: {
     securitySchemes: {
@@ -2564,6 +2722,43 @@ const swaggerSpec = {
             nullable: true,
           },
           createdAt: { type: "string", format: "date-time" },
+        },
+      },
+      ExternalReview: {
+        type: "object",
+        properties: {
+          id: { type: "string", format: "uuid" },
+          rating: { type: "integer", minimum: 1, maximum: 5 },
+          textSnippet: {
+            type: "string",
+            nullable: true,
+            description:
+              "First ~100 characters of the review text, truncated at word boundary (LGPD compliance)",
+          },
+          sourceUrl: {
+            type: "string",
+            format: "uri",
+            description: "Link to the full review on Google Maps",
+          },
+          source: {
+            type: "string",
+            enum: ["GOOGLE_MAPS"],
+          },
+          originalDate: { type: "string", format: "date-time" },
+          universityId: { type: "string", format: "uuid" },
+          createdAt: { type: "string", format: "date-time" },
+        },
+      },
+      ExternalStats: {
+        type: "object",
+        nullable: true,
+        description:
+          "Google Maps review statistics. Null when no external reviews exist.",
+        properties: {
+          averageRating: { type: "number", format: "float", example: 4.2 },
+          reviewCount: { type: "integer", example: 15 },
+          recommendedCount: { type: "integer", example: 10 },
+          source: { type: "string", enum: ["GOOGLE_MAPS"] },
         },
       },
       Error: {
