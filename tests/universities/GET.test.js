@@ -21,6 +21,7 @@ const UNIVERSITIES_FROM_DB = [
     courses: ["Business"],
     rating: 4.5,
     reviews: [{ rating: 5 }, { rating: 4 }],
+    externalReviews: [],
   },
   {
     id: "b2c3d4e5-f6a7-8901-bcde-f12345678901",
@@ -30,6 +31,7 @@ const UNIVERSITIES_FROM_DB = [
     courses: ["Research"],
     rating: 4.3,
     reviews: [{ rating: 4 }, { rating: 5 }],
+    externalReviews: [],
   },
 ];
 
@@ -71,6 +73,29 @@ describe("universityService.listUniversities", () => {
     expect(universityRepository.findAll).toHaveBeenCalledTimes(1);
     expect(result.data).toEqual(ENRICHED_UNIVERSITIES);
     expect(result.total).toBe(2);
+  });
+
+  it("includes external reviews in reviewCount and rating", async () => {
+    universityRepository.findAll.mockResolvedValue({
+      data: [
+        {
+          id: "uni-1",
+          name: "USP",
+          location: "São Paulo",
+          type: "PUBLIC",
+          courses: ["Research"],
+          rating: 4.0,
+          reviews: [{ rating: 4 }, { rating: 5 }],
+          externalReviews: [{ rating: 3 }, { rating: 5 }],
+        },
+      ],
+      total: 1,
+    });
+
+    const result = await listUniversities();
+
+    expect(result.data[0].reviewCount).toBe(4);
+    expect(result.data[0].rating).toBe(4.3);
   });
 
   it("returns empty data when no universities exist", async () => {
