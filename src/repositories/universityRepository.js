@@ -21,6 +21,9 @@ export async function findAll({ skip, take, where } = {}) {
           },
           select: { rating: true },
         },
+        externalReviews: {
+          select: { rating: true },
+        },
       },
       skip,
       take,

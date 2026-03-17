@@ -194,15 +194,19 @@ export async function listUniversities({
   const enriched = data
     .map((university) => {
       const approvedReviews = university.reviews || [];
-      const reviewCount = approvedReviews.length;
+      const externalReviews = university.externalReviews || [];
+      const allRatings = [
+        ...approvedReviews.map((r) => r.rating),
+        ...externalReviews.map((r) => r.rating),
+      ];
+      const reviewCount = allRatings.length;
       const computedRating =
         reviewCount > 0
-          ? +(
-              approvedReviews.reduce((sum, r) => sum + r.rating, 0) /
-              reviewCount
-            ).toFixed(1)
+          ? +(allRatings.reduce((sum, r) => sum + r, 0) / reviewCount).toFixed(
+              1,
+            )
           : null;
-      const { reviews, ...rest } = university;
+      const { reviews, externalReviews: _, ...rest } = university;
       return { ...rest, reviewCount, rating: computedRating };
     })
     .sort((a, b) => b.reviewCount - a.reviewCount);
