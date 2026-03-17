@@ -62,7 +62,7 @@ export default function Footer() {
 
             <div className="flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
               <Link
-                href="/universities/create"
+                href="/sugerir-universidade"
                 className="inline-flex items-center gap-2 rounded-xl bg-white px-6 py-2.5 text-[0.88rem] font-semibold text-indigo-600 shadow-lg shadow-indigo-900/20 transition-all hover:bg-indigo-50 hover:shadow-xl"
               >
                 <Zap size={16} />
