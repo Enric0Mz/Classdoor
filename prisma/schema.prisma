@@ -32,6 +32,10 @@ enum SubmissionStatus {
   REJECTED
 }
 
+enum ExternalReviewSource {
+  GOOGLE_MAPS
+}
+
 model University {
   id        String              @id @default(uuid())
   name         String              @unique
@@ -42,11 +46,26 @@ model University {
   courses   String[]
   rating    Float?
   createdAt DateTime            @default(now())
-  images      UniversityImage[]
-  reviews     Review[]
-  domains     UniversityDomain[]
-  users       User[]
-  submissions UniversitySubmission[]
+  images           UniversityImage[]
+  reviews          Review[]
+  domains          UniversityDomain[]
+  users            User[]
+  submissions      UniversitySubmission[]
+  externalReviews  ExternalReview[]
+}
+
+model ExternalReview {
+  id           String               @id @default(uuid())
+  rating       Int
+  textSnippet  String?
+  sourceUrl    String
+  source       ExternalReviewSource @default(GOOGLE_MAPS)
+  originalDate DateTime
+  universityId String
+  university   University           @relation(fields: [universityId], references: [id])
+  createdAt    DateTime             @default(now())
+
+  @@unique([sourceUrl])
 }
 
 model UniversityImage {
