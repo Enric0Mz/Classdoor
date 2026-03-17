@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   GraduationCap,
   Zap,
@@ -24,7 +25,21 @@ const SOCIAL_LINKS = [
   { icon: Instagram, href: "#", label: "Instagram" },
 ];
 
+const HIDDEN_ROUTES = [
+  "/login",
+  "/logout",
+  "/register",
+  "/sugerir-universidade",
+  "/avaliar",
+];
+
 export default function Footer() {
+  const pathname = usePathname();
+
+  if (HIDDEN_ROUTES.includes(pathname)) {
+    return null;
+  }
+
   return (
     <footer className="mt-auto">
       {/* CTA Banner */}
