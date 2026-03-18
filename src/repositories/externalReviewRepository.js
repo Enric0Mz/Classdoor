@@ -11,7 +11,10 @@ export async function findByUniversityId({ universityId, skip, take }) {
   const [data, total] = await prisma.$transaction([
     prisma.externalReview.findMany({
       where: { universityId },
-      orderBy: { originalDate: "desc" },
+      orderBy: [
+        { textSnippet: { sort: "desc", nulls: "last" } },
+        { originalDate: "desc" },
+      ],
       skip,
       take,
     }),

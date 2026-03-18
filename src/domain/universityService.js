@@ -185,63 +185,14 @@ export async function listUniversities({
   type,
   state,
 } = {}) {
-  const where = buildUniversityWhereClause({ search, type, state });
-  const { data, total } = await universityRepository.findAll({
+  return universityRepository.findAllOrderedByReviewCount({
     skip,
     take,
-    where,
+    search,
+    type,
+    state,
   });
-  const enriched = data
-    .map((university) => {
-      const approvedReviews = university.reviews || [];
-      const externalReviews = university.externalReviews || [];
-      const allRatings = [
-        ...approvedReviews.map((r) => r.rating),
-        ...externalReviews.map((r) => r.rating),
-      ];
-      const reviewCount = allRatings.length;
-      const computedRating =
-        reviewCount > 0
-          ? +(allRatings.reduce((sum, r) => sum + r, 0) / reviewCount).toFixed(
-              1,
-            )
-          : null;
-      const { reviews, externalReviews: _, ...rest } = university;
-      return { ...rest, reviewCount, rating: computedRating };
-    })
-    .sort((a, b) => b.reviewCount - a.reviewCount);
-  return { data: enriched, total };
 }
-
-function buildUniversityWhereClause({ search, type, state }) {
-  const conditions = [];
-
-  if (search && search.trim()) {
-    const searchTerm = search.trim();
-    conditions.push({
-      OR: [
-        { name: { contains: searchTerm, mode: "insensitive" } },
-        { abbreviation: { contains: searchTerm, mode: "insensitive" } },
-        { location: { contains: searchTerm, mode: "insensitive" } },
-        { courses: { hasSome: [searchTerm] } },
-      ],
-    });
-  }
-
-  if (type) {
-    conditions.push({ type });
-  }
-
-  if (state) {
-    conditions.push({
-      location: { contains: state, mode: "insensitive" },
-    });
-  }
-
-  if (conditions.length === 0) return undefined;
-  return { AND: conditions };
-}
-
 function computeStats(reviews) {
   const reviewCount = reviews.length;
 
