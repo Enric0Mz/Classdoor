@@ -93,7 +93,7 @@ export default function RegisterPage() {
       {/* ── Left branding panel (desktop only) ── */}
       <div
         className="relative hidden overflow-hidden lg:flex lg:w-1/2 flex-col justify-between"
-        style={{ backgroundColor: "#0f0f14" }}
+        style={{ backgroundColor: "#0F2854" }}
       >
         {/* Dot grid overlay */}
         <div className="dot-grid absolute inset-0 opacity-40" />

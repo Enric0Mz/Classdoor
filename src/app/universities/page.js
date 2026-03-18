@@ -12,6 +12,8 @@ import {
   X,
   Zap,
   Lightbulb,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 
 const UNIVERSITIES_PER_PAGE = 20;
@@ -49,6 +51,12 @@ export default function UniversitiesPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [sortByRating, setSortByRating] = useState(false);
+
+  // Pagination
+  const COLUMNS_PER_ROW = 3;
+  const ROWS_PER_PAGE = 5;
+  const ITEMS_PER_PAGE = COLUMNS_PER_ROW * ROWS_PER_PAGE;
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     try {
@@ -136,6 +144,17 @@ export default function UniversitiesPage() {
     return [...universities].sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0));
   }, [universities, sortByRating]);
 
+  // Reset to first page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeState, activeType, searchQuery, sortByRating]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
+  const paginatedUniversities = useMemo(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    return filtered.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  }, [filtered, currentPage, ITEMS_PER_PAGE]);
+
   const avgRating = useMemo(() => {
     const ratedUniversities = universities.filter((u) => u.rating != null);
     if (ratedUniversities.length === 0) return "—";
@@ -162,17 +181,20 @@ export default function UniversitiesPage() {
       {/* ── Hero Section ── */}
       <section
         className="relative overflow-hidden pb-16 pt-16 text-center"
-        style={{ backgroundColor: "#0f0f14" }}
+        style={{
+          background:
+            "linear-gradient(180deg, #0F2854 0%, #1C4D8D 60%, #4988C4 100%)",
+        }}
       >
         {/* Dot grid overlay */}
         <div className="dot-grid absolute inset-0 opacity-40" />
 
-        {/* Radial purple glow in center */}
-        <div className="absolute left-1/2 top-0 -z-0 h-[600px] w-[800px] -translate-x-1/2 rounded-full bg-gradient-radial from-violet-900/30 to-transparent blur-3xl" />
+        {/* Radial blue glow in center */}
+        <div className="absolute left-1/2 top-0 -z-0 h-[600px] w-[800px] -translate-x-1/2 rounded-full bg-gradient-radial from-sky-700/30 to-transparent blur-3xl" />
 
         <div className="relative z-10 mx-auto max-w-4xl px-4">
           {/* Badge chip */}
-          <div className="stagger-1 mb-6 inline-flex items-center gap-2 rounded-full border border-indigo-400/30 bg-indigo-500/20 px-4 py-1.5 text-xs font-semibold text-white backdrop-blur-sm">
+          <div className="stagger-1 mb-6 inline-flex items-center gap-2 rounded-full border border-sky-400/30 bg-sky-500/20 px-4 py-1.5 text-xs font-semibold text-white backdrop-blur-sm">
             <TrendingUp size={13} />
             <span>
               +{pagination?.total || universities.length || "500"} universidades
@@ -183,7 +205,14 @@ export default function UniversitiesPage() {
           {/* Heading */}
           <h1 className="stagger-2 text-5xl font-extrabold tracking-tight text-white sm:text-6xl">
             Encontre a universidade{" "}
-            <span className="brand-gradient-text">perfeita pra você</span>
+            <span
+              className="bg-clip-text text-transparent"
+              style={{
+                backgroundImage: "linear-gradient(135deg, #4988C4, #BDE8F5)",
+              }}
+            >
+              perfeita pra você
+            </span>
           </h1>
 
           <p className="stagger-3 mx-auto mt-6 max-w-2xl text-lg text-gray-400">
@@ -193,9 +222,9 @@ export default function UniversitiesPage() {
 
           {/* Search Bar */}
           <div className="mx-auto mt-10 max-w-2xl">
-            <div className="group relative flex items-center rounded-2xl border border-white/10 bg-white/5 px-4 py-3 backdrop-blur-sm transition-all focus-within:border-indigo-400/50 focus-within:ring-2 focus-within:ring-indigo-500/60">
+            <div className="group relative flex items-center rounded-2xl border border-white/10 bg-white/5 px-4 py-3 backdrop-blur-sm transition-all focus-within:border-sky-400/50 focus-within:ring-2 focus-within:ring-sky-500/60">
               <Search
-                className="mr-3 shrink-0 text-gray-500 group-focus-within:text-indigo-400"
+                className="mr-3 shrink-0 text-gray-500 group-focus-within:text-sky-400"
                 size={20}
               />
               <input
@@ -205,7 +234,12 @@ export default function UniversitiesPage() {
                 onChange={(e) => handleSearchChange(e.target.value)}
                 className="flex-1 bg-transparent text-base text-white outline-none placeholder:text-gray-500"
               />
-              <button className="brand-gradient ml-2 hidden rounded-xl px-6 py-2 text-sm font-semibold text-white transition-transform hover:scale-105 active:scale-95 sm:block">
+              <button
+                className="ml-2 hidden rounded-xl px-6 py-2 text-sm font-semibold text-white transition-transform hover:scale-105 active:scale-95 sm:block"
+                style={{
+                  background: "linear-gradient(135deg, #1C4D8D, #4988C4)",
+                }}
+              >
                 Buscar
               </button>
             </div>
@@ -227,7 +261,7 @@ export default function UniversitiesPage() {
             </div>
             <div className="flex flex-col items-center rounded-2xl border border-white/10 bg-white/5 px-5 py-3 backdrop-blur-sm">
               <span className="flex items-center gap-1 text-xl font-bold text-white">
-                <Zap size={16} className="text-indigo-400" />
+                <Zap size={16} className="text-sky-400" />
                 100%
               </span>
               <span className="text-xs text-gray-400">
@@ -243,7 +277,7 @@ export default function UniversitiesPage() {
                 <button
                   key={chip}
                   onClick={() => handleChipClick(chip)}
-                  className="rounded-full border border-white/15 bg-white/10 px-4 py-1.5 text-sm font-medium text-gray-300 transition-colors hover:border-indigo-400/30 hover:bg-indigo-500/20 hover:text-indigo-300"
+                  className="rounded-full border border-white/15 bg-white/10 px-4 py-1.5 text-sm font-medium text-gray-300 transition-colors hover:border-sky-400/30 hover:bg-sky-500/20 hover:text-sky-300"
                 >
                   {chip}
                 </button>
@@ -291,14 +325,14 @@ export default function UniversitiesPage() {
               onClick={() => setShowFilters((prev) => !prev)}
               className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-colors ${
                 showFilters || activeFiltersCount > 0
-                  ? "bg-indigo-50 text-indigo-700 ring-1 ring-inset ring-indigo-200"
+                  ? "bg-sky-50 text-sky-700 ring-1 ring-inset ring-sky-200"
                   : "bg-white text-gray-600 hover:bg-gray-50 ring-1 ring-inset ring-gray-200"
               }`}
             >
               <SlidersHorizontal size={16} />
               Filtros
               {activeFiltersCount > 0 && (
-                <span className="ml-1 flex h-5 w-5 items-center justify-center rounded-full bg-indigo-600 text-[0.65rem] text-white">
+                <span className="ml-1 flex h-5 w-5 items-center justify-center rounded-full bg-sky-600 text-[0.65rem] text-white">
                   {activeFiltersCount}
                 </span>
               )}
@@ -313,7 +347,7 @@ export default function UniversitiesPage() {
               <div className="flex flex-col gap-6 sm:flex-row sm:gap-12">
                 {/* State Filter */}
                 <div className="flex-1">
-                  <label className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-indigo-600">
+                  <label className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-sky-600">
                     <MapPin size={14} />
                     Localização (Estado)
                   </label>
@@ -324,7 +358,7 @@ export default function UniversitiesPage() {
                         onClick={() => setActiveState(state)}
                         className={`rounded-lg px-3.5 py-1.5 text-sm font-medium transition-all ${
                           activeState === state
-                            ? "bg-indigo-600 text-white shadow-md shadow-indigo-200"
+                            ? "bg-sky-600 text-white shadow-md shadow-sky-200"
                             : "bg-gray-50 text-gray-600 hover:bg-gray-100"
                         }`}
                       >
@@ -338,7 +372,7 @@ export default function UniversitiesPage() {
 
                 {/* Type Filter */}
                 <div className="flex-1">
-                  <label className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-indigo-600">
+                  <label className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-sky-600">
                     <GraduationCap size={14} />
                     Tipo de Instituição
                   </label>
@@ -349,7 +383,7 @@ export default function UniversitiesPage() {
                         onClick={() => setActiveType(typeFilter.value)}
                         className={`rounded-lg px-3.5 py-1.5 text-sm font-medium transition-all ${
                           activeType === typeFilter.value
-                            ? "bg-indigo-600 text-white shadow-md shadow-indigo-200"
+                            ? "bg-sky-600 text-white shadow-md shadow-sky-200"
                             : "bg-gray-50 text-gray-600 hover:bg-gray-100"
                         }`}
                       >
@@ -381,8 +415,8 @@ export default function UniversitiesPage() {
 
         {/* Grid Results */}
         {loading ? (
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {Array.from({ length: 8 }).map((_, index) => (
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {Array.from({ length: 6 }).map((_, index) => (
               <div
                 key={index}
                 className="flex flex-col gap-3 rounded-2xl border border-gray-100 bg-white p-4 shadow-sm"
@@ -424,13 +458,13 @@ export default function UniversitiesPage() {
                 setActiveState("Todos");
                 setActiveType(null);
               }}
-              className="mt-6 font-medium text-indigo-600 hover:underline"
+              className="mt-6 font-medium text-sky-600 hover:underline"
             >
               Limpar busca
             </button>
             <Link
               href="/sugerir-universidade"
-              className="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 transition-colors hover:text-indigo-600"
+              className="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 transition-colors hover:text-sky-600"
             >
               <Lightbulb size={14} />
               Nao encontrou sua universidade? Sugira aqui
@@ -438,8 +472,8 @@ export default function UniversitiesPage() {
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {filtered.map((university) => (
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {paginatedUniversities.map((university) => (
                 <UniversityCard
                   key={university.id}
                   university={university}
@@ -449,64 +483,49 @@ export default function UniversitiesPage() {
               ))}
             </div>
 
-            {hasMoreUniversities && (
-              <button
-                onClick={loadMoreUniversities}
-                disabled={isLoadingMore}
-                className="mt-8 flex w-full cursor-pointer items-center justify-center gap-2 rounded-2xl border border-gray-100 bg-white py-3.5 text-sm font-medium text-gray-500 shadow-sm transition-colors hover:border-indigo-200 hover:text-indigo-600 disabled:opacity-60"
-              >
-                {isLoadingMore ? (
-                  <>
-                    <svg
-                      className="h-4 w-4 animate-spin"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                    >
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                      />
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 0 1 8-8v4a4 4 0 0 0-4 4H4z"
-                      />
-                    </svg>
-                    Carregando...
-                  </>
-                ) : (
-                  <>
-                    Carregar mais universidades
-                    <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-400">
-                      {pagination.total - universities.length} restantes
-                    </span>
-                  </>
-                )}
-              </button>
-            )}
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="mt-10 flex items-center justify-center gap-2">
+                <button
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.max(1, prev - 1))
+                  }
+                  disabled={currentPage === 1}
+                  className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-600 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  <ChevronLeft size={18} />
+                </button>
 
-            {!hasMoreUniversities && universities.length > 0 && (
-              <p className="mt-4 py-2 text-center text-xs text-gray-300">
-                Todas as {universities.length} universidades carregadas
-              </p>
+                {Array.from(
+                  { length: totalPages },
+                  (_, index) => index + 1,
+                ).map((pageNumber) => (
+                  <button
+                    key={pageNumber}
+                    onClick={() => setCurrentPage(pageNumber)}
+                    className={`flex h-10 w-10 items-center justify-center rounded-full text-sm font-medium transition-colors ${
+                      currentPage === pageNumber
+                        ? "bg-sky-600 text-white shadow-md shadow-sky-200"
+                        : "border border-gray-200 bg-white text-gray-600 hover:bg-gray-50"
+                    }`}
+                  >
+                    {pageNumber}
+                  </button>
+                ))}
+
+                <button
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.min(totalPages, prev + 1))
+                  }
+                  disabled={currentPage === totalPages}
+                  className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-600 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  <ChevronRight size={18} />
+                </button>
+              </div>
             )}
           </>
         )}
-
-        {/* CTA for suggesting a university */}
-        <div className="mt-12 flex flex-col items-center gap-2 text-center">
-          <Link
-            href="/sugerir-universidade"
-            className="inline-flex items-center gap-2 rounded-full border border-indigo-100 bg-indigo-50 px-5 py-2.5 text-sm font-medium text-indigo-700 transition-colors hover:bg-indigo-100"
-          >
-            <Lightbulb size={15} />
-            Nao encontrou sua universidade? Sugira aqui
-          </Link>
-        </div>
       </div>
     </main>
   );

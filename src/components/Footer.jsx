@@ -12,11 +12,11 @@ import {
 } from "lucide-react";
 
 const QUICK_LINKS = [
-  { label: "Sobre nós", href: "#" },
-  { label: "Como funciona", href: "#" },
-  { label: "Blog", href: "#" },
-  { label: "Termos de uso", href: "#" },
-  { label: "Privacidade", href: "#" },
+  { label: "Sobre nós", href: "/em-breve" },
+  { label: "Como funciona", href: "/em-breve" },
+  { label: "Blog", href: "/em-breve" },
+  { label: "Termos de uso", href: "/em-breve" },
+  { label: "Privacidade", href: "/em-breve" },
 ];
 
 const SOCIAL_LINKS = [
@@ -31,6 +31,7 @@ const HIDDEN_ROUTES = [
   "/register",
   "/sugerir-universidade",
   "/avaliar",
+  "/em-breve",
 ];
 
 export default function Footer() {
@@ -48,7 +49,7 @@ export default function Footer() {
           className="relative overflow-hidden rounded-2xl px-6 py-12 text-center sm:px-12 sm:py-16"
           style={{
             background:
-              "linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a78bfa 100%)",
+              "linear-gradient(135deg, #0F2854 0%, #1C4D8D 50%, #4988C4 100%)",
           }}
         >
           {/* Subtle dot overlay for texture */}
@@ -78,7 +79,7 @@ export default function Footer() {
             <div className="flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
               <Link
                 href="/sugerir-universidade"
-                className="inline-flex items-center gap-2 rounded-xl bg-white px-6 py-2.5 text-[0.88rem] font-semibold text-indigo-600 shadow-lg shadow-indigo-900/20 transition-all hover:bg-indigo-50 hover:shadow-xl"
+                className="inline-flex items-center gap-2 rounded-xl bg-white px-6 py-2.5 text-[0.88rem] font-semibold text-[#1C4D8D] shadow-lg shadow-sky-900/20 transition-all hover:bg-sky-50 hover:shadow-xl"
               >
                 <Zap size={16} />
                 Adicionar universidade
@@ -102,10 +103,10 @@ export default function Footer() {
           {/* Brand Column */}
           <div>
             <Link href="/" className="mb-4 inline-flex items-center gap-2.5">
-              <div className="brand-gradient flex h-9 w-9 items-center justify-center rounded-xl text-white shadow-lg shadow-indigo-500/30">
+              <div className="blue-gradient flex h-9 w-9 items-center justify-center rounded-xl text-white shadow-lg shadow-sky-500/30">
                 <GraduationCap size={20} />
               </div>
-              <span className="brand-gradient-text text-[1.3rem] font-extrabold tracking-tight">
+              <span className="blue-gradient-text text-[1.3rem] font-extrabold tracking-tight">
                 InfoCampus
               </span>
             </Link>
@@ -121,7 +122,7 @@ export default function Footer() {
                   key={label}
                   href={href}
                   aria-label={label}
-                  className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 text-gray-400 transition-all hover:border-indigo-300 hover:text-indigo-500 hover:shadow-md hover:shadow-indigo-500/10"
+                  className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 text-gray-400 transition-all hover:border-sky-300 hover:text-sky-600 hover:shadow-md hover:shadow-sky-500/10"
                 >
                   <Icon size={18} />
                 </a>
@@ -140,7 +141,7 @@ export default function Footer() {
                 <li key={link.label}>
                   <Link
                     href={link.href}
-                    className="text-[0.88rem] text-gray-500 transition-colors hover:text-indigo-600"
+                    className="text-[0.88rem] text-gray-500 transition-colors hover:text-sky-600"
                   >
                     {link.label}
                   </Link>
@@ -167,11 +168,11 @@ export default function Footer() {
               <input
                 type="email"
                 placeholder="seu@email.com"
-                className="flex-1 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-[0.85rem] text-gray-700 outline-none transition-all placeholder:text-gray-400 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20"
+                className="flex-1 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-[0.85rem] text-gray-700 outline-none transition-all placeholder:text-gray-400 focus:border-sky-400 focus:ring-2 focus:ring-sky-500/20"
               />
               <button
                 type="submit"
-                className="brand-gradient shrink-0 cursor-pointer rounded-xl px-5 py-2.5 text-[0.85rem] font-semibold text-white shadow-md shadow-indigo-500/20 transition-opacity hover:opacity-90"
+                className="blue-gradient shrink-0 cursor-pointer rounded-xl px-5 py-2.5 text-[0.85rem] font-semibold text-white shadow-md shadow-sky-500/20 transition-opacity hover:opacity-90"
               >
                 Enviar
               </button>
@@ -184,7 +185,7 @@ export default function Footer() {
       <div className="border-t border-gray-200/60 bg-gray-50/60">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-2 px-4 py-4 text-[0.78rem] text-gray-400 sm:flex-row sm:px-6 lg:px-8">
           <span>Feito pelo time InfoCampus &#128153;</span>
-          <span className="font-medium text-indigo-500/70">
+          <span className="font-medium text-sky-500/70">
             Sua universidade, sua escolha &#9996;
           </span>
           <span>&copy; 2026 InfoCampus</span>

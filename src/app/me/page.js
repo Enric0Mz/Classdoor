@@ -192,10 +192,10 @@ export default function MePage() {
     return (
       <main
         className="relative flex min-h-[calc(100vh-4rem)] items-center justify-center overflow-hidden px-4"
-        style={{ backgroundColor: "#0f0f14" }}
+        style={{ backgroundColor: "#0F2854" }}
       >
         <div className="dot-grid absolute inset-0 opacity-40" />
-        <div className="absolute left-1/2 top-1/2 h-[500px] w-[500px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-radial from-violet-900/30 to-transparent blur-3xl" />
+        <div className="absolute left-1/2 top-1/2 h-[500px] w-[500px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-radial from-sky-700/30 to-transparent blur-3xl" />
 
         <div className="relative z-10 flex w-full max-w-sm flex-col items-center gap-4 text-center">
           <div className="flex h-16 w-16 items-center justify-center rounded-full border border-white/10 bg-white/5 backdrop-blur-sm text-gray-400">
@@ -211,7 +211,7 @@ export default function MePage() {
           </div>
           <Link
             href="/"
-            className="brand-gradient rounded-xl px-6 py-2.5 text-sm font-semibold text-white hover:opacity-90"
+            className="blue-gradient rounded-xl px-6 py-2.5 text-sm font-semibold text-white hover:opacity-90"
           >
             Ir para o início
           </Link>
@@ -230,10 +230,10 @@ export default function MePage() {
     return (
       <main
         className="relative flex min-h-[calc(100vh-4rem)] items-center justify-center overflow-hidden px-4"
-        style={{ backgroundColor: "#0f0f14" }}
+        style={{ backgroundColor: "#0F2854" }}
       >
         <div className="dot-grid absolute inset-0 opacity-40" />
-        <div className="absolute left-1/2 top-1/2 h-[500px] w-[500px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-radial from-violet-900/30 to-transparent blur-3xl" />
+        <div className="absolute left-1/2 top-1/2 h-[500px] w-[500px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-radial from-sky-700/30 to-transparent blur-3xl" />
 
         <div className="relative z-10 w-full max-w-sm rounded-2xl border border-white/10 bg-white/5 p-8 text-center backdrop-blur-sm">
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-amber-500/10 border border-amber-400/20">
@@ -265,7 +265,7 @@ export default function MePage() {
               <button
                 onClick={handleResendVerification}
                 disabled={resendStatus === "sending"}
-                className="brand-gradient w-full rounded-xl px-4 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-60"
+                className="blue-gradient w-full rounded-xl px-4 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-60"
               >
                 {resendStatus === "sending"
                   ? "Enviando..."
@@ -297,16 +297,16 @@ export default function MePage() {
     return (
       <main
         className="relative flex min-h-[calc(100vh-4rem)] items-center justify-center overflow-hidden px-4"
-        style={{ backgroundColor: "#0f0f14" }}
+        style={{ backgroundColor: "#0F2854" }}
       >
         <div className="dot-grid absolute inset-0 opacity-40" />
-        <div className="absolute left-1/2 top-1/2 h-[500px] w-[500px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-radial from-violet-900/30 to-transparent blur-3xl" />
+        <div className="absolute left-1/2 top-1/2 h-[500px] w-[500px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-radial from-sky-700/30 to-transparent blur-3xl" />
 
         <div className="relative z-10 flex flex-col items-center gap-4 text-center">
           <p className="text-sm text-gray-400">{errorMessage}</p>
           <button
             onClick={() => window.location.reload()}
-            className="brand-gradient rounded-xl px-5 py-2.5 text-sm font-medium text-white hover:opacity-90"
+            className="blue-gradient rounded-xl px-5 py-2.5 text-sm font-medium text-white hover:opacity-90"
           >
             Tentar novamente
           </button>
@@ -324,17 +324,17 @@ export default function MePage() {
       {/* Dark hero band */}
       <section
         className="relative overflow-hidden pb-20 pt-12"
-        style={{ backgroundColor: "#0f0f14" }}
+        style={{ backgroundColor: "#0F2854" }}
       >
         {/* Dot grid overlay */}
         <div className="dot-grid absolute inset-0 opacity-40" />
 
         {/* Radial purple glow */}
-        <div className="absolute left-1/2 top-0 h-[400px] w-[600px] -translate-x-1/2 rounded-full bg-gradient-radial from-violet-900/30 to-transparent blur-3xl" />
+        <div className="absolute left-1/2 top-0 h-[400px] w-[600px] -translate-x-1/2 rounded-full bg-gradient-radial from-sky-700/30 to-transparent blur-3xl" />
 
         <div className="relative z-10 mx-auto flex max-w-2xl flex-col items-center px-6 text-center">
           {/* Avatar */}
-          <div className="brand-gradient stagger-1 flex h-20 w-20 items-center justify-center rounded-full text-2xl font-bold text-white shadow-lg">
+          <div className="blue-gradient stagger-1 flex h-20 w-20 items-center justify-center rounded-full text-2xl font-bold text-white shadow-lg">
             {initials}
           </div>
 
@@ -344,7 +344,7 @@ export default function MePage() {
               {user.username ?? "Usuário anônimo"}
             </h1>
             {user.verified && (
-              <span className="flex items-center gap-1 rounded-full border border-indigo-400/30 bg-indigo-500/20 px-2.5 py-0.5 text-xs font-semibold text-white backdrop-blur-sm">
+              <span className="flex items-center gap-1 rounded-full border border-sky-400/30 bg-sky-500/20 px-2.5 py-0.5 text-xs font-semibold text-white backdrop-blur-sm">
                 <ShieldCheck size={12} />
                 Verificado
               </span>
@@ -438,22 +438,22 @@ export default function MePage() {
 
           {/* Verification CTA — only when not verified */}
           {!user.verified && (
-            <div className="flex items-start gap-4 rounded-2xl border border-indigo-100 bg-indigo-50 p-5">
-              <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-indigo-100 text-indigo-600">
+            <div className="flex items-start gap-4 rounded-2xl border border-sky-100 bg-sky-50 p-5">
+              <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-sky-100 text-sky-600">
                 <ShieldAlert size={18} />
               </div>
               <div className="flex-1">
-                <p className="text-sm font-semibold text-indigo-900">
+                <p className="text-sm font-semibold text-sky-900">
                   Obtenha o selo de verificado
                 </p>
-                <p className="mt-1 text-sm text-indigo-700">
+                <p className="mt-1 text-sm text-sky-700">
                   Vincule seu email universitário para ganhar o selo{" "}
                   <span className="font-medium">Verificado</span> e mostrar que
                   você realmente estuda ou estudou na universidade que avalia.
                 </p>
                 <Link
                   href="#"
-                  className="brand-gradient mt-3 inline-flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+                  className="blue-gradient mt-3 inline-flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90"
                 >
                   <GraduationCap size={14} />
                   Verificar email universitário
@@ -464,12 +464,12 @@ export default function MePage() {
 
           {/* Admin Panel — only visible to admins */}
           {(userRole === "ADMIN" || user.role === "ADMIN") && (
-            <div className="rounded-2xl border border-indigo-100 bg-white p-6 shadow-sm">
+            <div className="rounded-2xl border border-sky-100 bg-white p-6 shadow-sm">
               <div className="flex items-center gap-2 mb-4">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-100 text-indigo-600">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-sky-100 text-sky-600">
                   <Shield size={16} />
                 </div>
-                <h2 className="text-sm font-semibold uppercase tracking-wide text-indigo-600">
+                <h2 className="text-sm font-semibold uppercase tracking-wide text-sky-600">
                   Painel Admin
                 </h2>
               </div>
@@ -479,14 +479,14 @@ export default function MePage() {
               <div className="flex flex-wrap gap-3">
                 <Link
                   href="/admin/universities/new"
-                  className="brand-gradient inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+                  className="blue-gradient inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
                 >
                   <Building2 size={15} />
                   Criar universidade
                 </Link>
                 <Link
                   href="/admin/university-submissions"
-                  className="inline-flex items-center gap-2 rounded-xl border border-indigo-200 bg-indigo-50 px-5 py-2.5 text-sm font-medium text-indigo-700 transition-colors hover:bg-indigo-100"
+                  className="inline-flex items-center gap-2 rounded-xl border border-sky-200 bg-sky-50 px-5 py-2.5 text-sm font-medium text-sky-700 transition-colors hover:bg-sky-100"
                 >
                   <Settings size={15} />
                   Gerenciar sugestoes
@@ -646,7 +646,7 @@ function UniversitySubmissionsSection() {
         </h2>
         <Link
           href="/sugerir-universidade"
-          className="inline-flex items-center gap-1.5 text-xs font-medium text-indigo-600 transition-colors hover:text-indigo-700"
+          className="inline-flex items-center gap-1.5 text-xs font-medium text-sky-600 transition-colors hover:text-sky-700"
         >
           <Lightbulb size={12} />
           Sugerir universidade
@@ -944,7 +944,7 @@ function MyReviewCard({ review, onUpdate, onRemove }) {
   // ── Edit mode ──
   if (isEditing) {
     return (
-      <li className="rounded-xl border-2 border-indigo-200 bg-white p-4">
+      <li className="rounded-xl border-2 border-sky-200 bg-white p-4">
         {/* Rejection modal */}
         {editRejectionReason && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
@@ -968,7 +968,7 @@ function MyReviewCard({ review, onUpdate, onRemove }) {
               </div>
               <button
                 onClick={() => setEditRejectionReason(null)}
-                className="brand-gradient w-full cursor-pointer rounded-xl py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+                className="blue-gradient w-full cursor-pointer rounded-xl py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
               >
                 Entendi, vou revisar
               </button>
@@ -978,7 +978,7 @@ function MyReviewCard({ review, onUpdate, onRemove }) {
 
         <div className="mb-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Pencil size={13} className="text-indigo-500" />
+            <Pencil size={13} className="text-sky-500" />
             <span className="text-sm font-semibold text-gray-700">
               Editando avaliação
             </span>
@@ -1070,7 +1070,7 @@ function MyReviewCard({ review, onUpdate, onRemove }) {
             <button
               onClick={handleSaveEdit}
               disabled={isSaving}
-              className="brand-gradient flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-60"
+              className="blue-gradient flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-60"
             >
               {isSaving ? "Salvando..." : "Salvar"}
             </button>
@@ -1088,7 +1088,7 @@ function MyReviewCard({ review, onUpdate, onRemove }) {
         <div className="flex-1 min-w-0">
           <Link
             href={`/universities/${review.universityId}`}
-            className="text-sm font-semibold text-gray-800 hover:text-indigo-600 transition-colors"
+            className="text-sm font-semibold text-gray-800 hover:text-sky-600 transition-colors"
           >
             {review.university?.name || "Universidade"}
           </Link>
@@ -1151,7 +1151,7 @@ function MyReviewCard({ review, onUpdate, onRemove }) {
           {needsExpand && (
             <button
               onClick={() => setExpanded(true)}
-              className="flex cursor-pointer items-center gap-0.5 text-xs font-medium text-indigo-500 hover:opacity-80"
+              className="flex cursor-pointer items-center gap-0.5 text-xs font-medium text-sky-500 hover:opacity-80"
             >
               Ler mais <ChevronDown size={11} />
             </button>
@@ -1164,7 +1164,7 @@ function MyReviewCard({ review, onUpdate, onRemove }) {
         <div className="mt-3 border-t border-gray-50 pt-2.5">
           <button
             onClick={() => setShowHistory(!showHistory)}
-            className="flex cursor-pointer items-center gap-1.5 text-xs font-medium text-gray-400 transition-colors hover:text-indigo-600"
+            className="flex cursor-pointer items-center gap-1.5 text-xs font-medium text-gray-400 transition-colors hover:text-sky-600"
           >
             <History size={12} />
             Histórico de edições ({childReviews.length})
@@ -1212,7 +1212,7 @@ function MyReviewCard({ review, onUpdate, onRemove }) {
       <div className="mt-3 flex items-center gap-2 border-t border-gray-50 pt-2.5">
         <button
           onClick={startEditing}
-          className="flex cursor-pointer items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium text-gray-500 transition-colors hover:bg-indigo-50 hover:text-indigo-600"
+          className="flex cursor-pointer items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium text-gray-500 transition-colors hover:bg-sky-50 hover:text-sky-600"
         >
           <Pencil size={12} />
           Editar
@@ -1310,7 +1310,7 @@ function MyReviewsSection() {
         </h2>
         <Link
           href="/avaliar"
-          className="inline-flex items-center gap-1.5 text-xs font-medium text-indigo-600 transition-colors hover:text-indigo-700"
+          className="inline-flex items-center gap-1.5 text-xs font-medium text-sky-600 transition-colors hover:text-sky-700"
         >
           <Star size={12} />
           Nova avaliação
@@ -1330,7 +1330,7 @@ function MyReviewsSection() {
           </p>
           <Link
             href="/avaliar"
-            className="mt-2 inline-flex items-center gap-1.5 text-sm font-medium text-indigo-600 transition-colors hover:text-indigo-700"
+            className="mt-2 inline-flex items-center gap-1.5 text-sm font-medium text-sky-600 transition-colors hover:text-sky-700"
           >
             Avaliar uma universidade
           </Link>
@@ -1356,7 +1356,7 @@ function ProfileSkeleton() {
     <main className="bg-gray-50">
       <section
         className="relative overflow-hidden pb-20 pt-12"
-        style={{ backgroundColor: "#0f0f14" }}
+        style={{ backgroundColor: "#0F2854" }}
       >
         <div className="dot-grid absolute inset-0 opacity-40" />
         <div className="relative z-10 mx-auto flex max-w-2xl flex-col items-center gap-3 px-6">

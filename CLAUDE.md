@@ -109,6 +109,7 @@ Key models (see `prisma/schema.prisma` for full schema):
 - Prefer verbose variable names over single-letter variables
 - Maintain consistent UI/UX across all pages
 - Document new routes in Swagger docs (`src/lib/swagger.js`)
+- When working in a worktree, copy the `.env` file from the project root into the worktree directory, since `.env` is gitignored and won't be available automatically
 
 ## Commands
 
@@ -142,6 +143,13 @@ Commit messages must follow [Conventional Commits](https://www.conventionalcommi
 
 - `main` branch: only accepts hotfix PRs for urgent production bugs
 - `development` branch: all feature/fix PRs target this branch
+- **IMPORTANT:** Always create new branches from the `development` branch, never from `main`:
+  ```bash
+  git checkout development
+  git pull origin development
+  git checkout -b feature/your-feature-name
+  ```
+- When working in a worktree, always copy the `.env` file from the project root into the worktree directory, since `.env` is gitignored and won't be available automatically
 - Use worktrees for parallel work:
 
 1. Commit and push from the worktree:

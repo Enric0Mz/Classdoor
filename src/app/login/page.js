@@ -71,21 +71,21 @@ function LoginPageContent() {
       {/* ── Left branding panel (desktop only) ── */}
       <div
         className="relative hidden overflow-hidden lg:flex lg:w-1/2 flex-col justify-between"
-        style={{ backgroundColor: "#0f0f14" }}
+        style={{ backgroundColor: "#0F2854" }}
       >
         {/* Dot grid overlay */}
         <div className="dot-grid absolute inset-0 opacity-40" />
 
         {/* Radial purple glow */}
-        <div className="absolute left-1/2 top-1/2 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-radial from-violet-900/30 to-transparent blur-3xl" />
+        <div className="absolute left-1/2 top-1/2 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-radial from-sky-700/30 to-transparent blur-3xl" />
 
         {/* Logo at top */}
         <div className="relative z-10 p-12">
           <Link href="/" className="inline-flex items-center gap-2.5">
-            <div className="brand-gradient flex h-10 w-10 items-center justify-center rounded-xl text-white">
+            <div className="blue-gradient flex h-10 w-10 items-center justify-center rounded-xl text-white">
               <GraduationCap size={22} />
             </div>
-            <span className="brand-gradient-text text-[1.4rem] font-extrabold tracking-tight">
+            <span className="blue-gradient-text text-[1.4rem] font-extrabold tracking-tight">
               InfoCampus
             </span>
           </Link>
@@ -93,14 +93,14 @@ function LoginPageContent() {
 
         {/* Bottom content */}
         <div className="relative z-10 px-12 pb-16">
-          <div className="stagger-1 mb-5 inline-flex items-center gap-2 rounded-full border border-indigo-400/30 bg-indigo-500/20 px-4 py-1.5 text-xs font-semibold text-white backdrop-blur-sm">
+          <div className="stagger-1 mb-5 inline-flex items-center gap-2 rounded-full border border-sky-400/30 bg-sky-500/20 px-4 py-1.5 text-xs font-semibold text-white backdrop-blur-sm">
             <Zap size={13} />
             <span>Avaliações verificadas por estudantes</span>
           </div>
 
           <h2 className="stagger-2 text-4xl font-extrabold tracking-tight text-white">
             A voz dos estudantes{" "}
-            <span className="brand-gradient-text">importa aqui.</span>
+            <span className="blue-gradient-text">importa aqui.</span>
           </h2>
 
           <p className="stagger-3 mt-4 text-base text-gray-400">
@@ -120,7 +120,7 @@ function LoginPageContent() {
             </div>
             <div className="flex flex-col items-center rounded-2xl border border-white/10 bg-white/5 px-5 py-3 backdrop-blur-sm">
               <span className="flex items-center gap-1 text-xl font-bold text-white">
-                <Zap size={16} className="text-indigo-400" />
+                <Zap size={16} className="text-sky-400" />
                 100%
               </span>
               <span className="text-xs text-gray-400">verificadas</span>
@@ -134,10 +134,10 @@ function LoginPageContent() {
         {/* Mobile logo — hidden on large screens */}
         <div className="mb-8 text-center lg:hidden">
           <Link href="/" className="inline-flex items-center gap-2.5">
-            <div className="brand-gradient flex h-10 w-10 items-center justify-center rounded-xl text-white">
+            <div className="blue-gradient flex h-10 w-10 items-center justify-center rounded-xl text-white">
               <GraduationCap size={22} />
             </div>
-            <span className="brand-gradient-text text-[1.4rem] font-extrabold tracking-tight">
+            <span className="blue-gradient-text text-[1.4rem] font-extrabold tracking-tight">
               InfoCampus
             </span>
           </Link>
@@ -204,7 +204,7 @@ function LoginPageContent() {
                     value={identifier}
                     onChange={(e) => setIdentifier(e.target.value)}
                     placeholder="seu@email.com ou AgilOnca472"
-                    className="w-full rounded-xl border border-gray-200 bg-gray-50 py-2.5 pl-9 pr-3 text-sm text-gray-800 outline-none transition-colors placeholder:text-gray-400 focus:border-indigo-300 focus:bg-white focus:ring-2 focus:ring-indigo-100"
+                    className="w-full rounded-xl border border-gray-200 bg-gray-50 py-2.5 pl-9 pr-3 text-sm text-gray-800 outline-none transition-colors placeholder:text-gray-400 focus:border-sky-300 focus:bg-white focus:ring-2 focus:ring-sky-100"
                   />
                 </div>
               </div>
@@ -229,7 +229,7 @@ function LoginPageContent() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Sua senha"
-                    className="w-full rounded-xl border border-gray-200 bg-gray-50 py-2.5 pl-9 pr-10 text-sm text-gray-800 outline-none transition-colors placeholder:text-gray-400 focus:border-indigo-300 focus:bg-white focus:ring-2 focus:ring-indigo-100"
+                    className="w-full rounded-xl border border-gray-200 bg-gray-50 py-2.5 pl-9 pr-10 text-sm text-gray-800 outline-none transition-colors placeholder:text-gray-400 focus:border-sky-300 focus:bg-white focus:ring-2 focus:ring-sky-100"
                   />
                   <button
                     type="button"
@@ -245,7 +245,7 @@ function LoginPageContent() {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="brand-gradient mt-1 flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-60"
+                className="blue-gradient mt-1 flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-60"
               >
                 {isLoading ? (
                   <>
@@ -281,7 +281,7 @@ function LoginPageContent() {
             Não tem conta?{" "}
             <Link
               href="/register"
-              className="font-semibold text-indigo-600 hover:underline"
+              className="font-semibold text-sky-600 hover:underline"
             >
               Cadastrar
             </Link>

@@ -59,7 +59,7 @@ function ChooseUsernameContent() {
     return (
       <main
         className="relative flex min-h-[calc(100vh-4rem)] items-center justify-center overflow-hidden px-4"
-        style={{ backgroundColor: "#0f0f14" }}
+        style={{ backgroundColor: "#0F2854" }}
       >
         <div className="dot-grid absolute inset-0 opacity-40" />
         <div className="relative z-10 flex flex-col items-center gap-4 text-center">
@@ -82,7 +82,7 @@ function ChooseUsernameContent() {
       {/* Left branding panel (desktop only) */}
       <div
         className="relative hidden overflow-hidden lg:flex lg:w-1/2 flex-col justify-between"
-        style={{ backgroundColor: "#0f0f14" }}
+        style={{ backgroundColor: "#0F2854" }}
       >
         <div className="dot-grid absolute inset-0 opacity-40" />
         <div className="absolute left-1/2 top-1/2 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-radial from-violet-900/30 to-transparent blur-3xl" />
@@ -241,7 +241,7 @@ export default function ChooseUsernamePage() {
       fallback={
         <main
           className="relative flex min-h-[calc(100vh-4rem)] items-center justify-center overflow-hidden px-4"
-          style={{ backgroundColor: "#0f0f14" }}
+          style={{ backgroundColor: "#0F2854" }}
         >
           <div className="dot-grid absolute inset-0 opacity-40" />
           <div className="relative z-10">

@@ -195,6 +195,17 @@
     background-clip: text;
   }
 
+  .blue-gradient {
+    background: linear-gradient(135deg, #1c4d8d, #4988c4);
+  }
+
+  .blue-gradient-text {
+    background: linear-gradient(135deg, #4988c4, #bde8f5);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
   .animate-fade-in-down {
     animation: fadeInDown 0.3s ease-out forwards;
   }

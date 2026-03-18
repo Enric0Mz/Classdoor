@@ -1264,7 +1264,7 @@ export default function UniversityDetailPage() {
       {/* ── Dark hero strip ── */}
       <div
         className="relative overflow-hidden pb-8 pt-6"
-        style={{ backgroundColor: "#0f0f14" }}
+        style={{ backgroundColor: "#0F2854" }}
       >
         {/* Dot grid overlay */}
         <div className="dot-grid absolute inset-0 opacity-30" />
