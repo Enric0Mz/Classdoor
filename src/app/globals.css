@@ -196,11 +196,11 @@
   }
 
   .blue-gradient {
-    background: linear-gradient(135deg, #1C4D8D, #4988C4);
+    background: linear-gradient(135deg, #1c4d8d, #4988c4);
   }
 
   .blue-gradient-text {
-    background: linear-gradient(135deg, #4988C4, #BDE8F5);
+    background: linear-gradient(135deg, #4988c4, #bde8f5);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;

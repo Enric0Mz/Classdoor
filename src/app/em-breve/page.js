@@ -35,8 +35,8 @@ export default function EmBrevePage() {
 
         {/* Description */}
         <p className="stagger-3 mx-auto mt-4 max-w-md text-base leading-relaxed text-gray-400">
-          Essa funcionalidade ainda está sendo desenvolvida pelo nosso time.
-          Em breve ela estará disponível pra você!
+          Essa funcionalidade ainda está sendo desenvolvida pelo nosso time. Em
+          breve ela estará disponível pra você!
         </p>
 
         {/* Progress bar */}

@@ -3,7 +3,14 @@
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { GraduationCap, Mail, CheckCircle, XCircle, Zap, Loader2 } from "lucide-react";
+import {
+  GraduationCap,
+  Mail,
+  CheckCircle,
+  XCircle,
+  Zap,
+  Loader2,
+} from "lucide-react";
 
 function VerifyEmailContent() {
   const searchParams = useSearchParams();
@@ -85,7 +92,9 @@ function VerifyEmailContent() {
       <div className="relative z-10 flex flex-col items-center px-4 text-center">
         {/* Logo */}
         <Link href="/" className="mb-12 inline-flex items-center gap-2.5">
-          <div className="brand-gradient flex h-10 w-10 items-center justify-center rounded-xl text-white"><GraduationCap size={22} /></div>
+          <div className="brand-gradient flex h-10 w-10 items-center justify-center rounded-xl text-white">
+            <GraduationCap size={22} />
+          </div>
           <span className="brand-gradient-text text-[1.4rem] font-extrabold tracking-tight">
             InfoCampus
           </span>

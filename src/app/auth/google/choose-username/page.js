@@ -89,7 +89,9 @@ function ChooseUsernameContent() {
 
         <div className="relative z-10 p-12">
           <Link href="/" className="inline-flex items-center gap-2.5">
-            <div className="brand-gradient flex h-10 w-10 items-center justify-center rounded-xl text-white"><GraduationCap size={22} /></div>
+            <div className="brand-gradient flex h-10 w-10 items-center justify-center rounded-xl text-white">
+              <GraduationCap size={22} />
+            </div>
             <span className="brand-gradient-text text-[1.4rem] font-extrabold tracking-tight">
               InfoCampus
             </span>
@@ -112,7 +114,9 @@ function ChooseUsernameContent() {
       <div className="flex flex-1 flex-col items-center justify-start overflow-y-auto bg-gray-50 px-6 py-12">
         <div className="mb-8 text-center lg:hidden">
           <Link href="/" className="inline-flex items-center gap-2.5">
-            <div className="brand-gradient flex h-10 w-10 items-center justify-center rounded-xl text-white"><GraduationCap size={22} /></div>
+            <div className="brand-gradient flex h-10 w-10 items-center justify-center rounded-xl text-white">
+              <GraduationCap size={22} />
+            </div>
             <span className="brand-gradient-text text-[1.4rem] font-extrabold tracking-tight">
               InfoCampus
             </span>

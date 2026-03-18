@@ -181,7 +181,10 @@ export default function UniversitiesPage() {
       {/* ── Hero Section ── */}
       <section
         className="relative overflow-hidden pb-16 pt-16 text-center"
-        style={{ background: "linear-gradient(180deg, #0F2854 0%, #1C4D8D 60%, #4988C4 100%)" }}
+        style={{
+          background:
+            "linear-gradient(180deg, #0F2854 0%, #1C4D8D 60%, #4988C4 100%)",
+        }}
       >
         {/* Dot grid overlay */}
         <div className="dot-grid absolute inset-0 opacity-40" />
@@ -202,7 +205,14 @@ export default function UniversitiesPage() {
           {/* Heading */}
           <h1 className="stagger-2 text-5xl font-extrabold tracking-tight text-white sm:text-6xl">
             Encontre a universidade{" "}
-            <span className="bg-clip-text text-transparent" style={{ backgroundImage: "linear-gradient(135deg, #4988C4, #BDE8F5)" }}>perfeita pra você</span>
+            <span
+              className="bg-clip-text text-transparent"
+              style={{
+                backgroundImage: "linear-gradient(135deg, #4988C4, #BDE8F5)",
+              }}
+            >
+              perfeita pra você
+            </span>
           </h1>
 
           <p className="stagger-3 mx-auto mt-6 max-w-2xl text-lg text-gray-400">
@@ -224,7 +234,12 @@ export default function UniversitiesPage() {
                 onChange={(e) => handleSearchChange(e.target.value)}
                 className="flex-1 bg-transparent text-base text-white outline-none placeholder:text-gray-500"
               />
-              <button className="ml-2 hidden rounded-xl px-6 py-2 text-sm font-semibold text-white transition-transform hover:scale-105 active:scale-95 sm:block" style={{ background: "linear-gradient(135deg, #1C4D8D, #4988C4)" }}>
+              <button
+                className="ml-2 hidden rounded-xl px-6 py-2 text-sm font-semibold text-white transition-transform hover:scale-105 active:scale-95 sm:block"
+                style={{
+                  background: "linear-gradient(135deg, #1C4D8D, #4988C4)",
+                }}
+              >
                 Buscar
               </button>
             </div>
@@ -472,31 +487,36 @@ export default function UniversitiesPage() {
             {totalPages > 1 && (
               <div className="mt-10 flex items-center justify-center gap-2">
                 <button
-                  onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.max(1, prev - 1))
+                  }
                   disabled={currentPage === 1}
                   className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-600 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   <ChevronLeft size={18} />
                 </button>
 
-                {Array.from({ length: totalPages }, (_, index) => index + 1).map(
-                  (pageNumber) => (
-                    <button
-                      key={pageNumber}
-                      onClick={() => setCurrentPage(pageNumber)}
-                      className={`flex h-10 w-10 items-center justify-center rounded-full text-sm font-medium transition-colors ${
-                        currentPage === pageNumber
-                          ? "bg-sky-600 text-white shadow-md shadow-sky-200"
-                          : "border border-gray-200 bg-white text-gray-600 hover:bg-gray-50"
-                      }`}
-                    >
-                      {pageNumber}
-                    </button>
-                  ),
-                )}
+                {Array.from(
+                  { length: totalPages },
+                  (_, index) => index + 1,
+                ).map((pageNumber) => (
+                  <button
+                    key={pageNumber}
+                    onClick={() => setCurrentPage(pageNumber)}
+                    className={`flex h-10 w-10 items-center justify-center rounded-full text-sm font-medium transition-colors ${
+                      currentPage === pageNumber
+                        ? "bg-sky-600 text-white shadow-md shadow-sky-200"
+                        : "border border-gray-200 bg-white text-gray-600 hover:bg-gray-50"
+                    }`}
+                  >
+                    {pageNumber}
+                  </button>
+                ))}
 
                 <button
-                  onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.min(totalPages, prev + 1))
+                  }
                   disabled={currentPage === totalPages}
                   className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-600 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
                 >
@@ -506,7 +526,6 @@ export default function UniversitiesPage() {
             )}
           </>
         )}
-
       </div>
     </main>
   );
