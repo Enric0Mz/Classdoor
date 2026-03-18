@@ -16,8 +16,6 @@ import {
   ChevronRight,
 } from "lucide-react";
 
-const UNIVERSITIES_PER_PAGE = 20;
-
 const STATE_FILTERS = [
   "Todos",
   "SP",
@@ -40,7 +38,6 @@ export default function UniversitiesPage() {
   const [universities, setUniversities] = useState([]);
   const [pagination, setPagination] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [error, setError] = useState(null);
 
   const [userRole, setUserRole] = useState(null);
@@ -53,10 +50,10 @@ export default function UniversitiesPage() {
   const [sortByRating, setSortByRating] = useState(false);
 
   // Pagination
-  const COLUMNS_PER_ROW = 3;
-  const ROWS_PER_PAGE = 5;
-  const ITEMS_PER_PAGE = COLUMNS_PER_ROW * ROWS_PER_PAGE;
+  const ITEMS_PER_PAGE = 15;
   const [currentPage, setCurrentPage] = useState(1);
+  const universitiesTopRef = useRef(null);
+  const isFirstRender = useRef(true);
 
   useEffect(() => {
     try {
@@ -87,57 +84,37 @@ export default function UniversitiesPage() {
     debounceTimer.current = setTimeout(() => setDebouncedSearch(value), 300);
   }
 
-  const fetchUniversities = useCallback(
-    async (page = 1, append = false) => {
-      if (append) {
-        setIsLoadingMore(true);
-      } else {
-        setLoading(true);
+  const fetchUniversities = useCallback(async () => {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams({
+        limit: String(ITEMS_PER_PAGE),
+        page: String(currentPage),
+      });
+      if (debouncedSearch.trim()) {
+        params.set("search", debouncedSearch.trim());
       }
-      try {
-        const params = new URLSearchParams({
-          limit: String(UNIVERSITIES_PER_PAGE),
-          page: String(page),
-        });
-        if (debouncedSearch.trim()) {
-          params.set("search", debouncedSearch.trim());
-        }
-        if (activeType) {
-          params.set("type", activeType);
-        }
-        if (activeState !== "Todos") {
-          params.set("state", activeState);
-        }
-        const res = await fetch(`/api/v1/universities?${params}`);
-        if (!res.ok) throw new Error("Falha ao carregar universidades");
-        const data = await res.json();
-        if (append) {
-          setUniversities((prev) => [...prev, ...(data.data ?? [])]);
-        } else {
-          setUniversities(data.data ?? []);
-        }
-        setPagination(data.pagination ?? null);
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-        setIsLoadingMore(false);
+      if (activeType) {
+        params.set("type", activeType);
       }
-    },
-    [debouncedSearch, activeType, activeState],
-  );
+      if (activeState !== "Todos") {
+        params.set("state", activeState);
+      }
+      const res = await fetch(`/api/v1/universities?${params}`);
+      if (!res.ok) throw new Error("Falha ao carregar universidades");
+      const data = await res.json();
+      setUniversities(data.data ?? []);
+      setPagination(data.pagination ?? null);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }, [currentPage, debouncedSearch, activeType, activeState]);
 
   useEffect(() => {
-    fetchUniversities(1);
+    fetchUniversities();
   }, [fetchUniversities]);
-
-  async function loadMoreUniversities() {
-    if (!pagination || isLoadingMore) return;
-    fetchUniversities(pagination.page + 1, true);
-  }
-
-  const hasMoreUniversities =
-    pagination && pagination.page < pagination.totalPages;
 
   const filtered = useMemo(() => {
     if (!sortByRating) return universities;
@@ -149,11 +126,41 @@ export default function UniversitiesPage() {
     setCurrentPage(1);
   }, [activeState, activeType, searchQuery, sortByRating]);
 
-  const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
-  const paginatedUniversities = useMemo(() => {
-    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-    return filtered.slice(startIndex, startIndex + ITEMS_PER_PAGE);
-  }, [filtered, currentPage, ITEMS_PER_PAGE]);
+  // Scroll to top of university list when page changes
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+    universitiesTopRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [currentPage]);
+
+  const totalPages = pagination?.totalPages ?? 1;
+
+  const visiblePageNumbers = useMemo(() => {
+    if (totalPages <= 4) {
+      return Array.from({ length: totalPages }, (_, index) => index + 1);
+    }
+
+    const pages = [];
+    const startPage = Math.max(1, currentPage - 1);
+    const endPage = Math.min(totalPages - 1, startPage + 2);
+    const adjustedStart = Math.max(1, endPage - 2);
+
+    for (let page = adjustedStart; page <= endPage; page++) {
+      pages.push(page);
+    }
+
+    if (endPage < totalPages - 1) {
+      pages.push("...");
+    }
+
+    if (!pages.includes(totalPages)) {
+      pages.push(totalPages);
+    }
+
+    return pages;
+  }, [totalPages, currentPage]);
 
   const avgRating = useMemo(() => {
     const ratedUniversities = universities.filter((u) => u.rating != null);
@@ -291,7 +298,10 @@ export default function UniversitiesPage() {
       </section>
 
       {/* ── Main Content ── */}
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <div
+        ref={universitiesTopRef}
+        className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8"
+      >
         {/* Toolbar */}
         <div className="mb-8 flex flex-col gap-4 py-5 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-4 text-sm text-gray-500">
@@ -473,7 +483,7 @@ export default function UniversitiesPage() {
         ) : (
           <>
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {paginatedUniversities.map((university) => (
+              {filtered.map((university) => (
                 <UniversityCard
                   key={university.id}
                   university={university}
@@ -496,22 +506,28 @@ export default function UniversitiesPage() {
                   <ChevronLeft size={18} />
                 </button>
 
-                {Array.from(
-                  { length: totalPages },
-                  (_, index) => index + 1,
-                ).map((pageNumber) => (
-                  <button
-                    key={pageNumber}
-                    onClick={() => setCurrentPage(pageNumber)}
-                    className={`flex h-10 w-10 items-center justify-center rounded-full text-sm font-medium transition-colors ${
-                      currentPage === pageNumber
-                        ? "bg-sky-600 text-white shadow-md shadow-sky-200"
-                        : "border border-gray-200 bg-white text-gray-600 hover:bg-gray-50"
-                    }`}
-                  >
-                    {pageNumber}
-                  </button>
-                ))}
+                {visiblePageNumbers.map((pageNumber, index) =>
+                  pageNumber === "..." ? (
+                    <span
+                      key={`ellipsis-${index}`}
+                      className="flex h-10 w-10 items-center justify-center text-sm text-gray-400"
+                    >
+                      ...
+                    </span>
+                  ) : (
+                    <button
+                      key={pageNumber}
+                      onClick={() => setCurrentPage(pageNumber)}
+                      className={`flex h-10 w-10 items-center justify-center rounded-full text-sm font-medium transition-colors ${
+                        currentPage === pageNumber
+                          ? "bg-sky-600 text-white shadow-md shadow-sky-200"
+                          : "border border-gray-200 bg-white text-gray-600 hover:bg-gray-50"
+                      }`}
+                    >
+                      {pageNumber}
+                    </button>
+                  ),
+                )}
 
                 <button
                   onClick={() =>
