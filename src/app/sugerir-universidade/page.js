@@ -117,7 +117,7 @@ export default function SugerirUniversidadePage() {
     return (
       <main
         className="relative flex min-h-[calc(100vh-4rem)] items-center justify-center overflow-hidden px-4"
-        style={{ backgroundColor: "#0f0f14" }}
+        style={{ backgroundColor: "#0F2854" }}
       >
         <div className="dot-grid absolute inset-0 opacity-40" />
         <div className="absolute left-1/2 top-1/2 h-[500px] w-[500px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-radial from-violet-900/30 to-transparent blur-3xl" />
@@ -157,7 +157,7 @@ export default function SugerirUniversidadePage() {
   return (
     <main
       className="relative min-h-[calc(100vh-4rem)] overflow-hidden px-4 py-12"
-      style={{ backgroundColor: "#0f0f14" }}
+      style={{ backgroundColor: "#0F2854" }}
     >
       <div className="dot-grid absolute inset-0 opacity-40" />
       <div className="absolute left-1/2 top-0 h-[600px] w-[800px] -translate-x-1/2 rounded-full bg-gradient-radial from-violet-900/30 to-transparent blur-3xl" />

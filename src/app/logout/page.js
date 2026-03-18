@@ -28,21 +28,21 @@ export default function LogoutPage() {
   return (
     <main
       className="relative flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center overflow-hidden"
-      style={{ backgroundColor: "#0f0f14" }}
+      style={{ backgroundColor: "#0F2854" }}
     >
       {/* Dot grid overlay */}
       <div className="dot-grid absolute inset-0 opacity-40" />
 
       {/* Radial purple glow */}
-      <div className="absolute left-1/2 top-1/2 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-radial from-violet-900/30 to-transparent blur-3xl" />
+      <div className="absolute left-1/2 top-1/2 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-radial from-sky-700/30 to-transparent blur-3xl" />
 
       <div className="relative z-10 flex flex-col items-center px-4 text-center">
         {/* Logo */}
         <Link href="/" className="mb-12 inline-flex items-center gap-2.5">
-          <div className="brand-gradient flex h-10 w-10 items-center justify-center rounded-xl text-white">
+          <div className="blue-gradient flex h-10 w-10 items-center justify-center rounded-xl text-white">
             <GraduationCap size={22} />
           </div>
-          <span className="brand-gradient-text text-[1.4rem] font-extrabold tracking-tight">
+          <span className="blue-gradient-text text-[1.4rem] font-extrabold tracking-tight">
             InfoCampus
           </span>
         </Link>
@@ -53,7 +53,7 @@ export default function LogoutPage() {
         </div>
 
         {/* Badge */}
-        <div className="stagger-1 mb-5 inline-flex items-center gap-2 rounded-full border border-indigo-400/30 bg-indigo-500/20 px-4 py-1.5 text-xs font-semibold text-white backdrop-blur-sm">
+        <div className="stagger-1 mb-5 inline-flex items-center gap-2 rounded-full border border-sky-400/30 bg-sky-500/20 px-4 py-1.5 text-xs font-semibold text-white backdrop-blur-sm">
           <Zap size={13} />
           <span>Sessão encerrada com segurança</span>
         </div>
@@ -70,13 +70,13 @@ export default function LogoutPage() {
         <div className="mt-8 flex w-full max-w-xs flex-col gap-3">
           <Link
             href="/login"
-            className="brand-gradient flex items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+            className="blue-gradient flex items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
           >
             Entrar novamente
           </Link>
           <Link
             href="/universities"
-            className="flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 py-2.5 text-sm font-medium text-gray-300 backdrop-blur-sm transition-colors hover:border-indigo-400/30 hover:bg-indigo-500/10 hover:text-white"
+            className="flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 py-2.5 text-sm font-medium text-gray-300 backdrop-blur-sm transition-colors hover:border-sky-400/30 hover:bg-sky-500/10 hover:text-white"
           >
             Explorar sem conta
           </Link>

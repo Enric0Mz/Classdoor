@@ -118,7 +118,7 @@ export default function CreateUniversityPage() {
   return (
     <main
       className="relative min-h-[calc(100vh-4rem)] overflow-hidden px-4 py-12"
-      style={{ backgroundColor: "#0f0f14" }}
+      style={{ backgroundColor: "#0F2854" }}
     >
       {/* Dot grid overlay */}
       <div className="dot-grid absolute inset-0 opacity-40" />

@@ -16,9 +16,9 @@ import {
 
 const NAV_LINKS = [
   { label: "Explorar 🔍", href: "/universities" },
-  { label: "Rankings 🏆", href: "#" },
+  { label: "Rankings 🏆", href: "/em-breve" },
   { label: "Cursos 📚", href: "/courses" },
-  { label: "Salários 💰", href: "#" },
+  { label: "Salários 💰", href: "/em-breve" },
 ];
 
 function getEmailFromToken(token) {
@@ -80,19 +80,19 @@ export default function Navbar() {
 
   return (
     <header
-      className="sticky top-0 z-50 border-b border-indigo-400/20 backdrop-blur-xl shadow-[0_1px_30px_-4px_rgba(99,102,241,0.25)]"
+      className="sticky top-0 z-50 border-b border-sky-400/20 backdrop-blur-xl shadow-[0_1px_30px_-4px_rgba(28,77,141,0.25)]"
       style={{
         background:
-          "linear-gradient(135deg, #1e1b4b 0%, #2e1d6e 50%, #1e1b4b 100%)",
+          "linear-gradient(135deg, #0F2854 0%, #1C4D8D 50%, #0F2854 100%)",
       }}
     >
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* Logo */}
         <Link href="/" className="flex shrink-0 items-center gap-2.5">
-          <div className="brand-gradient flex h-9 w-9 items-center justify-center rounded-xl text-white shadow-lg shadow-indigo-500/30">
+          <div className="blue-gradient flex h-9 w-9 items-center justify-center rounded-xl text-white shadow-lg shadow-sky-500/30">
             <GraduationCap size={20} />
           </div>
-          <span className="brand-gradient-text text-[1.3rem] font-extrabold tracking-tight">
+          <span className="blue-gradient-text text-[1.3rem] font-extrabold tracking-tight">
             InfoCampus
           </span>
         </Link>
@@ -132,13 +132,13 @@ export default function Navbar() {
           {/* Bell */}
           <button className="relative cursor-pointer rounded-xl p-2.5 text-gray-400 transition-colors hover:bg-white/8 hover:text-gray-200">
             <Bell size={20} />
-            <span className="absolute right-1.5 top-1.5 h-2.5 w-2.5 rounded-full border-2 border-[#1e1b4b] bg-indigo-400" />
+            <span className="absolute right-1.5 top-1.5 h-2.5 w-2.5 rounded-full border-2 border-[#0F2854] bg-sky-400" />
           </button>
 
           {/* Avaliar — hidden on mobile */}
           <Link
             href={userEmail ? "/avaliar" : "/register"}
-            className="brand-gradient hidden items-center gap-2 rounded-xl px-4 py-2 text-[0.85rem] text-white shadow-md shadow-indigo-500/20 transition-opacity hover:opacity-90 sm:flex"
+            className="blue-gradient hidden items-center gap-2 rounded-xl px-4 py-2 text-[0.85rem] text-white shadow-md shadow-sky-500/20 transition-opacity hover:opacity-90 sm:flex"
           >
             <Zap size={16} />
             Avaliar
@@ -149,7 +149,7 @@ export default function Navbar() {
             <div className="relative" ref={dropdownRef}>
               <button
                 onClick={() => setIsDropdownOpen((prev) => !prev)}
-                className="brand-gradient flex h-9 w-9 cursor-pointer items-center justify-center rounded-full text-[0.75rem] font-semibold text-white shadow-md shadow-indigo-500/30 transition-opacity hover:opacity-80"
+                className="blue-gradient flex h-9 w-9 cursor-pointer items-center justify-center rounded-full text-[0.75rem] font-semibold text-white shadow-md shadow-sky-500/30 transition-opacity hover:opacity-80"
                 title={userEmail}
               >
                 {getInitials(userEmail)}
@@ -159,7 +159,7 @@ export default function Navbar() {
                 <div
                   className="absolute right-0 top-11 w-52 rounded-xl border border-white/10 shadow-xl shadow-black/40 backdrop-blur-xl"
                   style={{
-                    background: "linear-gradient(135deg, #12102a, #1a1040)",
+                    background: "linear-gradient(135deg, #0F2854, #1C4D8D)",
                   }}
                 >
                   <div className="border-b border-white/10 px-4 py-3">
@@ -191,13 +191,13 @@ export default function Navbar() {
             <>
               <Link
                 href="/login"
-                className="rounded-xl border border-white/15 px-4 py-2 text-sm font-medium text-gray-300 transition-colors hover:border-indigo-400/50 hover:text-indigo-300"
+                className="rounded-xl border border-white/15 px-4 py-2 text-sm font-medium text-gray-300 transition-colors hover:border-sky-400/50 hover:text-sky-300"
               >
                 Entrar
               </Link>
               <Link
                 href="/register"
-                className="brand-gradient rounded-xl px-4 py-2 text-sm font-medium text-white shadow-md shadow-indigo-500/20 transition-opacity hover:opacity-90"
+                className="blue-gradient rounded-xl px-4 py-2 text-sm font-medium text-white shadow-md shadow-sky-500/20 transition-opacity hover:opacity-90"
               >
                 Cadastrar
               </Link>
@@ -218,7 +218,7 @@ export default function Navbar() {
       {isMobileMenuOpen && (
         <div
           className="border-t border-white/10 px-4 py-3 md:hidden"
-          style={{ background: "linear-gradient(135deg, #1e1b4b, #2e1d6e)" }}
+          style={{ background: "linear-gradient(135deg, #0F2854, #1C4D8D)" }}
         >
           {/* Mobile search */}
           <div className="mb-3 flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3.5 py-2.5 sm:hidden">
@@ -245,7 +245,7 @@ export default function Navbar() {
           {/* Mobile Avaliar button */}
           <Link
             href={userEmail ? "/avaliar" : "/register"}
-            className="brand-gradient mt-2 flex w-full items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-[0.85rem] text-white shadow-md shadow-indigo-500/20"
+            className="blue-gradient mt-2 flex w-full items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-[0.85rem] text-white shadow-md shadow-sky-500/20"
             onClick={() => setIsMobileMenuOpen(false)}
           >
             <Zap size={16} />

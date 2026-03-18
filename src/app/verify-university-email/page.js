@@ -3,14 +3,7 @@
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import {
-  GraduationCap,
-  School,
-  CheckCircle,
-  XCircle,
-  Zap,
-  Loader2,
-} from "lucide-react";
+import { GraduationCap, School, CheckCircle, XCircle, Zap, Loader2 } from "lucide-react";
 
 function VerifyUniversityEmailContent() {
   const searchParams = useSearchParams();
@@ -86,7 +79,7 @@ function VerifyUniversityEmailContent() {
   return (
     <main
       className="relative flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center overflow-hidden"
-      style={{ backgroundColor: "#0f0f14" }}
+      style={{ backgroundColor: "#0F2854" }}
     >
       {/* Dot grid overlay */}
       <div className="dot-grid absolute inset-0 opacity-40" />
@@ -97,9 +90,7 @@ function VerifyUniversityEmailContent() {
       <div className="relative z-10 flex flex-col items-center px-4 text-center">
         {/* Logo */}
         <Link href="/" className="mb-12 inline-flex items-center gap-2.5">
-          <div className="brand-gradient flex h-10 w-10 items-center justify-center rounded-xl text-white">
-            <GraduationCap size={22} />
-          </div>
+          <div className="brand-gradient flex h-10 w-10 items-center justify-center rounded-xl text-white"><GraduationCap size={22} /></div>
           <span className="brand-gradient-text text-[1.4rem] font-extrabold tracking-tight">
             InfoCampus
           </span>
@@ -178,7 +169,7 @@ export default function VerifyUniversityEmailPage() {
       fallback={
         <main
           className="relative flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center overflow-hidden"
-          style={{ backgroundColor: "#0f0f14" }}
+          style={{ backgroundColor: "#0F2854" }}
         >
           <div className="dot-grid absolute inset-0 opacity-40" />
           <div className="absolute left-1/2 top-1/2 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-radial from-violet-900/30 to-transparent blur-3xl" />

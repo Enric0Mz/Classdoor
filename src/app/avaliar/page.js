@@ -46,7 +46,7 @@ function UniversitySelector({ value, onChange }) {
       <button
         type="button"
         onClick={() => setOpen((prev) => !prev)}
-        className="flex w-full cursor-pointer items-center justify-between gap-2 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm transition-colors hover:border-indigo-300 focus:border-indigo-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-100"
+        className="flex w-full cursor-pointer items-center justify-between gap-2 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm transition-colors hover:border-sky-300 focus:border-sky-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-100"
       >
         {selected ? (
           <span className="font-medium text-gray-800">{selected.name}</span>
@@ -85,9 +85,9 @@ function UniversitySelector({ value, onChange }) {
                   <button
                     type="button"
                     onClick={() => select(u)}
-                    className={`w-full cursor-pointer px-4 py-2.5 text-left text-sm transition-colors hover:bg-indigo-50 hover:text-indigo-700 ${
+                    className={`w-full cursor-pointer px-4 py-2.5 text-left text-sm transition-colors hover:bg-sky-50 hover:text-sky-700 ${
                       u.id === value
-                        ? "bg-indigo-50 font-semibold text-indigo-700"
+                        ? "bg-sky-50 font-semibold text-sky-700"
                         : "text-gray-700"
                     }`}
                   >
@@ -111,8 +111,8 @@ function ModerationOverlay() {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
       <div className="mx-4 flex w-full max-w-sm flex-col items-center gap-5 rounded-2xl border border-white/10 bg-white p-8 text-center shadow-2xl">
         <div className="relative flex h-16 w-16 items-center justify-center">
-          <div className="absolute inset-0 animate-spin rounded-full border-4 border-indigo-100 border-t-indigo-500" />
-          <ShieldCheck size={28} className="text-indigo-500" />
+          <div className="absolute inset-0 animate-spin rounded-full border-4 border-sky-100 border-t-sky-500" />
+          <ShieldCheck size={28} className="text-sky-500" />
         </div>
         <div>
           <h3 className="text-lg font-semibold text-gray-800">
@@ -125,15 +125,15 @@ function ModerationOverlay() {
         </div>
         <div className="flex items-center gap-1.5">
           <span
-            className="h-2 w-2 animate-bounce rounded-full bg-indigo-400"
+            className="h-2 w-2 animate-bounce rounded-full bg-sky-400"
             style={{ animationDelay: "0ms" }}
           />
           <span
-            className="h-2 w-2 animate-bounce rounded-full bg-indigo-400"
+            className="h-2 w-2 animate-bounce rounded-full bg-sky-400"
             style={{ animationDelay: "150ms" }}
           />
           <span
-            className="h-2 w-2 animate-bounce rounded-full bg-indigo-400"
+            className="h-2 w-2 animate-bounce rounded-full bg-sky-400"
             style={{ animationDelay: "300ms" }}
           />
         </div>
@@ -168,7 +168,7 @@ function RejectionModal({ reason, onClose }) {
         </p>
         <button
           onClick={onClose}
-          className="brand-gradient w-full cursor-pointer rounded-xl py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+          className="blue-gradient w-full cursor-pointer rounded-xl py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
         >
           Entendi, vou revisar
         </button>
@@ -199,7 +199,7 @@ function PendingModerationModal({ universityId }) {
         </div>
         <button
           onClick={() => router.push(`/universities/${universityId}`)}
-          className="brand-gradient w-full cursor-pointer rounded-xl py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+          className="blue-gradient w-full cursor-pointer rounded-xl py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
         >
           Voltar para a universidade
         </button>
@@ -230,7 +230,7 @@ function ApprovalModal({ universityId }) {
         </div>
         <button
           onClick={() => router.push(`/universities/${universityId}`)}
-          className="brand-gradient w-full cursor-pointer rounded-xl py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+          className="blue-gradient w-full cursor-pointer rounded-xl py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
         >
           Ver minha avaliação
         </button>
@@ -352,27 +352,27 @@ function AvaliarContent() {
       )}
       <main
         className="relative min-h-[calc(100vh-4rem)] overflow-hidden px-4 py-12"
-        style={{ backgroundColor: "#0f0f14" }}
+        style={{ backgroundColor: "#0F2854" }}
       >
         {/* Dot grid overlay */}
         <div className="dot-grid absolute inset-0 opacity-40" />
 
         {/* Radial purple glow */}
-        <div className="absolute left-1/2 top-0 h-[600px] w-[800px] -translate-x-1/2 rounded-full bg-gradient-radial from-violet-900/30 to-transparent blur-3xl" />
+        <div className="absolute left-1/2 top-0 h-[600px] w-[800px] -translate-x-1/2 rounded-full bg-gradient-radial from-sky-700/30 to-transparent blur-3xl" />
 
         <div className="relative z-10 mx-auto w-full max-w-lg">
           {/* Header */}
           <div className="mb-8 flex flex-col items-center gap-4 text-center">
             <Link href="/" className="inline-flex items-center gap-2.5">
-              <div className="brand-gradient flex h-10 w-10 items-center justify-center rounded-xl text-white shadow-lg shadow-indigo-500/30">
+              <div className="blue-gradient flex h-10 w-10 items-center justify-center rounded-xl text-white shadow-lg shadow-sky-500/30">
                 <GraduationCap size={22} />
               </div>
-              <span className="brand-gradient-text text-[1.4rem] font-extrabold tracking-tight">
+              <span className="blue-gradient-text text-[1.4rem] font-extrabold tracking-tight">
                 InfoCampus
               </span>
             </Link>
 
-            <div className="stagger-1 inline-flex items-center gap-2 rounded-full border border-indigo-400/30 bg-indigo-500/20 px-4 py-1.5 text-xs font-semibold text-white backdrop-blur-sm">
+            <div className="stagger-1 inline-flex items-center gap-2 rounded-full border border-sky-400/30 bg-sky-500/20 px-4 py-1.5 text-xs font-semibold text-white backdrop-blur-sm">
               <Star size={13} />
               <span>Avaliações verificadas por estudantes</span>
             </div>
@@ -393,7 +393,7 @@ function AvaliarContent() {
               className="absolute inset-0 -z-10"
               style={{
                 background:
-                  "radial-gradient(ellipse at 50% 50%, rgba(139,92,246,0.45) 0%, rgba(99,102,241,0.2) 40%, transparent 70%)",
+                  "radial-gradient(ellipse at 50% 50%, rgba(28,77,141,0.45) 0%, rgba(73,136,196,0.2) 40%, transparent 70%)",
                 transform: "scale(1.6)",
                 filter: "blur(24px)",
               }}
@@ -512,7 +512,7 @@ function AvaliarContent() {
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="brand-gradient flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-60"
+                  className="blue-gradient flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-60"
                 >
                   {isLoading ? (
                     <>
@@ -567,7 +567,7 @@ export default function AvaliarPage() {
     <Suspense
       fallback={
         <div className="flex h-[calc(100vh-4rem)] w-full items-center justify-center bg-gray-50">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-indigo-200 border-t-indigo-600" />
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-sky-200 border-t-sky-600" />
         </div>
       }
     >

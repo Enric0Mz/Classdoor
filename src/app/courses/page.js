@@ -59,20 +59,20 @@ export default function CoursesPage() {
       {/* Hero Section */}
       <section
         className="relative overflow-hidden pb-16 pt-16 text-center"
-        style={{ backgroundColor: "#0f0f14" }}
+        style={{ backgroundColor: "#0F2854" }}
       >
         <div className="dot-grid absolute inset-0 opacity-40" />
-        <div className="absolute left-1/2 top-0 -z-0 h-[600px] w-[800px] -translate-x-1/2 rounded-full bg-gradient-radial from-violet-900/30 to-transparent blur-3xl" />
+        <div className="absolute left-1/2 top-0 -z-0 h-[600px] w-[800px] -translate-x-1/2 rounded-full bg-gradient-radial from-sky-700/30 to-transparent blur-3xl" />
 
         <div className="relative z-10 mx-auto max-w-4xl px-4">
-          <div className="stagger-1 mb-6 inline-flex items-center gap-2 rounded-full border border-indigo-400/30 bg-indigo-500/20 px-4 py-1.5 text-xs font-semibold text-white backdrop-blur-sm">
+          <div className="stagger-1 mb-6 inline-flex items-center gap-2 rounded-full border border-sky-400/30 bg-sky-500/20 px-4 py-1.5 text-xs font-semibold text-white backdrop-blur-sm">
             <BookOpen size={13} />
             <span>Cursos selecionados para você</span>
           </div>
 
           <h1 className="stagger-2 text-5xl font-extrabold tracking-tight text-white sm:text-6xl">
             Aprenda com os{" "}
-            <span className="brand-gradient-text">melhores cursos</span>
+            <span className="blue-gradient-text">melhores cursos</span>
           </h1>
 
           <p className="stagger-3 mx-auto mt-6 max-w-2xl text-lg text-gray-400">
@@ -81,9 +81,9 @@ export default function CoursesPage() {
           </p>
 
           <div className="mx-auto mt-10 max-w-2xl">
-            <div className="group relative flex items-center rounded-2xl border border-white/10 bg-white/5 px-4 py-3 backdrop-blur-sm transition-all focus-within:border-indigo-400/50 focus-within:ring-2 focus-within:ring-indigo-500/60">
+            <div className="group relative flex items-center rounded-2xl border border-white/10 bg-white/5 px-4 py-3 backdrop-blur-sm transition-all focus-within:border-sky-400/50 focus-within:ring-2 focus-within:ring-sky-500/60">
               <Search
-                className="mr-3 shrink-0 text-gray-500 group-focus-within:text-indigo-400"
+                className="mr-3 shrink-0 text-gray-500 group-focus-within:text-sky-400"
                 size={20}
               />
               <input
@@ -117,7 +117,7 @@ export default function CoursesPage() {
               onClick={() => setActiveCategory(category)}
               className={`rounded-full px-4 py-1.5 text-sm font-medium transition-all ${
                 activeCategory === category
-                  ? "bg-indigo-600 text-white shadow-md shadow-indigo-200"
+                  ? "bg-sky-600 text-white shadow-md shadow-sky-200"
                   : "bg-white text-gray-600 hover:bg-gray-50 ring-1 ring-inset ring-gray-200"
               }`}
             >
@@ -183,7 +183,7 @@ export default function CoursesPage() {
                 setSearchQuery("");
                 setActiveCategory("Todos");
               }}
-              className="mt-6 font-medium text-indigo-600 hover:underline"
+              className="mt-6 font-medium text-sky-600 hover:underline"
             >
               Limpar busca
             </button>
@@ -202,9 +202,9 @@ export default function CoursesPage() {
 
 function CourseCard({ course }) {
   const gradients = [
-    "from-indigo-500 to-purple-600",
+    "from-sky-500 to-blue-600",
     "from-blue-500 to-cyan-600",
-    "from-violet-500 to-pink-600",
+    "from-sky-600 to-cyan-500",
     "from-emerald-500 to-teal-600",
     "from-orange-500 to-red-600",
   ];
@@ -229,11 +229,11 @@ function CourseCard({ course }) {
 
       <div className="flex flex-1 flex-col p-4">
         {course.category && (
-          <span className="mb-2 w-fit rounded-full bg-indigo-50 px-2.5 py-0.5 text-xs font-medium text-indigo-700">
+          <span className="mb-2 w-fit rounded-full bg-sky-50 px-2.5 py-0.5 text-xs font-medium text-sky-700">
             {course.category}
           </span>
         )}
-        <h3 className="mb-1 line-clamp-2 text-sm font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors">
+        <h3 className="mb-1 line-clamp-2 text-sm font-semibold text-gray-900 group-hover:text-sky-600 transition-colors">
           {course.title}
         </h3>
         <p className="mb-3 line-clamp-2 text-xs text-gray-500">
@@ -251,7 +251,7 @@ function CourseCard({ course }) {
           )}
           <Link
             href={`/courses/${course.id}`}
-            className="brand-gradient rounded-xl px-3 py-1.5 text-xs font-semibold text-white transition-opacity hover:opacity-90"
+            className="blue-gradient rounded-xl px-3 py-1.5 text-xs font-semibold text-white transition-opacity hover:opacity-90"
           >
             Ver curso
           </Link>

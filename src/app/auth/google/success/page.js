@@ -32,7 +32,7 @@ function GoogleSuccessContent() {
     return (
       <main
         className="relative flex min-h-[calc(100vh-4rem)] items-center justify-center overflow-hidden px-4"
-        style={{ backgroundColor: "#0f0f14" }}
+        style={{ backgroundColor: "#0F2854" }}
       >
         <div className="dot-grid absolute inset-0 opacity-40" />
         <div className="relative z-10 flex flex-col items-center gap-4 text-center">
@@ -51,7 +51,7 @@ function GoogleSuccessContent() {
   return (
     <main
       className="relative flex min-h-[calc(100vh-4rem)] items-center justify-center overflow-hidden px-4"
-      style={{ backgroundColor: "#0f0f14" }}
+      style={{ backgroundColor: "#0F2854" }}
     >
       <div className="dot-grid absolute inset-0 opacity-40" />
       <div className="relative z-10 flex flex-col items-center gap-4 text-center">
@@ -86,7 +86,7 @@ export default function GoogleSuccessPage() {
       fallback={
         <main
           className="relative flex min-h-[calc(100vh-4rem)] items-center justify-center overflow-hidden px-4"
-          style={{ backgroundColor: "#0f0f14" }}
+          style={{ backgroundColor: "#0F2854" }}
         >
           <div className="dot-grid absolute inset-0 opacity-40" />
           <div className="relative z-10 flex flex-col items-center gap-4 text-center">
