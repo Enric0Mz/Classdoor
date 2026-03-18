@@ -8,7 +8,6 @@ import { withErrorHandler } from "@/lib/errorHandler";
 export const GET = withErrorHandler(async (request) => {
   const { searchParams } = new URL(request.url);
   const { page, limit, skip } = parsePagination(searchParams);
-
   const search = searchParams.get("search") || undefined;
   const type = searchParams.get("type") || undefined;
   const state = searchParams.get("state") || undefined;

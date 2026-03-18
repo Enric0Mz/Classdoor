@@ -57,7 +57,8 @@ const swaggerSpec = {
             in: "query",
             required: false,
             schema: { type: "string" },
-            description: "Search universities by name, location, or course",
+            description:
+              "Search universities by name, abbreviation, location, or course",
           },
           {
             name: "type",
