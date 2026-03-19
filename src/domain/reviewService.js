@@ -22,6 +22,27 @@ function validateDifficultyLevel(difficultyLevel) {
   }
 }
 
+/**
+ * Sanitizes a review comment, handling both JSON (pros/cons) and plain text.
+ * For JSON comments, sanitizes only the inner text values so the JSON
+ * structure is preserved and can be parsed back on the frontend.
+ */
+function sanitizeComment(comment) {
+  if (!comment || typeof comment !== "string") return comment;
+  try {
+    const parsed = JSON.parse(comment);
+    if (parsed && (parsed.pros || parsed.cons)) {
+      return JSON.stringify({
+        pros: parsed.pros ? sanitizeString(parsed.pros) : "",
+        cons: parsed.cons ? sanitizeString(parsed.cons) : "",
+      });
+    }
+  } catch {
+    // not JSON — sanitize as plain text
+  }
+  return sanitizeString(comment);
+}
+
 const COMMENT_MIN_LENGTH = 10;
 const COMMENT_MAX_LENGTH = 2000;
 
@@ -82,7 +103,7 @@ export async function createReview(body, authorId) {
   // Sanitize first so validation runs against the value that will actually be stored.
   // This prevents inputs like "<script>x</script>" from passing length checks
   // before being stripped down to an empty/short string.
-  const sanitizedComment = sanitizeString(comment);
+  const sanitizedComment = sanitizeComment(comment);
   validateComment(sanitizedComment);
 
   const { moderationStatus, moderationReason } =
@@ -172,7 +193,7 @@ export async function updateReview(id, data, requesterId, requesterRole) {
   let moderationReason = null;
 
   if (comment !== undefined) {
-    const sanitizedComment = sanitizeString(comment);
+    const sanitizedComment = sanitizeComment(comment);
     validateComment(sanitizedComment);
     newComment = sanitizedComment;
 

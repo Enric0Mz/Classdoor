@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
@@ -18,8 +18,12 @@ function VerifyEmailContent() {
 
   const [status, setStatus] = useState("verifying");
   const [errorMessage, setErrorMessage] = useState("");
+  const hasSubmitted = useRef(false);
 
   useEffect(() => {
+    if (hasSubmitted.current) return;
+    hasSubmitted.current = true;
+
     if (!token) {
       setStatus("error");
       setErrorMessage("O link de verificação está sem o token necessário.");
