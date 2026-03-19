@@ -170,7 +170,7 @@ function UniversityHeader({
           showArrows={university.images?.length > 1}
           showDots={university.images?.length > 1}
           fallback={
-            <div className="h-full w-full bg-gradient-to-br from-slate-800 via-indigo-900 to-violet-900" />
+            <div className="h-full w-full bg-gradient-to-br from-slate-800 via-blue-900 to-blue-800" />
           }
         />
         {/* Bottom-heavy gradient so logo + name are always readable */}
@@ -201,7 +201,7 @@ function UniversityHeader({
               <span>{university.location}</span>
             </span>
             <span className="text-gray-300">•</span>
-            <span className="font-medium text-indigo-600">{typeLabel}</span>
+            <span className="font-medium text-blue-700">{typeLabel}</span>
             {university.website && (
               <>
                 <span className="text-gray-300">•</span>
@@ -209,7 +209,7 @@ function UniversityHeader({
                   href={university.website}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-indigo-500 hover:underline"
+                  className="text-blue-600 hover:underline"
                 >
                   Site oficial
                 </a>
@@ -223,11 +223,11 @@ function UniversityHeader({
               onClick={() => setFollowing((prev) => !prev)}
               className={`flex cursor-pointer items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium transition-all ${
                 following
-                  ? "border border-indigo-300 bg-indigo-50 text-indigo-600 hover:bg-indigo-100"
+                  ? "border border-blue-300 bg-blue-50 text-blue-700 hover:bg-blue-100"
                   : "brand-gradient border border-transparent text-white hover:opacity-90"
               }`}
             >
-              <Heart size={14} fill={following ? "#6366f1" : "none"} />
+              <Heart size={14} fill={following ? "#1c4d8d" : "none"} />
               {following ? "Seguindo" : "Seguir"}
             </button>
 
@@ -281,7 +281,7 @@ function UniversityHeader({
                   onClick={() => onTabChange(tab)}
                   className={`cursor-pointer whitespace-nowrap px-4 py-2.5 text-[0.82rem] font-medium transition-colors ${
                     isActive
-                      ? "border-b-2 border-indigo-500 text-indigo-600"
+                      ? "border-b-2 border-blue-600 text-blue-700"
                       : "border-b-2 border-transparent text-gray-400 hover:text-gray-700"
                   }`}
                 >
@@ -421,9 +421,9 @@ function RatingOverview({ stats, externalStats }) {
 
       {/* Trust banner */}
       <div className="flex items-center gap-2.5 border-t border-gray-100 bg-gray-50/40 px-5 py-3">
-        <ShieldCheck size={15} className="shrink-0 text-indigo-500" />
+        <ShieldCheck size={15} className="shrink-0 text-blue-600" />
         <p className="text-xs text-gray-500">
-          <span className="font-semibold text-indigo-600">
+          <span className="font-semibold text-blue-700">
             Avaliações 100% reais 🔒
           </span>{" "}
           Universidades não podem alterar ou remover avaliações. Confiança é
@@ -461,8 +461,7 @@ function FilterBar({ activeFilter, onFilterChange }) {
       <span className="text-sm font-semibold text-gray-700">
         {hasActiveFilter ? (
           <>
-            Ordenando por:{" "}
-            <span className="text-indigo-600">{activeFilter}</span>
+            Ordenando por: <span className="text-blue-700">{activeFilter}</span>
           </>
         ) : (
           activeFilter
@@ -474,7 +473,7 @@ function FilterBar({ activeFilter, onFilterChange }) {
           onClick={() => setIsOpen((prev) => !prev)}
           className={`flex cursor-pointer items-center gap-2 rounded-full px-4 py-2 text-[0.82rem] font-medium transition-all ${
             hasActiveFilter
-              ? "bg-indigo-50 text-indigo-600 ring-1 ring-inset ring-indigo-200"
+              ? "bg-blue-50 text-blue-700 ring-1 ring-inset ring-blue-200"
               : "bg-white text-gray-600 hover:bg-gray-50 ring-1 ring-inset ring-gray-200"
           }`}
         >
@@ -496,14 +495,14 @@ function FilterBar({ activeFilter, onFilterChange }) {
                   onClick={() => selectFilter(filter)}
                   className={`flex w-full cursor-pointer items-center justify-between px-4 py-2.5 text-[0.82rem] transition-colors ${
                     isActive
-                      ? "bg-indigo-50 font-semibold text-indigo-600"
+                      ? "bg-blue-50 font-semibold text-blue-700"
                       : "text-gray-600 hover:bg-gray-50"
                   }`}
                 >
                   {filter}
                   {isActive && (
                     <svg
-                      className="h-3.5 w-3.5 text-indigo-500"
+                      className="h-3.5 w-3.5 text-blue-600"
                       viewBox="0 0 20 20"
                       fill="currentColor"
                     >
@@ -660,7 +659,7 @@ function ReviewCard({ review, isAdmin, isOwner, onDelete, onEdit }) {
   // ── Edit mode rendering ──
   if (isEditing) {
     return (
-      <div className="rounded-2xl border-2 border-indigo-200 bg-white p-5 shadow-sm">
+      <div className="rounded-2xl border-2 border-blue-200 bg-white p-5 shadow-sm">
         {/* Rejection modal for edit */}
         {editRejectionReason && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
@@ -698,7 +697,7 @@ function ReviewCard({ review, isAdmin, isOwner, onDelete, onEdit }) {
         {/* Header */}
         <div className="mb-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Pencil size={14} className="text-indigo-500" />
+            <Pencil size={14} className="text-blue-600" />
             <span className="text-sm font-semibold text-gray-700">
               Editando avaliação
             </span>
@@ -884,7 +883,7 @@ function ReviewCard({ review, isAdmin, isOwner, onDelete, onEdit }) {
               {review.rating.toFixed(1)}
             </span>
             {review.isVerified && (
-              <span className="flex items-center gap-1 rounded-full bg-indigo-50 px-2 py-0.5 text-[0.7rem] font-medium text-indigo-600">
+              <span className="flex items-center gap-1 rounded-full bg-blue-50 px-2 py-0.5 text-[0.7rem] font-medium text-blue-700">
                 <ShieldCheck size={10} />
                 Verificado
               </span>
@@ -953,7 +952,7 @@ function ReviewCard({ review, isAdmin, isOwner, onDelete, onEdit }) {
           {needsExpand && (
             <button
               onClick={() => setExpanded(true)}
-              className="flex cursor-pointer items-center gap-0.5 text-[0.82rem] font-medium text-indigo-500 hover:opacity-80"
+              className="flex cursor-pointer items-center gap-0.5 text-[0.82rem] font-medium text-blue-600 hover:opacity-80"
             >
               Ler mais <ChevronDown size={13} />
             </button>
@@ -971,7 +970,7 @@ function ReviewCard({ review, isAdmin, isOwner, onDelete, onEdit }) {
           onClick={handleLike}
           className={`flex cursor-pointer items-center gap-1.5 rounded-full px-3 py-1.5 text-[0.8rem] transition-all ${
             liked
-              ? "bg-indigo-50 text-indigo-600"
+              ? "bg-blue-50 text-blue-700"
               : "bg-gray-50 text-gray-400 hover:bg-gray-100"
           }`}
         >
@@ -987,7 +986,7 @@ function ReviewCard({ review, isAdmin, isOwner, onDelete, onEdit }) {
         {isOwner && (
           <button
             onClick={startEditing}
-            className="cursor-pointer rounded-full p-2 text-gray-300 transition-colors hover:bg-indigo-50 hover:text-indigo-500"
+            className="cursor-pointer rounded-full p-2 text-gray-300 transition-colors hover:bg-blue-50 hover:text-blue-600"
             title="Editar avaliação"
           >
             <Pencil size={14} />
@@ -1269,11 +1268,11 @@ export default function UniversityDetailPage() {
         {/* Dot grid overlay */}
         <div className="dot-grid absolute inset-0 opacity-30" />
 
-        {/* Radial purple glow */}
+        {/* Radial blue glow */}
         <div
           className="absolute left-1/2 top-0 h-[400px] w-[700px] -translate-x-1/2 rounded-full opacity-20 blur-3xl"
           style={{
-            background: "radial-gradient(circle, #7c3aed 0%, transparent 70%)",
+            background: "radial-gradient(circle, #1c4d8d 0%, transparent 70%)",
           }}
         />
 
@@ -1282,7 +1281,7 @@ export default function UniversityDetailPage() {
           <div className="mb-5 flex items-center justify-between">
             <Link
               href="/universities"
-              className="inline-flex items-center gap-1.5 text-sm text-gray-400 transition-colors hover:text-indigo-400"
+              className="inline-flex items-center gap-1.5 text-sm text-gray-400 transition-colors hover:text-blue-400"
             >
               <ArrowLeft size={14} />
               Todas as universidades
@@ -1352,7 +1351,7 @@ export default function UniversityDetailPage() {
                     <button
                       onClick={loadMoreReviews}
                       disabled={isLoadingMore}
-                      className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-2xl border border-gray-100 bg-white py-3.5 text-sm font-medium text-gray-500 shadow-sm transition-colors hover:border-indigo-200 hover:text-indigo-600 disabled:opacity-60"
+                      className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-2xl border border-gray-100 bg-white py-3.5 text-sm font-medium text-gray-500 shadow-sm transition-colors hover:border-blue-200 hover:text-blue-700 disabled:opacity-60"
                     >
                       {isLoadingMore ? (
                         <>
