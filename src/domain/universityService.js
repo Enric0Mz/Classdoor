@@ -1,4 +1,5 @@
 import { AppError } from "@/errors/AppError";
+import { sanitizeString } from "@/lib/sanitize";
 import * as universityRepository from "@/repositories/universityRepository";
 import * as universityDomainRepository from "@/repositories/universityDomainRepository";
 import * as externalReviewService from "@/domain/externalReviewService";
@@ -16,11 +17,15 @@ export async function createUniversity({
   rating,
   domain,
 }) {
-  if (!name) {
+  const sanitizedName = sanitizeString(name);
+  const sanitizedLocation = sanitizeString(location);
+  const sanitizedWebsite = website ? sanitizeString(website) : undefined;
+
+  if (!sanitizedName) {
     throw new AppError("Name is required", 400);
   }
 
-  if (!location) {
+  if (!sanitizedLocation) {
     throw new AppError("Location is required", 400);
   }
 
@@ -32,7 +37,7 @@ export async function createUniversity({
     throw new AppError("Type must be PUBLIC or PRIVATE", 400);
   }
 
-  const existing = await universityRepository.findByName(name);
+  const existing = await universityRepository.findByName(sanitizedName);
   if (existing) {
     throw new AppError("A university with this name already exists", 409);
   }
@@ -49,10 +54,10 @@ export async function createUniversity({
   }
 
   const university = await universityRepository.create({
-    name,
+    name: sanitizedName,
     abbreviation,
-    location,
-    website,
+    location: sanitizedLocation,
+    website: sanitizedWebsite,
     images,
     type,
     courses,

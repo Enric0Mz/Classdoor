@@ -6,6 +6,7 @@ import { requireRole } from "@/lib/authorization";
 import { PUT } from "@/app/api/v1/university-submissions/[id]/approve/route";
 
 jest.mock("@/repositories/universityDomainRepository", () => ({
+  findByDomain: jest.fn(),
   create: jest.fn(),
 }));
 
@@ -72,6 +73,7 @@ describe("universitySubmissionService.approveSubmission", () => {
 
     universitySubmissionRepository.findById.mockResolvedValue(submission);
     universitySubmissionRepository.updateStatus.mockResolvedValue(approved);
+    universityDomainRepository.findByDomain.mockResolvedValue(null);
     universityDomainRepository.create.mockResolvedValue({
       id: "dom-1",
       domain: "usp.br",
@@ -96,6 +98,7 @@ describe("universitySubmissionService.approveSubmission", () => {
 
     universitySubmissionRepository.findById.mockResolvedValue(submission);
     universitySubmissionRepository.updateStatus.mockResolvedValue(approved);
+    universityDomainRepository.findByDomain.mockResolvedValue(null);
     universityDomainRepository.create.mockResolvedValue({ id: "dom-1" });
 
     await approveSubmission("sub-1", "admin-1", {
@@ -159,6 +162,36 @@ describe("universitySubmissionService.approveSubmission", () => {
       message: "Only pending submissions can be approved",
       statusCode: 400,
     });
+  });
+
+  it("throws 409 when email domain already belongs to another university", async () => {
+    const submission = {
+      id: "sub-1",
+      name: "USP",
+      status: "PENDING",
+      emailDomain: "usp.br",
+    };
+
+    universitySubmissionRepository.findById.mockResolvedValue(submission);
+    universitySubmissionRepository.updateStatus.mockResolvedValue({
+      ...submission,
+      status: "APPROVED",
+    });
+    universityDomainRepository.findByDomain.mockResolvedValue({
+      id: "dom-1",
+      domain: "usp.br",
+      universityId: "other-uni",
+    });
+
+    await expect(
+      approveSubmission("sub-1", "admin-1", { universityId: "uni-1" }),
+    ).rejects.toMatchObject({
+      message:
+        "This email domain is already associated with another university",
+      statusCode: 409,
+    });
+
+    expect(universityDomainRepository.create).not.toHaveBeenCalled();
   });
 });
 

@@ -1,14 +1,44 @@
 import { NextResponse } from "next/server";
 import { isRequestAllowed } from "@/lib/rateLimiter";
 
-const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN || "http://localhost:3000";
+const ALLOWED_ORIGINS = [
+  "https://www.infocampus.com.br",
+  "https://qa.infocampus.com.br",
+  "http://localhost:3000",
+];
 
-const CORS_HEADERS = {
-  "Access-Control-Allow-Origin": ALLOWED_ORIGIN,
-  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization",
-  "Access-Control-Allow-Credentials": "true",
-};
+const VERCEL_PREVIEW_PATTERN = /^https:\/\/[\w-]+\.vercel\.app$/;
+
+const STATE_CHANGING_METHODS = ["POST", "PUT", "DELETE", "PATCH"];
+
+/**
+ * Returns the CORS headers with the origin set dynamically
+ * only if it matches an allowed origin.
+ *
+ * @param {string} origin - The request's Origin header value
+ * @returns {object} CORS headers object
+ */
+function getCorsHeaders(origin) {
+  return {
+    "Access-Control-Allow-Origin": origin,
+    "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization",
+    "Access-Control-Allow-Credentials": "true",
+  };
+}
+
+/**
+ * Checks whether the given origin is in the allowed list
+ * or matches the Vercel preview URL pattern.
+ *
+ * @param {string|null} origin
+ * @returns {boolean}
+ */
+function isAllowedOrigin(origin) {
+  if (!origin) return false;
+  if (ALLOWED_ORIGINS.includes(origin)) return true;
+  return VERCEL_PREVIEW_PATTERN.test(origin);
+}
 
 /**
  * Rate limit rules applied per route and HTTP method.
@@ -131,15 +161,38 @@ function findMatchingRule(pathname, method) {
 }
 
 export function middleware(request) {
+  const origin = request.headers.get("origin");
+  const originAllowed = isAllowedOrigin(origin);
+
   // Handle preflight OPTIONS requests sent by browsers before cross-origin requests
   if (request.method === "OPTIONS") {
+    if (!originAllowed) {
+      return new NextResponse(null, { status: 403 });
+    }
+
     return new NextResponse(null, {
       status: 204,
       headers: {
-        ...CORS_HEADERS,
-        "Access-Control-Max-Age": "86400", // Cache preflight response for 24 hours
+        ...getCorsHeaders(origin),
+        "Access-Control-Max-Age": "86400",
       },
     });
+  }
+
+  // CSRF protection: block state-changing requests from unknown origins.
+  // Browsers always send the Origin header on cross-origin requests, so a
+  // missing or non-matching origin on POST/PUT/DELETE means the request is
+  // either cross-site (CSRF) or coming from a context we don't trust.
+  if (STATE_CHANGING_METHODS.includes(request.method) && !originAllowed) {
+    return NextResponse.json(
+      {
+        error: {
+          message: "Forbidden: origin not allowed",
+          statusCode: 403,
+        },
+      },
+      { status: 403 },
+    );
   }
 
   // Apply rate limiting before passing the request to the route handler
@@ -158,6 +211,13 @@ export function middleware(request) {
         matchedRule.windowMs,
       )
     ) {
+      const headers = originAllowed
+        ? {
+            ...getCorsHeaders(origin),
+            "Retry-After": String(retryAfterSeconds),
+          }
+        : { "Retry-After": String(retryAfterSeconds) };
+
       return NextResponse.json(
         {
           error: {
@@ -165,23 +225,21 @@ export function middleware(request) {
             statusCode: 429,
           },
         },
-        {
-          status: 429,
-          headers: {
-            // Include CORS headers so the browser can read the 429 response body
-            ...CORS_HEADERS,
-            "Retry-After": String(retryAfterSeconds),
-          },
-        },
+        { status: 429, headers },
       );
     }
   }
 
   const response = NextResponse.next();
 
-  Object.entries(CORS_HEADERS).forEach(([headerName, headerValue]) => {
-    response.headers.set(headerName, headerValue);
-  });
+  // Only attach CORS headers when the origin is trusted
+  if (originAllowed) {
+    Object.entries(getCorsHeaders(origin)).forEach(
+      ([headerName, headerValue]) => {
+        response.headers.set(headerName, headerValue);
+      },
+    );
+  }
 
   return response;
 }

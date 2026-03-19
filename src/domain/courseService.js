@@ -1,4 +1,5 @@
 import { AppError } from "@/errors/AppError";
+import { sanitizeString } from "@/lib/sanitize";
 import * as courseRepository from "@/repositories/courseRepository";
 
 export async function listCourses({ skip, take, category } = {}) {
@@ -21,23 +22,28 @@ export async function getCourseById(id) {
 export async function createCourse(body, creatorId) {
   const { title, description, link, image, price, category } = body;
 
-  if (!title) {
+  const sanitizedTitle = sanitizeString(title);
+  const sanitizedDescription = sanitizeString(description);
+  const sanitizedLink = sanitizeString(link);
+  const sanitizedCategory = category ? sanitizeString(category) : null;
+
+  if (!sanitizedTitle) {
     throw new AppError("title is required", 400);
   }
-  if (!description) {
+  if (!sanitizedDescription) {
     throw new AppError("description is required", 400);
   }
-  if (!link) {
+  if (!sanitizedLink) {
     throw new AppError("link is required", 400);
   }
 
   return courseRepository.create({
-    title: title.trim(),
-    description: description.trim(),
-    link: link.trim(),
+    title: sanitizedTitle,
+    description: sanitizedDescription,
+    link: sanitizedLink,
     image: image ?? null,
     price: price ?? null,
-    category: category ?? null,
+    category: sanitizedCategory,
     createdBy: creatorId,
   });
 }
@@ -51,12 +57,13 @@ export async function updateCourse(id, body) {
   const { title, description, link, image, price, category, active } = body;
   const updateData = {};
 
-  if (title !== undefined) updateData.title = title.trim();
-  if (description !== undefined) updateData.description = description.trim();
-  if (link !== undefined) updateData.link = link.trim();
+  if (title !== undefined) updateData.title = sanitizeString(title);
+  if (description !== undefined)
+    updateData.description = sanitizeString(description);
+  if (link !== undefined) updateData.link = sanitizeString(link);
   if (image !== undefined) updateData.image = image;
   if (price !== undefined) updateData.price = price;
-  if (category !== undefined) updateData.category = category;
+  if (category !== undefined) updateData.category = sanitizeString(category);
   if (active !== undefined) updateData.active = active;
 
   return courseRepository.update(id, updateData);
