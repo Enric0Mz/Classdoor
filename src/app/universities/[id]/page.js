@@ -61,10 +61,20 @@ function formatDate(dateString) {
   });
 }
 
+function unescapeHtml(text) {
+  return text
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#x27;/g, "'");
+}
+
 function parseComment(raw) {
   if (!raw) return null;
+  const unescaped = unescapeHtml(raw);
   try {
-    const parsed = JSON.parse(raw);
+    const parsed = JSON.parse(unescaped);
     if (parsed && (parsed.pros || parsed.cons)) {
       return {
         structured: true,
@@ -75,7 +85,7 @@ function parseComment(raw) {
   } catch {
     // not JSON — fall through to plain text
   }
-  return { structured: false, text: raw };
+  return { structured: false, text: unescaped };
 }
 
 const TABS = ["Visão geral 👀", "Avaliações ⭐", "Cursos 📖", "Salários 💸"];
@@ -918,7 +928,7 @@ function ReviewCard({ review, isAdmin, isOwner, onDelete, onEdit }) {
                       Prós
                     </span>
                   </div>
-                  <p className="text-[0.85rem] leading-relaxed text-gray-700">
+                  <p className="whitespace-pre-line text-[0.85rem] leading-relaxed text-gray-700">
                     {expanded || parsedComment.pros.length <= TRUNCATE_LENGTH
                       ? parsedComment.pros
                       : parsedComment.pros.slice(0, TRUNCATE_LENGTH) + "..."}
@@ -933,7 +943,7 @@ function ReviewCard({ review, isAdmin, isOwner, onDelete, onEdit }) {
                       Contras
                     </span>
                   </div>
-                  <p className="text-[0.85rem] leading-relaxed text-gray-700">
+                  <p className="whitespace-pre-line text-[0.85rem] leading-relaxed text-gray-700">
                     {expanded || parsedComment.cons.length <= TRUNCATE_LENGTH
                       ? parsedComment.cons
                       : parsedComment.cons.slice(0, TRUNCATE_LENGTH) + "..."}
@@ -942,7 +952,7 @@ function ReviewCard({ review, isAdmin, isOwner, onDelete, onEdit }) {
               )}
             </>
           ) : (
-            <p className="text-[0.85rem] leading-relaxed text-gray-700">
+            <p className="whitespace-pre-line text-[0.85rem] leading-relaxed text-gray-700">
               {expanded || parsedComment.text.length <= TRUNCATE_LENGTH
                 ? parsedComment.text
                 : parsedComment.text.slice(0, TRUNCATE_LENGTH) + "..."}
