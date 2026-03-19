@@ -4,6 +4,11 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, BookOpen } from "lucide-react";
+import {
+  fetchWithAuth,
+  AuthExpiredError,
+  isAuthenticated as checkAuth,
+} from "@/lib/fetchWithAuth";
 
 function getRoleFromToken(token) {
   try {
@@ -29,15 +34,17 @@ export default function NewCoursePage() {
   });
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) {
+    if (!checkAuth()) {
       router.replace("/login");
       return;
     }
-    const role = getRoleFromToken(token);
-    if (role !== "ADMIN") {
-      router.replace("/courses");
-      return;
+    const token = localStorage.getItem("token");
+    if (token) {
+      const role = getRoleFromToken(token);
+      if (role !== "ADMIN") {
+        router.replace("/courses");
+        return;
+      }
     }
     setAuthorized(true);
   }, [router]);
@@ -66,7 +73,6 @@ export default function NewCoursePage() {
 
     setLoading(true);
     try {
-      const token = localStorage.getItem("token");
       const body = {
         title: formData.title.trim(),
         description: formData.description.trim(),
@@ -76,12 +82,9 @@ export default function NewCoursePage() {
         category: formData.category.trim() || undefined,
       };
 
-      const res = await fetch("/api/v1/courses", {
+      const res = await fetchWithAuth("/api/v1/courses", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
       });
 
@@ -92,6 +95,10 @@ export default function NewCoursePage() {
 
       router.push(`/courses/${data.id}`);
     } catch (err) {
+      if (err instanceof AuthExpiredError) {
+        router.push("/login");
+        return;
+      }
       setError(err.message);
     } finally {
       setLoading(false);

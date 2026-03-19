@@ -9,7 +9,9 @@ export const PUT = withErrorHandler(async (request, { params }) => {
   requireRole(decoded, ["ADMIN"]);
 
   const { id } = await params;
-  const body = await request.json().catch(() => ({}));
+  const contentLength = request.headers.get("content-length");
+  const hasBody = contentLength && contentLength !== "0";
+  const body = hasBody ? await request.json() : {};
 
   const submission = await universitySubmissionService.approveSubmission(
     id,

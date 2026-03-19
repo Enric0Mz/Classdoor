@@ -185,7 +185,8 @@ describe("universitySubmissionService.createSubmission", () => {
 
     expect(universitySubmissionRepository.create).toHaveBeenCalledWith(
       expect.objectContaining({
-        emailDomain: "alert('xss')usp.br",
+        emailDomain:
+          "&lt;script&gt;alert(&#x27;xss&#x27;)&lt;/script&gt;usp.br",
       }),
     );
   });
@@ -206,8 +207,8 @@ describe("universitySubmissionService.createSubmission", () => {
 
     expect(universitySubmissionRepository.create).toHaveBeenCalledWith(
       expect.objectContaining({
-        name: "alert('xss')USP",
-        location: "SP",
+        name: "&lt;script&gt;alert(&#x27;xss&#x27;)&lt;/script&gt;USP",
+        location: "&lt;b&gt;SP&lt;/b&gt;",
       }),
     );
   });

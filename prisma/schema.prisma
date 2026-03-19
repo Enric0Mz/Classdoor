@@ -32,28 +32,61 @@ enum SubmissionStatus {
   REJECTED
 }
 
+enum ExternalReviewSource {
+  GOOGLE_MAPS
+}
+
 model University {
   id        String              @id @default(uuid())
-  name      String              @unique
-  location  String
-  website   String?
-  image     String?
+  name         String              @unique
+  abbreviation String?
+  location     String
+  website      String?
   type      UniversityType
   courses   String[]
   rating    Float?
   createdAt DateTime            @default(now())
-  reviews     Review[]
-  domains     UniversityDomain[]
-  users       User[]
-  submissions UniversitySubmission[]
+  images           UniversityImage[]
+  reviews          Review[]
+  domains          UniversityDomain[]
+  users            User[]
+  submissions      UniversitySubmission[]
+  externalReviews  ExternalReview[]
+}
+
+model ExternalReview {
+  id           String               @id @default(uuid())
+  rating       Int
+  textSnippet  String?
+  sourceUrl    String
+  source       ExternalReviewSource @default(GOOGLE_MAPS)
+  originalDate DateTime
+  universityId String
+  university   University           @relation(fields: [universityId], references: [id], onDelete: Cascade)
+  createdAt    DateTime             @default(now())
+
+  @@unique([sourceUrl])
+  @@index([universityId])
+}
+
+model UniversityImage {
+  id           String     @id @default(uuid())
+  url          String
+  universityId String
+  university   University @relation(fields: [universityId], references: [id], onDelete: Cascade)
+  createdAt    DateTime   @default(now())
+
+  @@index([universityId])
 }
 
 model UniversityDomain {
   id           String     @id @default(uuid())
   domain       String     @unique
   universityId String
-  university   University @relation(fields: [universityId], references: [id])
+  university   University @relation(fields: [universityId], references: [id], onDelete: Cascade)
   createdAt    DateTime   @default(now())
+
+  @@index([universityId])
 }
 
 model Review {
@@ -62,13 +95,20 @@ model Review {
   comment         String?
   difficultyLevel Int
   universityId    String
-  university      University @relation(fields: [universityId], references: [id])
+  university      University @relation(fields: [universityId], references: [id], onDelete: Cascade)
   authorId        String?
-  author          User?      @relation(fields: [authorId], references: [id])
+  author          User?      @relation(fields: [authorId], references: [id], onDelete: SetNull)
   editToken         String?
   moderationStatus  ModerationStatus @default(PENDING_MODERATION)
   moderationReason  String?
+  parentReviewId    String?
+  parentReview      Review?  @relation("ReviewEditHistory", fields: [parentReviewId], references: [id], onDelete: Cascade)
+  childReviews      Review[] @relation("ReviewEditHistory")
   createdAt         DateTime         @default(now())
+
+  @@index([universityId, createdAt])
+  @@index([moderationStatus, createdAt])
+  @@index([authorId])
 }
 
 model User {
@@ -77,12 +117,16 @@ model User {
   password                     String?
   username                     String                        @unique
   role                         Role                          @default(USER)
+  googleId                     String?                       @unique
+  authProvider                 String                        @default("local")
   universityEmail              String?                       @unique
   verified                     Boolean                       @default(false)
   emailVerified                Boolean                       @default(false)
   universityId                 String?
-  university                   University?                   @relation(fields: [universityId], references: [id])
+  university                   University?                   @relation(fields: [universityId], references: [id], onDelete: SetNull)
   createdAt                    DateTime                      @default(now())
+
+  @@index([universityId])
 
   reviews                      Review[]
   courses                      Course[]
@@ -95,21 +139,25 @@ model User {
 model EmailVerification {
   id        String   @id @default(uuid())
   userId    String
-  user      User     @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   email     String
   token     String   @unique
   expiresAt DateTime
   createdAt DateTime @default(now())
+
+  @@index([userId])
 }
 
 model UniversityEmailVerification {
   id              String   @id @default(uuid())
   userId          String
-  user            User     @relation(fields: [userId], references: [id])
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   universityEmail String
   token           String   @unique
   expiresAt       DateTime
   createdAt       DateTime @default(now())
+
+  @@index([userId])
 }
 
 model RefreshToken {
@@ -119,6 +167,8 @@ model RefreshToken {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   expiresAt DateTime
   createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
 }
 
 model UniversitySubmission {
@@ -131,12 +181,16 @@ model UniversitySubmission {
   status       SubmissionStatus @default(PENDING)
   reason       String?
   submitterId  String
-  submitter    User             @relation(fields: [submitterId], references: [id])
+  submitter    User             @relation(fields: [submitterId], references: [id], onDelete: Cascade)
   universityId String?
-  university   University?      @relation(fields: [universityId], references: [id])
+  university   University?      @relation(fields: [universityId], references: [id], onDelete: SetNull)
   reviewedBy   String?
   reviewedAt   DateTime?
   createdAt    DateTime         @default(now())
+
+  @@index([submitterId])
+  @@index([status, createdAt])
+  @@index([name, status])
 }
 
 model Course {
@@ -152,4 +206,7 @@ model Course {
   creator     User?    @relation(fields: [createdBy], references: [id], onDelete: SetNull)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  @@index([active, category])
+  @@index([createdAt])
 }

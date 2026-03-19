@@ -4,6 +4,11 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { GraduationCap, ArrowLeft, Lightbulb } from "lucide-react";
+import {
+  fetchWithAuth,
+  AuthExpiredError,
+  isAuthenticated as checkAuth,
+} from "@/lib/fetchWithAuth";
 
 const BRAZILIAN_STATES = [
   "AC",
@@ -50,12 +55,11 @@ export default function SugerirUniversidadePage() {
   const [success, setSuccess] = useState(false);
 
   useEffect(() => {
-    const storedToken = localStorage.getItem("token");
-    if (!storedToken) {
+    if (!checkAuth()) {
       router.replace("/register");
       return;
     }
-    setToken(storedToken);
+    setToken(localStorage.getItem("token"));
   }, [router]);
 
   function validate() {
@@ -77,12 +81,9 @@ export default function SugerirUniversidadePage() {
     setIsLoading(true);
 
     try {
-      const response = await fetch("/api/v1/university-submissions", {
+      const response = await fetchWithAuth("/api/v1/university-submissions", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: name.trim(),
           type,
@@ -100,6 +101,10 @@ export default function SugerirUniversidadePage() {
 
       setSuccess(true);
     } catch (err) {
+      if (err instanceof AuthExpiredError) {
+        router.push("/login");
+        return;
+      }
       setError(err.message);
     } finally {
       setIsLoading(false);
@@ -112,7 +117,7 @@ export default function SugerirUniversidadePage() {
     return (
       <main
         className="relative flex min-h-[calc(100vh-4rem)] items-center justify-center overflow-hidden px-4"
-        style={{ backgroundColor: "#0f0f14" }}
+        style={{ backgroundColor: "#0F2854" }}
       >
         <div className="dot-grid absolute inset-0 opacity-40" />
         <div className="absolute left-1/2 top-1/2 h-[500px] w-[500px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-radial from-violet-900/30 to-transparent blur-3xl" />
@@ -152,7 +157,7 @@ export default function SugerirUniversidadePage() {
   return (
     <main
       className="relative min-h-[calc(100vh-4rem)] overflow-hidden px-4 py-12"
-      style={{ backgroundColor: "#0f0f14" }}
+      style={{ backgroundColor: "#0F2854" }}
     >
       <div className="dot-grid absolute inset-0 opacity-40" />
       <div className="absolute left-1/2 top-0 h-[600px] w-[800px] -translate-x-1/2 rounded-full bg-gradient-radial from-violet-900/30 to-transparent blur-3xl" />

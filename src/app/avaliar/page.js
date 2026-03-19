@@ -13,96 +13,30 @@ import {
   ShieldX,
   X,
 } from "lucide-react";
-
-// ─── Interactive star picker ──────────────────────────────────────────────────
-
-function StarPicker({ value, onChange }) {
-  const [hovered, setHovered] = useState(0);
-  const displayed = hovered || value;
-
-  const LABELS = ["", "Ruim", "Regular", "Bom", "Muito bom", "Excelente"];
-
-  return (
-    <div className="flex flex-col items-center gap-3">
-      <div className="flex items-center gap-1">
-        {Array.from({ length: 5 }).map((_, i) => {
-          const starValue = i + 1;
-          const filled = starValue <= displayed;
-          return (
-            <button
-              key={starValue}
-              type="button"
-              onMouseEnter={() => setHovered(starValue)}
-              onMouseLeave={() => setHovered(0)}
-              onClick={() => onChange(starValue)}
-              className="cursor-pointer p-1 transition-transform hover:scale-110 active:scale-95"
-            >
-              <svg
-                className={`h-9 w-9 transition-colors ${filled ? "text-yellow-400" : "text-gray-200"}`}
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-              </svg>
-            </button>
-          );
-        })}
-      </div>
-      <span
-        className={`text-sm font-medium ${displayed ? "text-indigo-600" : "text-gray-300"}`}
-      >
-        {LABELS[displayed] || "Selecione uma nota"}
-      </span>
-    </div>
-  );
-}
-
-// ─── Difficulty picker ────────────────────────────────────────────────────────
-
-const DIFFICULTY_LABELS = ["Fácil", "Tranquilo", "Médio", "Difícil", "Puxado"];
-
-function DifficultyPicker({ value, onChange }) {
-  return (
-    <div className="flex gap-2">
-      {DIFFICULTY_LABELS.map((label, i) => {
-        const level = i + 1;
-        const isSelected = value === level;
-        return (
-          <button
-            key={level}
-            type="button"
-            onClick={() => onChange(level)}
-            className={`flex-1 cursor-pointer rounded-xl py-2 text-xs font-medium transition-all ${
-              isSelected
-                ? "brand-gradient text-white shadow-sm"
-                : "border border-gray-200 bg-gray-50 text-gray-500 hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-600"
-            }`}
-          >
-            {level}
-            <span className="mt-0.5 block text-[0.65rem] font-normal opacity-80">
-              {label}
-            </span>
-          </button>
-        );
-      })}
-    </div>
-  );
-}
+import {
+  fetchWithAuth,
+  AuthExpiredError,
+  isAuthenticated as checkAuth,
+} from "@/lib/fetchWithAuth";
+import StarPicker from "@/components/StarPicker";
+import DifficultyPicker from "@/components/DifficultyPicker";
+import { useUniversitySearch } from "@/hooks/useUniversitySearch";
 
 // ─── University selector ──────────────────────────────────────────────────────
 
-function UniversitySelector({ value, onChange, universities }) {
+function UniversitySelector({ value, onChange }) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
+  const [selected, setSelected] = useState(null);
 
-  const filtered = universities.filter((u) =>
-    u.name.toLowerCase().includes(search.toLowerCase()),
-  );
-
-  const selected = universities.find((u) => u.id === value);
+  const { results: filtered, isLoading } = useUniversitySearch({
+    search,
+    debounceMs: 300,
+  });
 
   function select(university) {
     onChange(university.id);
+    setSelected(university);
     setSearch("");
     setOpen(false);
   }
@@ -112,7 +46,7 @@ function UniversitySelector({ value, onChange, universities }) {
       <button
         type="button"
         onClick={() => setOpen((prev) => !prev)}
-        className="flex w-full cursor-pointer items-center justify-between gap-2 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm transition-colors hover:border-indigo-300 focus:border-indigo-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-100"
+        className="flex w-full cursor-pointer items-center justify-between gap-2 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm transition-colors hover:border-sky-300 focus:border-sky-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-100"
       >
         {selected ? (
           <span className="font-medium text-gray-800">{selected.name}</span>
@@ -139,7 +73,9 @@ function UniversitySelector({ value, onChange, universities }) {
             />
           </div>
           <ul className="max-h-56 overflow-y-auto">
-            {filtered.length === 0 ? (
+            {isLoading ? (
+              <li className="px-4 py-3 text-sm text-gray-400">Buscando...</li>
+            ) : filtered.length === 0 ? (
               <li className="px-4 py-3 text-sm text-gray-400">
                 Nenhuma universidade encontrada.
               </li>
@@ -149,9 +85,9 @@ function UniversitySelector({ value, onChange, universities }) {
                   <button
                     type="button"
                     onClick={() => select(u)}
-                    className={`w-full cursor-pointer px-4 py-2.5 text-left text-sm transition-colors hover:bg-indigo-50 hover:text-indigo-700 ${
+                    className={`w-full cursor-pointer px-4 py-2.5 text-left text-sm transition-colors hover:bg-sky-50 hover:text-sky-700 ${
                       u.id === value
-                        ? "bg-indigo-50 font-semibold text-indigo-700"
+                        ? "bg-sky-50 font-semibold text-sky-700"
                         : "text-gray-700"
                     }`}
                   >
@@ -175,8 +111,8 @@ function ModerationOverlay() {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
       <div className="mx-4 flex w-full max-w-sm flex-col items-center gap-5 rounded-2xl border border-white/10 bg-white p-8 text-center shadow-2xl">
         <div className="relative flex h-16 w-16 items-center justify-center">
-          <div className="absolute inset-0 animate-spin rounded-full border-4 border-indigo-100 border-t-indigo-500" />
-          <ShieldCheck size={28} className="text-indigo-500" />
+          <div className="absolute inset-0 animate-spin rounded-full border-4 border-sky-100 border-t-sky-500" />
+          <ShieldCheck size={28} className="text-sky-500" />
         </div>
         <div>
           <h3 className="text-lg font-semibold text-gray-800">
@@ -189,15 +125,15 @@ function ModerationOverlay() {
         </div>
         <div className="flex items-center gap-1.5">
           <span
-            className="h-2 w-2 animate-bounce rounded-full bg-indigo-400"
+            className="h-2 w-2 animate-bounce rounded-full bg-sky-400"
             style={{ animationDelay: "0ms" }}
           />
           <span
-            className="h-2 w-2 animate-bounce rounded-full bg-indigo-400"
+            className="h-2 w-2 animate-bounce rounded-full bg-sky-400"
             style={{ animationDelay: "150ms" }}
           />
           <span
-            className="h-2 w-2 animate-bounce rounded-full bg-indigo-400"
+            className="h-2 w-2 animate-bounce rounded-full bg-sky-400"
             style={{ animationDelay: "300ms" }}
           />
         </div>
@@ -232,7 +168,7 @@ function RejectionModal({ reason, onClose }) {
         </p>
         <button
           onClick={onClose}
-          className="brand-gradient w-full cursor-pointer rounded-xl py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+          className="blue-gradient w-full cursor-pointer rounded-xl py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
         >
           Entendi, vou revisar
         </button>
@@ -263,7 +199,7 @@ function PendingModerationModal({ universityId }) {
         </div>
         <button
           onClick={() => router.push(`/universities/${universityId}`)}
-          className="brand-gradient w-full cursor-pointer rounded-xl py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+          className="blue-gradient w-full cursor-pointer rounded-xl py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
         >
           Voltar para a universidade
         </button>
@@ -294,7 +230,7 @@ function ApprovalModal({ universityId }) {
         </div>
         <button
           onClick={() => router.push(`/universities/${universityId}`)}
-          className="brand-gradient w-full cursor-pointer rounded-xl py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+          className="blue-gradient w-full cursor-pointer rounded-xl py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
         >
           Ver minha avaliação
         </button>
@@ -310,7 +246,6 @@ function AvaliarContent() {
   const searchParams = useSearchParams();
   const preselectedUniversityId = searchParams.get("universityId");
 
-  const [universities, setUniversities] = useState([]);
   const [universityId, setUniversityId] = useState(
     preselectedUniversityId || "",
   );
@@ -323,33 +258,16 @@ function AvaliarContent() {
   const [rejectionReason, setRejectionReason] = useState(null);
   const [showPendingModeration, setShowPendingModeration] = useState(false);
   const [showApproval, setShowApproval] = useState(false);
-  const [token, setToken] = useState(null);
-
   // Auth guard
+  const [isAuthed, setIsAuthed] = useState(false);
+
   useEffect(() => {
-    const storedToken = localStorage.getItem("token");
-    if (!storedToken) {
+    if (!checkAuth()) {
       router.replace("/register");
       return;
     }
-    setToken(storedToken);
+    setIsAuthed(true);
   }, [router]);
-
-  // Fetch university list for selector
-  useEffect(() => {
-    async function fetchUniversities() {
-      try {
-        const res = await fetch("/api/v1/universities");
-        if (res.ok) {
-          const data = await res.json();
-          setUniversities(data.data ?? []);
-        }
-      } catch {
-        // non-blocking — university list is a convenience
-      }
-    }
-    fetchUniversities();
-  }, []);
 
   function validate() {
     if (!universityId) return "Selecione uma universidade.";
@@ -378,12 +296,9 @@ function AvaliarContent() {
           ? JSON.stringify({ pros: prosText, cons: consText })
           : undefined;
 
-      const response = await fetch("/api/v1/reviews", {
+      const response = await fetchWithAuth("/api/v1/reviews", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           universityId,
           rating,
@@ -410,13 +325,17 @@ function AvaliarContent() {
 
       setShowApproval(true);
     } catch (err) {
+      if (err instanceof AuthExpiredError) {
+        router.push("/login");
+        return;
+      }
       setError(err.message);
     } finally {
       setIsLoading(false);
     }
   }
 
-  if (!token) return null;
+  if (!isAuthed) return null;
 
   return (
     <>
@@ -433,27 +352,27 @@ function AvaliarContent() {
       )}
       <main
         className="relative min-h-[calc(100vh-4rem)] overflow-hidden px-4 py-12"
-        style={{ backgroundColor: "#0f0f14" }}
+        style={{ backgroundColor: "#0F2854" }}
       >
         {/* Dot grid overlay */}
         <div className="dot-grid absolute inset-0 opacity-40" />
 
         {/* Radial purple glow */}
-        <div className="absolute left-1/2 top-0 h-[600px] w-[800px] -translate-x-1/2 rounded-full bg-gradient-radial from-violet-900/30 to-transparent blur-3xl" />
+        <div className="absolute left-1/2 top-0 h-[600px] w-[800px] -translate-x-1/2 rounded-full bg-gradient-radial from-sky-700/30 to-transparent blur-3xl" />
 
         <div className="relative z-10 mx-auto w-full max-w-lg">
           {/* Header */}
           <div className="mb-8 flex flex-col items-center gap-4 text-center">
             <Link href="/" className="inline-flex items-center gap-2.5">
-              <div className="brand-gradient flex h-10 w-10 items-center justify-center rounded-xl text-white shadow-lg shadow-indigo-500/30">
+              <div className="blue-gradient flex h-10 w-10 items-center justify-center rounded-xl text-white shadow-lg shadow-sky-500/30">
                 <GraduationCap size={22} />
               </div>
-              <span className="brand-gradient-text text-[1.4rem] font-extrabold tracking-tight">
+              <span className="blue-gradient-text text-[1.4rem] font-extrabold tracking-tight">
                 InfoCampus
               </span>
             </Link>
 
-            <div className="stagger-1 inline-flex items-center gap-2 rounded-full border border-indigo-400/30 bg-indigo-500/20 px-4 py-1.5 text-xs font-semibold text-white backdrop-blur-sm">
+            <div className="stagger-1 inline-flex items-center gap-2 rounded-full border border-sky-400/30 bg-sky-500/20 px-4 py-1.5 text-xs font-semibold text-white backdrop-blur-sm">
               <Star size={13} />
               <span>Avaliações verificadas por estudantes</span>
             </div>
@@ -474,7 +393,7 @@ function AvaliarContent() {
               className="absolute inset-0 -z-10"
               style={{
                 background:
-                  "radial-gradient(ellipse at 50% 50%, rgba(139,92,246,0.45) 0%, rgba(99,102,241,0.2) 40%, transparent 70%)",
+                  "radial-gradient(ellipse at 50% 50%, rgba(28,77,141,0.45) 0%, rgba(73,136,196,0.2) 40%, transparent 70%)",
                 transform: "scale(1.6)",
                 filter: "blur(24px)",
               }}
@@ -508,7 +427,6 @@ function AvaliarContent() {
                   <UniversitySelector
                     value={universityId}
                     onChange={setUniversityId}
-                    universities={universities}
                   />
                 </div>
 
@@ -594,7 +512,7 @@ function AvaliarContent() {
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="brand-gradient flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-60"
+                  className="blue-gradient flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-60"
                 >
                   {isLoading ? (
                     <>
@@ -649,7 +567,7 @@ export default function AvaliarPage() {
     <Suspense
       fallback={
         <div className="flex h-[calc(100vh-4rem)] w-full items-center justify-center bg-gray-50">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-indigo-200 border-t-indigo-600" />
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-sky-200 border-t-sky-600" />
         </div>
       }
     >

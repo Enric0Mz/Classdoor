@@ -3,6 +3,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import { MapPin, Star, Trash2 } from "lucide-react";
+import { fetchWithAuth } from "@/lib/fetchWithAuth";
+import ImageCarousel from "@/components/ImageCarousel";
 
 function getInitials(name) {
   return name
@@ -50,7 +52,7 @@ function StarRating({ rating }) {
 export default function UniversityCard({ university, isAdmin, onDelete }) {
   const [deleteConfirming, setDeleteConfirming] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const initials = getInitials(university.name);
+  const initials = university.abbreviation || getInitials(university.name);
   const typeLabel = university.type === "PUBLIC" ? "Pública" : "Privada";
 
   const typeStyles =
@@ -65,15 +67,16 @@ export default function UniversityCard({ university, isAdmin, onDelete }) {
     >
       {/* Image Header */}
       <div className="relative h-48 w-full shrink-0 overflow-hidden">
-        {university.image ? (
-          <img
-            src={university.image}
-            alt={university.name}
-            className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
-          />
-        ) : (
-          <div className="h-full w-full bg-gradient-to-br from-slate-800 via-indigo-900 to-violet-900" />
-        )}
+        <ImageCarousel
+          images={university.images}
+          alt={university.name}
+          className="transition-transform duration-700 group-hover:scale-105"
+          showArrows={university.images?.length > 1}
+          showDots={university.images?.length > 1}
+          fallback={
+            <div className="h-full w-full bg-gradient-to-br from-slate-800 via-indigo-900 to-violet-900" />
+          }
+        />
 
         {/* Gradient Overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-90 transition-opacity group-hover:opacity-100" />
@@ -88,15 +91,11 @@ export default function UniversityCard({ university, isAdmin, onDelete }) {
                 setDeleteConfirming(true);
                 return;
               }
-              const token = localStorage.getItem("token");
               setIsDeleting(true);
               try {
-                const response = await fetch(
+                const response = await fetchWithAuth(
                   `/api/v1/universities/${university.id}`,
-                  {
-                    method: "DELETE",
-                    headers: { Authorization: `Bearer ${token}` },
-                  },
+                  { method: "DELETE" },
                 );
                 if (!response.ok) throw new Error();
                 onDelete(university.id);
@@ -151,22 +150,15 @@ export default function UniversityCard({ university, isAdmin, onDelete }) {
       {/* Body Content */}
       <div className="flex flex-1 flex-col justify-between p-5">
         <div>
-          {/* Rating Section */}
-          <div className="mb-4 flex items-center gap-2">
-            {university.rating != null ? (
-              <>
-                <span className="text-lg font-bold leading-none text-gray-900">
-                  {university.rating.toFixed(1)}
-                </span>
-                <StarRating rating={university.rating} />
-                {university.reviewCount && (
-                  <span className="ml-auto text-xs text-gray-400">
-                    ({university.reviewCount} avaliações)
-                  </span>
-                )}
-              </>
+          {/* Review Count */}
+          <div className="mb-4">
+            {university.reviewCount > 0 ? (
+              <span className="text-sm font-semibold text-gray-700">
+                {university.reviewCount}{" "}
+                {university.reviewCount === 1 ? "avaliação" : "avaliações"}
+              </span>
             ) : (
-              <span className="text-xs font-medium text-gray-400">
+              <span className="text-sm font-medium text-gray-400">
                 Sem avaliações ainda
               </span>
             )}

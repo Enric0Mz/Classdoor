@@ -1,22 +1,31 @@
 import { AppError } from "@/errors/AppError";
+import { sanitizeString } from "@/lib/sanitize";
 import * as universityRepository from "@/repositories/universityRepository";
+import * as universityDomainRepository from "@/repositories/universityDomainRepository";
+import * as externalReviewService from "@/domain/externalReviewService";
 
 const VALID_TYPES = ["PUBLIC", "PRIVATE"];
 
 export async function createUniversity({
   name,
+  abbreviation,
   location,
   website,
-  image,
+  images,
   type,
   courses,
   rating,
+  domain,
 }) {
-  if (!name) {
+  const sanitizedName = sanitizeString(name);
+  const sanitizedLocation = sanitizeString(location);
+  const sanitizedWebsite = website ? sanitizeString(website) : undefined;
+
+  if (!sanitizedName) {
     throw new AppError("Name is required", 400);
   }
 
-  if (!location) {
+  if (!sanitizedLocation) {
     throw new AppError("Location is required", 400);
   }
 
@@ -28,26 +37,167 @@ export async function createUniversity({
     throw new AppError("Type must be PUBLIC or PRIVATE", 400);
   }
 
-  const existing = await universityRepository.findByName(name);
+  const existing = await universityRepository.findByName(sanitizedName);
   if (existing) {
     throw new AppError("A university with this name already exists", 409);
   }
 
-  return universityRepository.create({
-    name,
-    location,
-    website,
-    image,
+  if (domain) {
+    const existingDomain =
+      await universityDomainRepository.findByDomain(domain);
+    if (existingDomain) {
+      throw new AppError(
+        "This domain is already linked to another university",
+        409,
+      );
+    }
+  }
+
+  const university = await universityRepository.create({
+    name: sanitizedName,
+    abbreviation,
+    location: sanitizedLocation,
+    website: sanitizedWebsite,
+    images,
     type,
     courses,
     rating,
   });
+
+  if (domain) {
+    await universityDomainRepository.create(domain, university.id);
+  }
+
+  return university;
 }
 
-export async function listUniversities({ skip, take } = {}) {
-  return universityRepository.findAll({ skip, take });
+export async function bulkCreateUniversities(universities) {
+  if (!Array.isArray(universities) || universities.length === 0) {
+    throw new AppError("Request body must be a non-empty array", 400);
+  }
+
+  const validatedUniversities = [];
+
+  for (const [index, university] of universities.entries()) {
+    const {
+      name,
+      abbreviation,
+      location,
+      website,
+      images,
+      type,
+      courses,
+      rating,
+      domain,
+    } = university;
+
+    if (!name) {
+      throw new AppError(`Item ${index}: Name is required`, 400);
+    }
+
+    if (!location) {
+      throw new AppError(`Item ${index}: Location is required`, 400);
+    }
+
+    if (!type) {
+      throw new AppError(`Item ${index}: Type is required`, 400);
+    }
+
+    if (!VALID_TYPES.includes(type)) {
+      throw new AppError(`Item ${index}: Type must be PUBLIC or PRIVATE`, 400);
+    }
+
+    validatedUniversities.push({
+      name,
+      abbreviation,
+      location,
+      website,
+      images,
+      type,
+      courses,
+      rating,
+      domain,
+    });
+  }
+
+  const seenNames = new Set();
+  const uniqueUniversities = validatedUniversities.filter((university) => {
+    if (seenNames.has(university.name)) return false;
+    seenNames.add(university.name);
+    return true;
+  });
+
+  const names = uniqueUniversities.map((university) => university.name);
+  const existingUniversities =
+    await universityRepository.findManyByNames(names);
+  const existingNameSet = new Set(
+    existingUniversities.map((university) => university.name),
+  );
+
+  const skippedNames = uniqueUniversities
+    .filter((university) => existingNameSet.has(university.name))
+    .map((university) => university.name);
+
+  const newUniversities = uniqueUniversities.filter(
+    (university) => !existingNameSet.has(university.name),
+  );
+
+  if (newUniversities.length === 0) {
+    return { created: 0, skipped: { names: skippedNames } };
+  }
+
+  const domains = newUniversities
+    .filter((university) => university.domain)
+    .map((university) => university.domain);
+
+  const seenDomains = new Set();
+  const deduplicatedUniversities = newUniversities.map((university) => {
+    if (!university.domain || seenDomains.has(university.domain)) {
+      return { ...university, domain: undefined };
+    }
+    seenDomains.add(university.domain);
+    return university;
+  });
+
+  if (domains.length > 0) {
+    const uniqueDomains = [...new Set(domains)];
+    const existingDomains =
+      await universityDomainRepository.findManyByDomains(uniqueDomains);
+    const existingDomainSet = new Set(
+      existingDomains.map((domainRecord) => domainRecord.domain),
+    );
+
+    for (const university of deduplicatedUniversities) {
+      if (university.domain && existingDomainSet.has(university.domain)) {
+        university.domain = undefined;
+      }
+    }
+  }
+
+  const createdUniversities = await universityRepository.createManyWithDomains(
+    deduplicatedUniversities,
+  );
+  return {
+    created: createdUniversities.length,
+    skipped: { names: skippedNames },
+  };
 }
 
+export async function listUniversities({
+  skip,
+  take,
+  search,
+  type,
+  state,
+} = {}) {
+  return universityRepository.findAllOrderedByReviewCount({
+    skip,
+    take,
+    search,
+    type,
+    state,
+  });
+}
 function computeStats(reviews) {
   const reviewCount = reviews.length;
 
@@ -96,9 +246,57 @@ export async function getUniversityById(id) {
   }
 
   const { reviews, ...universityData } = university;
+  const internalStats = computeStats(reviews);
+
+  let externalStats = null;
+  try {
+    externalStats = await externalReviewService.getStats(id);
+  } catch (error) {
+    console.warn("Failed to fetch external review stats:", error.message);
+  }
+
+  const mergedStats = mergeStats(internalStats, externalStats);
 
   return {
     ...universityData,
-    stats: computeStats(reviews),
+    stats: mergedStats,
+    externalStats,
+  };
+}
+
+function mergeStats(internalStats, externalStats) {
+  if (!externalStats) {
+    return internalStats;
+  }
+
+  const internalCount = internalStats.reviewCount;
+  const externalCount = externalStats.reviewCount;
+  const totalCount = internalCount + externalCount;
+
+  if (totalCount === 0) {
+    return internalStats;
+  }
+
+  const internalRatingSum = internalStats.averageRating
+    ? internalStats.averageRating * internalCount
+    : 0;
+  const externalRatingSum = externalStats.averageRating * externalCount;
+  const mergedAverageRating = +(
+    (internalRatingSum + externalRatingSum) /
+    totalCount
+  ).toFixed(1);
+
+  const internalRecommended = internalStats.recommendationPercentage
+    ? Math.round((internalStats.recommendationPercentage / 100) * internalCount)
+    : 0;
+  const externalRecommended = externalStats.recommendedCount;
+
+  return {
+    averageRating: mergedAverageRating,
+    averageDifficultyLevel: internalStats.averageDifficultyLevel,
+    recommendationPercentage: Math.round(
+      ((internalRecommended + externalRecommended) / totalCount) * 100,
+    ),
+    reviewCount: totalCount,
   };
 }

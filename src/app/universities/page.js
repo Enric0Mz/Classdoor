@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import UniversityCard from "@/components/UniversityCard";
 import Link from "next/link";
 import {
@@ -12,6 +12,8 @@ import {
   X,
   Zap,
   Lightbulb,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 
 const STATE_FILTERS = [
@@ -34,6 +36,7 @@ const TYPE_FILTERS = [
 
 export default function UniversitiesPage() {
   const [universities, setUniversities] = useState([]);
+  const [pagination, setPagination] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -45,6 +48,12 @@ export default function UniversitiesPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [sortByRating, setSortByRating] = useState(false);
+
+  // Pagination
+  const ITEMS_PER_PAGE = 15;
+  const [currentPage, setCurrentPage] = useState(1);
+  const universitiesTopRef = useRef(null);
+  const isFirstRender = useRef(true);
 
   useEffect(() => {
     try {
@@ -66,50 +75,92 @@ export default function UniversitiesPage() {
     );
   }
 
-  useEffect(() => {
-    async function fetchUniversities() {
-      try {
-        const res = await fetch("/api/v1/universities");
-        if (!res.ok) throw new Error("Falha ao carregar universidades");
-        const data = await res.json();
-        setUniversities(data.data ?? []);
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const debounceTimer = useRef(null);
+
+  function handleSearchChange(value) {
+    setSearchQuery(value);
+    clearTimeout(debounceTimer.current);
+    debounceTimer.current = setTimeout(() => setDebouncedSearch(value), 300);
+  }
+
+  const fetchUniversities = useCallback(async () => {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams({
+        limit: String(ITEMS_PER_PAGE),
+        page: String(currentPage),
+      });
+      if (debouncedSearch.trim()) {
+        params.set("search", debouncedSearch.trim());
       }
+      if (activeType) {
+        params.set("type", activeType);
+      }
+      if (activeState !== "Todos") {
+        params.set("state", activeState);
+      }
+      const res = await fetch(`/api/v1/universities?${params}`);
+      if (!res.ok) throw new Error("Falha ao carregar universidades");
+      const data = await res.json();
+      setUniversities(data.data ?? []);
+      setPagination(data.pagination ?? null);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
+  }, [currentPage, debouncedSearch, activeType, activeState]);
+
+  useEffect(() => {
     fetchUniversities();
-  }, []);
+  }, [fetchUniversities]);
 
   const filtered = useMemo(() => {
-    let result = universities;
+    if (!sortByRating) return universities;
+    return [...universities].sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0));
+  }, [universities, sortByRating]);
 
-    if (activeState !== "Todos") {
-      result = result.filter((u) =>
-        u.location.toUpperCase().includes(activeState.toUpperCase()),
-      );
+  // Reset to first page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeState, activeType, searchQuery, sortByRating]);
+
+  // Scroll to top of university list when page changes
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+    universitiesTopRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [currentPage]);
+
+  const totalPages = pagination?.totalPages ?? 1;
+
+  const visiblePageNumbers = useMemo(() => {
+    if (totalPages <= 4) {
+      return Array.from({ length: totalPages }, (_, index) => index + 1);
     }
 
-    if (activeType) {
-      result = result.filter((u) => u.type === activeType);
+    const pages = [];
+    const startPage = Math.max(1, currentPage - 1);
+    const endPage = Math.min(totalPages - 1, startPage + 2);
+    const adjustedStart = Math.max(1, endPage - 2);
+
+    for (let page = adjustedStart; page <= endPage; page++) {
+      pages.push(page);
     }
 
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
-      result = result.filter(
-        (u) =>
-          u.name.toLowerCase().includes(query) ||
-          u.location.toLowerCase().includes(query),
-      );
+    if (endPage < totalPages - 1) {
+      pages.push("...");
     }
 
-    if (sortByRating) {
-      result = [...result].sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0));
+    if (!pages.includes(totalPages)) {
+      pages.push(totalPages);
     }
 
-    return result;
-  }, [universities, activeState, activeType, searchQuery, sortByRating]);
+    return pages;
+  }, [totalPages, currentPage]);
 
   const avgRating = useMemo(() => {
     const ratedUniversities = universities.filter((u) => u.rating != null);
@@ -137,28 +188,38 @@ export default function UniversitiesPage() {
       {/* ── Hero Section ── */}
       <section
         className="relative overflow-hidden pb-16 pt-16 text-center"
-        style={{ backgroundColor: "#0f0f14" }}
+        style={{
+          background:
+            "linear-gradient(180deg, #0F2854 0%, #1C4D8D 60%, #4988C4 100%)",
+        }}
       >
         {/* Dot grid overlay */}
         <div className="dot-grid absolute inset-0 opacity-40" />
 
-        {/* Radial purple glow in center */}
-        <div className="absolute left-1/2 top-0 -z-0 h-[600px] w-[800px] -translate-x-1/2 rounded-full bg-gradient-radial from-violet-900/30 to-transparent blur-3xl" />
+        {/* Radial blue glow in center */}
+        <div className="absolute left-1/2 top-0 -z-0 h-[600px] w-[800px] -translate-x-1/2 rounded-full bg-gradient-radial from-sky-700/30 to-transparent blur-3xl" />
 
         <div className="relative z-10 mx-auto max-w-4xl px-4">
           {/* Badge chip */}
-          <div className="stagger-1 mb-6 inline-flex items-center gap-2 rounded-full border border-indigo-400/30 bg-indigo-500/20 px-4 py-1.5 text-xs font-semibold text-white backdrop-blur-sm">
+          <div className="stagger-1 mb-6 inline-flex items-center gap-2 rounded-full border border-sky-400/30 bg-sky-500/20 px-4 py-1.5 text-xs font-semibold text-white backdrop-blur-sm">
             <TrendingUp size={13} />
             <span>
-              +{universities.length > 0 ? universities.length : "500"}{" "}
-              universidades avaliadas
+              +{pagination?.total || universities.length || "500"} universidades
+              avaliadas
             </span>
           </div>
 
           {/* Heading */}
           <h1 className="stagger-2 text-5xl font-extrabold tracking-tight text-white sm:text-6xl">
             Encontre a universidade{" "}
-            <span className="brand-gradient-text">perfeita pra você</span>
+            <span
+              className="bg-clip-text text-transparent"
+              style={{
+                backgroundImage: "linear-gradient(135deg, #4988C4, #BDE8F5)",
+              }}
+            >
+              perfeita pra você
+            </span>
           </h1>
 
           <p className="stagger-3 mx-auto mt-6 max-w-2xl text-lg text-gray-400">
@@ -168,19 +229,24 @@ export default function UniversitiesPage() {
 
           {/* Search Bar */}
           <div className="mx-auto mt-10 max-w-2xl">
-            <div className="group relative flex items-center rounded-2xl border border-white/10 bg-white/5 px-4 py-3 backdrop-blur-sm transition-all focus-within:border-indigo-400/50 focus-within:ring-2 focus-within:ring-indigo-500/60">
+            <div className="group relative flex items-center rounded-2xl border border-white/10 bg-white/5 px-4 py-3 backdrop-blur-sm transition-all focus-within:border-sky-400/50 focus-within:ring-2 focus-within:ring-sky-500/60">
               <Search
-                className="mr-3 shrink-0 text-gray-500 group-focus-within:text-indigo-400"
+                className="mr-3 shrink-0 text-gray-500 group-focus-within:text-sky-400"
                 size={20}
               />
               <input
                 type="text"
                 placeholder="Busque por universidade, cidade ou curso..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => handleSearchChange(e.target.value)}
                 className="flex-1 bg-transparent text-base text-white outline-none placeholder:text-gray-500"
               />
-              <button className="brand-gradient ml-2 hidden rounded-xl px-6 py-2 text-sm font-semibold text-white transition-transform hover:scale-105 active:scale-95 sm:block">
+              <button
+                className="ml-2 hidden rounded-xl px-6 py-2 text-sm font-semibold text-white transition-transform hover:scale-105 active:scale-95 sm:block"
+                style={{
+                  background: "linear-gradient(135deg, #1C4D8D, #4988C4)",
+                }}
+              >
                 Buscar
               </button>
             </div>
@@ -190,7 +256,7 @@ export default function UniversitiesPage() {
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <div className="flex flex-col items-center rounded-2xl border border-white/10 bg-white/5 px-5 py-3 backdrop-blur-sm">
               <span className="text-xl font-bold text-white">
-                {loading ? "..." : universities.length}
+                {loading ? "..." : (pagination?.total ?? universities.length)}
               </span>
               <span className="text-xs text-gray-400">universidades</span>
             </div>
@@ -202,7 +268,7 @@ export default function UniversitiesPage() {
             </div>
             <div className="flex flex-col items-center rounded-2xl border border-white/10 bg-white/5 px-5 py-3 backdrop-blur-sm">
               <span className="flex items-center gap-1 text-xl font-bold text-white">
-                <Zap size={16} className="text-indigo-400" />
+                <Zap size={16} className="text-sky-400" />
                 100%
               </span>
               <span className="text-xs text-gray-400">
@@ -218,7 +284,7 @@ export default function UniversitiesPage() {
                 <button
                   key={chip}
                   onClick={() => handleChipClick(chip)}
-                  className="rounded-full border border-white/15 bg-white/10 px-4 py-1.5 text-sm font-medium text-gray-300 transition-colors hover:border-indigo-400/30 hover:bg-indigo-500/20 hover:text-indigo-300"
+                  className="rounded-full border border-white/15 bg-white/10 px-4 py-1.5 text-sm font-medium text-gray-300 transition-colors hover:border-sky-400/30 hover:bg-sky-500/20 hover:text-sky-300"
                 >
                   {chip}
                 </button>
@@ -232,7 +298,10 @@ export default function UniversitiesPage() {
       </section>
 
       {/* ── Main Content ── */}
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <div
+        ref={universitiesTopRef}
+        className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8"
+      >
         {/* Toolbar */}
         <div className="mb-8 flex flex-col gap-4 py-5 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-4 text-sm text-gray-500">
@@ -266,14 +335,14 @@ export default function UniversitiesPage() {
               onClick={() => setShowFilters((prev) => !prev)}
               className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-colors ${
                 showFilters || activeFiltersCount > 0
-                  ? "bg-indigo-50 text-indigo-700 ring-1 ring-inset ring-indigo-200"
+                  ? "bg-sky-50 text-sky-700 ring-1 ring-inset ring-sky-200"
                   : "bg-white text-gray-600 hover:bg-gray-50 ring-1 ring-inset ring-gray-200"
               }`}
             >
               <SlidersHorizontal size={16} />
               Filtros
               {activeFiltersCount > 0 && (
-                <span className="ml-1 flex h-5 w-5 items-center justify-center rounded-full bg-indigo-600 text-[0.65rem] text-white">
+                <span className="ml-1 flex h-5 w-5 items-center justify-center rounded-full bg-sky-600 text-[0.65rem] text-white">
                   {activeFiltersCount}
                 </span>
               )}
@@ -288,7 +357,7 @@ export default function UniversitiesPage() {
               <div className="flex flex-col gap-6 sm:flex-row sm:gap-12">
                 {/* State Filter */}
                 <div className="flex-1">
-                  <label className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-indigo-600">
+                  <label className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-sky-600">
                     <MapPin size={14} />
                     Localização (Estado)
                   </label>
@@ -299,7 +368,7 @@ export default function UniversitiesPage() {
                         onClick={() => setActiveState(state)}
                         className={`rounded-lg px-3.5 py-1.5 text-sm font-medium transition-all ${
                           activeState === state
-                            ? "bg-indigo-600 text-white shadow-md shadow-indigo-200"
+                            ? "bg-sky-600 text-white shadow-md shadow-sky-200"
                             : "bg-gray-50 text-gray-600 hover:bg-gray-100"
                         }`}
                       >
@@ -313,7 +382,7 @@ export default function UniversitiesPage() {
 
                 {/* Type Filter */}
                 <div className="flex-1">
-                  <label className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-indigo-600">
+                  <label className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-sky-600">
                     <GraduationCap size={14} />
                     Tipo de Instituição
                   </label>
@@ -324,7 +393,7 @@ export default function UniversitiesPage() {
                         onClick={() => setActiveType(typeFilter.value)}
                         className={`rounded-lg px-3.5 py-1.5 text-sm font-medium transition-all ${
                           activeType === typeFilter.value
-                            ? "bg-indigo-600 text-white shadow-md shadow-indigo-200"
+                            ? "bg-sky-600 text-white shadow-md shadow-sky-200"
                             : "bg-gray-50 text-gray-600 hover:bg-gray-100"
                         }`}
                       >
@@ -356,8 +425,8 @@ export default function UniversitiesPage() {
 
         {/* Grid Results */}
         {loading ? (
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {Array.from({ length: 8 }).map((_, index) => (
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {Array.from({ length: 6 }).map((_, index) => (
               <div
                 key={index}
                 className="flex flex-col gap-3 rounded-2xl border border-gray-100 bg-white p-4 shadow-sm"
@@ -399,41 +468,80 @@ export default function UniversitiesPage() {
                 setActiveState("Todos");
                 setActiveType(null);
               }}
-              className="mt-6 font-medium text-indigo-600 hover:underline"
+              className="mt-6 font-medium text-sky-600 hover:underline"
             >
               Limpar busca
             </button>
             <Link
               href="/sugerir-universidade"
-              className="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 transition-colors hover:text-indigo-600"
+              className="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 transition-colors hover:text-sky-600"
             >
               <Lightbulb size={14} />
               Nao encontrou sua universidade? Sugira aqui
             </Link>
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {filtered.map((university) => (
-              <UniversityCard
-                key={university.id}
-                university={university}
-                isAdmin={isAdmin}
-                onDelete={handleUniversityDelete}
-              />
-            ))}
-          </div>
-        )}
+          <>
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {filtered.map((university) => (
+                <UniversityCard
+                  key={university.id}
+                  university={university}
+                  isAdmin={isAdmin}
+                  onDelete={handleUniversityDelete}
+                />
+              ))}
+            </div>
 
-        {/* CTA for suggesting a university */}
-        <div className="mt-12 flex flex-col items-center gap-2 text-center">
-          <Link
-            href="/sugerir-universidade"
-            className="inline-flex items-center gap-2 rounded-full border border-indigo-100 bg-indigo-50 px-5 py-2.5 text-sm font-medium text-indigo-700 transition-colors hover:bg-indigo-100"
-          >
-            <Lightbulb size={15} />
-            Nao encontrou sua universidade? Sugira aqui
-          </Link>
-        </div>
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="mt-10 flex items-center justify-center gap-2">
+                <button
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.max(1, prev - 1))
+                  }
+                  disabled={currentPage === 1}
+                  className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-600 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  <ChevronLeft size={18} />
+                </button>
+
+                {visiblePageNumbers.map((pageNumber, index) =>
+                  pageNumber === "..." ? (
+                    <span
+                      key={`ellipsis-${index}`}
+                      className="flex h-10 w-10 items-center justify-center text-sm text-gray-400"
+                    >
+                      ...
+                    </span>
+                  ) : (
+                    <button
+                      key={pageNumber}
+                      onClick={() => setCurrentPage(pageNumber)}
+                      className={`flex h-10 w-10 items-center justify-center rounded-full text-sm font-medium transition-colors ${
+                        currentPage === pageNumber
+                          ? "bg-sky-600 text-white shadow-md shadow-sky-200"
+                          : "border border-gray-200 bg-white text-gray-600 hover:bg-gray-50"
+                      }`}
+                    >
+                      {pageNumber}
+                    </button>
+                  ),
+                )}
+
+                <button
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.min(totalPages, prev + 1))
+                  }
+                  disabled={currentPage === totalPages}
+                  className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-600 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  <ChevronRight size={18} />
+                </button>
+              </div>
+            )}
+          </>
+        )}
       </div>
     </main>
   );

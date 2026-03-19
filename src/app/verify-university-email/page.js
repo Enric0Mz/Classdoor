@@ -86,7 +86,7 @@ function VerifyUniversityEmailContent() {
   return (
     <main
       className="relative flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center overflow-hidden"
-      style={{ backgroundColor: "#0f0f14" }}
+      style={{ backgroundColor: "#0F2854" }}
     >
       {/* Dot grid overlay */}
       <div className="dot-grid absolute inset-0 opacity-40" />
@@ -178,7 +178,7 @@ export default function VerifyUniversityEmailPage() {
       fallback={
         <main
           className="relative flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center overflow-hidden"
-          style={{ backgroundColor: "#0f0f14" }}
+          style={{ backgroundColor: "#0F2854" }}
         >
           <div className="dot-grid absolute inset-0 opacity-40" />
           <div className="absolute left-1/2 top-1/2 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-radial from-violet-900/30 to-transparent blur-3xl" />

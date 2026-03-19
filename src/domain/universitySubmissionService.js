@@ -103,6 +103,14 @@ export async function approveSubmission(
 
   const domainToCreate = emailDomain || submission.emailDomain;
   if (domainToCreate && universityId) {
+    const existingDomain =
+      await universityDomainRepository.findByDomain(domainToCreate);
+    if (existingDomain) {
+      throw new AppError(
+        "This email domain is already associated with another university",
+        409,
+      );
+    }
     await universityDomainRepository.create(domainToCreate, universityId);
   }
 

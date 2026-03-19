@@ -4,6 +4,11 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { GraduationCap, ArrowLeft, Building2 } from "lucide-react";
+import {
+  fetchWithAuth,
+  AuthExpiredError,
+  isAuthenticated as checkAuth,
+} from "@/lib/fetchWithAuth";
 
 function decodeJwtPayload(token) {
   try {
@@ -20,7 +25,7 @@ const UNIVERSITY_TYPES = [
 
 export default function CreateUniversityPage() {
   const router = useRouter();
-  const [token, setToken] = useState(null);
+  const [authorized, setAuthorized] = useState(false);
 
   const [name, setName] = useState("");
   const [location, setLocation] = useState("");
@@ -28,22 +33,25 @@ export default function CreateUniversityPage() {
   const [website, setWebsite] = useState("");
   const [image, setImage] = useState("");
   const [coursesInput, setCoursesInput] = useState("");
+  const [domain, setDomain] = useState("");
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const storedToken = localStorage.getItem("token");
-    if (!storedToken) {
+    if (!checkAuth()) {
       router.replace("/login");
       return;
     }
-    const decoded = decodeJwtPayload(storedToken);
-    if (decoded?.role !== "ADMIN") {
-      router.replace("/me");
-      return;
+    const storedToken = localStorage.getItem("token");
+    if (storedToken) {
+      const decoded = decodeJwtPayload(storedToken);
+      if (decoded?.role !== "ADMIN") {
+        router.replace("/me");
+        return;
+      }
     }
-    setToken(storedToken);
+    setAuthorized(true);
   }, [router]);
 
   function validate() {
@@ -79,13 +87,11 @@ export default function CreateUniversityPage() {
       if (website.trim()) body.website = website.trim();
       if (image.trim()) body.image = image.trim();
       if (courses.length > 0) body.courses = courses;
+      if (domain.trim()) body.domain = domain.trim();
 
-      const response = await fetch("/api/v1/universities", {
+      const response = await fetchWithAuth("/api/v1/universities", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
       });
 
@@ -97,18 +103,22 @@ export default function CreateUniversityPage() {
 
       router.push(`/universities/${data.id}`);
     } catch (err) {
+      if (err instanceof AuthExpiredError) {
+        router.push("/login");
+        return;
+      }
       setError(err.message);
     } finally {
       setIsLoading(false);
     }
   }
 
-  if (!token) return null;
+  if (!authorized) return null;
 
   return (
     <main
       className="relative min-h-[calc(100vh-4rem)] overflow-hidden px-4 py-12"
-      style={{ backgroundColor: "#0f0f14" }}
+      style={{ backgroundColor: "#0F2854" }}
     >
       {/* Dot grid overlay */}
       <div className="dot-grid absolute inset-0 opacity-40" />
@@ -239,6 +249,24 @@ export default function CreateUniversityPage() {
                   placeholder="https://www.universidade.edu.br"
                   className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-800 outline-none transition-colors placeholder:text-gray-400 focus:border-indigo-300 focus:bg-white focus:ring-2 focus:ring-indigo-100"
                 />
+              </div>
+
+              {/* Domain */}
+              <div className="flex flex-col gap-2">
+                <label className="text-sm font-semibold text-gray-700">
+                  Dominio de e-mail{" "}
+                  <span className="font-normal text-gray-400">(opcional)</span>
+                </label>
+                <input
+                  type="text"
+                  value={domain}
+                  onChange={(event) => setDomain(event.target.value)}
+                  placeholder="Ex: usp.br"
+                  className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-800 outline-none transition-colors placeholder:text-gray-400 focus:border-indigo-300 focus:bg-white focus:ring-2 focus:ring-indigo-100"
+                />
+                <span className="text-xs text-gray-400">
+                  Dominio usado para verificar alunos (ex: usp.br, unicamp.br)
+                </span>
               </div>
 
               {/* Image URL */}

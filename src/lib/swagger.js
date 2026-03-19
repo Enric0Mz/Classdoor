@@ -52,6 +52,28 @@ const swaggerSpec = {
             schema: { type: "integer", default: 10, maximum: 100 },
             description: "Number of items per page",
           },
+          {
+            name: "search",
+            in: "query",
+            required: false,
+            schema: { type: "string" },
+            description:
+              "Search universities by name, abbreviation, location, or course",
+          },
+          {
+            name: "type",
+            in: "query",
+            required: false,
+            schema: { type: "string", enum: ["PUBLIC", "PRIVATE"] },
+            description: "Filter by university type",
+          },
+          {
+            name: "state",
+            in: "query",
+            required: false,
+            schema: { type: "string" },
+            description: "Filter by state abbreviation (e.g., SP, RJ)",
+          },
         ],
         responses: {
           200: {
@@ -95,6 +117,11 @@ const swaggerSpec = {
                 required: ["name", "location", "type"],
                 properties: {
                   name: { type: "string", example: "MIT" },
+                  abbreviation: {
+                    type: "string",
+                    nullable: true,
+                    example: "MIT",
+                  },
                   location: {
                     type: "string",
                     example: "Cambridge, MA",
@@ -104,10 +131,13 @@ const swaggerSpec = {
                     nullable: true,
                     example: "https://mit.edu",
                   },
-                  image: {
-                    type: "string",
-                    nullable: true,
-                    example: "https://example.com/mit.jpg",
+                  images: {
+                    type: "array",
+                    items: { type: "string" },
+                    example: [
+                      "https://example.com/mit1.jpg",
+                      "https://example.com/mit2.jpg",
+                    ],
                   },
                   type: {
                     type: "string",
@@ -124,6 +154,13 @@ const swaggerSpec = {
                     format: "float",
                     nullable: true,
                     example: 4.5,
+                  },
+                  domain: {
+                    type: "string",
+                    nullable: true,
+                    description:
+                      "Email domain to link to this university (used for student verification)",
+                    example: "mit.edu",
                   },
                 },
               },
@@ -165,6 +202,132 @@ const swaggerSpec = {
           },
           409: {
             description: "University already exists",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
+        },
+      },
+    },
+    "/api/v1/universities/bulk": {
+      post: {
+        tags: ["Universities"],
+        summary: "Bulk create universities",
+        description:
+          "Creates multiple universities at once, including their email domains. Requires ADMIN role. Duplicate universities (by name) and domains are automatically skipped. Returns the count of newly created universities.",
+        security: [{ BearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: {
+                type: "array",
+                items: {
+                  type: "object",
+                  required: ["name", "location", "type"],
+                  properties: {
+                    name: { type: "string", example: "MIT" },
+                    abbreviation: {
+                      type: "string",
+                      nullable: true,
+                      example: "MIT",
+                    },
+                    location: {
+                      type: "string",
+                      example: "Cambridge, MA, USA",
+                    },
+                    website: {
+                      type: "string",
+                      nullable: true,
+                      example: "https://mit.edu",
+                    },
+                    images: {
+                      type: "array",
+                      items: { type: "string" },
+                      example: [
+                        "https://example.com/mit1.jpg",
+                        "https://example.com/mit2.jpg",
+                      ],
+                    },
+                    type: {
+                      type: "string",
+                      enum: ["PUBLIC", "PRIVATE"],
+                      example: "PRIVATE",
+                    },
+                    courses: {
+                      type: "array",
+                      items: { type: "string" },
+                      example: ["Business", "Economics"],
+                    },
+                    rating: {
+                      type: "number",
+                      format: "float",
+                      nullable: true,
+                      example: 0,
+                    },
+                    domain: {
+                      type: "string",
+                      nullable: true,
+                      description:
+                        "Email domain to link to this university (used for student verification)",
+                      example: "mit.edu",
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          201: {
+            description: "Universities created",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    created: {
+                      type: "integer",
+                      description: "Number of universities created",
+                      example: 10,
+                    },
+                    skipped: {
+                      type: "object",
+                      properties: {
+                        names: {
+                          type: "array",
+                          items: { type: "string" },
+                          description:
+                            "Names of universities that were skipped because they already exist",
+                          example: ["MIT"],
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+          400: {
+            description: "Validation error",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
+          401: {
+            description: "Authentication required",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
+          403: {
+            description: "Forbidden: ADMIN role required",
             content: {
               "application/json": {
                 schema: { $ref: "#/components/schemas/Error" },
@@ -228,9 +391,13 @@ const swaggerSpec = {
                 type: "object",
                 properties: {
                   name: { type: "string" },
+                  abbreviation: { type: "string", nullable: true },
                   location: { type: "string" },
                   website: { type: "string", nullable: true },
-                  image: { type: "string", nullable: true },
+                  images: {
+                    type: "array",
+                    items: { type: "string" },
+                  },
                   type: { type: "string", enum: ["PUBLIC", "PRIVATE"] },
                   courses: { type: "array", items: { type: "string" } },
                   rating: { type: "number", format: "float", nullable: true },
@@ -1910,6 +2077,60 @@ const swaggerSpec = {
         },
       },
     },
+    "/api/v1/users/me/reviews": {
+      get: {
+        tags: ["Reviews"],
+        summary: "List current user's reviews",
+        description:
+          "Returns a paginated list of reviews made by the authenticated user, including all moderation statuses. Each review includes the university name.",
+        security: [{ BearerAuth: [] }],
+        parameters: [
+          {
+            name: "page",
+            in: "query",
+            required: false,
+            schema: { type: "integer", default: 1 },
+            description: "Page number",
+          },
+          {
+            name: "limit",
+            in: "query",
+            required: false,
+            schema: { type: "integer", default: 10, maximum: 100 },
+            description: "Number of items per page",
+          },
+        ],
+        responses: {
+          200: {
+            description: "List of user's reviews",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    data: {
+                      type: "array",
+                      items: { $ref: "#/components/schemas/Review" },
+                    },
+                    pagination: {
+                      $ref: "#/components/schemas/Pagination",
+                    },
+                  },
+                },
+              },
+            },
+          },
+          401: {
+            description: "Authentication required",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
+        },
+      },
+    },
     "/api/v1/users/{id}": {
       parameters: [
         {
@@ -2049,6 +2270,207 @@ const swaggerSpec = {
         },
       },
     },
+    "/api/v1/auth/google": {
+      get: {
+        tags: ["Authentication"],
+        summary: "Initiate Google OAuth login",
+        description:
+          "Redirects the user to Google's consent screen. After authorization, Google redirects back to the callback endpoint.",
+        responses: {
+          302: {
+            description: "Redirect to Google OAuth consent screen",
+          },
+        },
+      },
+    },
+    "/api/v1/auth/google/callback": {
+      get: {
+        tags: ["Authentication"],
+        summary: "Google OAuth callback",
+        description:
+          "Handles the callback from Google after user authorization. Exchanges the authorization code for tokens, creates or links user accounts, and redirects to the frontend with JWT tokens.",
+        parameters: [
+          {
+            name: "code",
+            in: "query",
+            required: true,
+            schema: { type: "string" },
+            description: "Authorization code from Google",
+          },
+          {
+            name: "state",
+            in: "query",
+            required: true,
+            schema: { type: "string" },
+            description: "CSRF state parameter for validation",
+          },
+        ],
+        responses: {
+          302: {
+            description:
+              "Redirect to frontend success page with tokens, or to login page on error",
+          },
+        },
+      },
+    },
+    "/api/v1/external-reviews": {
+      get: {
+        tags: ["External Reviews"],
+        summary: "List external reviews for a university",
+        parameters: [
+          {
+            name: "universityId",
+            in: "query",
+            required: true,
+            schema: { type: "string", format: "uuid" },
+            description: "University ID to filter external reviews",
+          },
+          {
+            name: "page",
+            in: "query",
+            required: false,
+            schema: { type: "integer", default: 1 },
+            description: "Page number",
+          },
+          {
+            name: "limit",
+            in: "query",
+            required: false,
+            schema: { type: "integer", default: 10, maximum: 100 },
+            description: "Items per page",
+          },
+        ],
+        responses: {
+          200: {
+            description: "Paginated list of external reviews",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    data: {
+                      type: "array",
+                      items: { $ref: "#/components/schemas/ExternalReview" },
+                    },
+                    pagination: { $ref: "#/components/schemas/Pagination" },
+                  },
+                },
+              },
+            },
+          },
+          400: {
+            description: "Missing universityId parameter",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
+        },
+      },
+    },
+    "/api/v1/external-reviews/import": {
+      post: {
+        tags: ["External Reviews"],
+        summary: "Import external reviews from scraper data",
+        description:
+          "Admin-only endpoint. Accepts an array of university entries with their Google Maps reviews.",
+        security: [{ BearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: {
+                type: "array",
+                items: {
+                  type: "object",
+                  required: ["universityName", "reviews"],
+                  properties: {
+                    universityName: {
+                      type: "string",
+                      example: "Universidade de São Paulo",
+                    },
+                    reviews: {
+                      type: "array",
+                      items: {
+                        type: "object",
+                        required: ["rating", "url"],
+                        properties: {
+                          rating: {
+                            type: "integer",
+                            minimum: 1,
+                            maximum: 5,
+                          },
+                          text: { type: "string" },
+                          url: {
+                            type: "string",
+                            format: "uri",
+                            example:
+                              "https://maps.google.com/maps/contrib/123/reviews",
+                          },
+                          date: {
+                            type: "string",
+                            format: "date",
+                            example: "2025-01-15",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          201: {
+            description: "Import summary",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    imported: {
+                      type: "integer",
+                      description: "Number of reviews imported",
+                    },
+                    skippedUniversities: {
+                      type: "array",
+                      items: { type: "string" },
+                      description: "University names not found in database",
+                    },
+                  },
+                },
+              },
+            },
+          },
+          400: {
+            description: "Invalid payload",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
+          401: {
+            description: "Unauthorized",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
+          403: {
+            description: "Forbidden — admin role required",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
+        },
+      },
+    },
   },
   components: {
     securitySchemes: {
@@ -2099,9 +2521,21 @@ const swaggerSpec = {
         properties: {
           id: { type: "string", format: "uuid" },
           name: { type: "string" },
+          abbreviation: { type: "string", nullable: true },
           location: { type: "string" },
           website: { type: "string", nullable: true },
-          image: { type: "string", nullable: true },
+          images: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                id: { type: "string", format: "uuid" },
+                url: { type: "string" },
+                universityId: { type: "string", format: "uuid" },
+                createdAt: { type: "string", format: "date-time" },
+              },
+            },
+          },
           type: { type: "string", enum: ["PUBLIC", "PRIVATE"] },
           courses: { type: "array", items: { type: "string" } },
           rating: { type: "number", format: "float", nullable: true },
@@ -2225,6 +2659,13 @@ const swaggerSpec = {
           verified: { type: "boolean", example: false },
           emailVerified: { type: "boolean", example: false },
           role: { type: "string", enum: ["USER", "MODERATOR", "ADMIN"] },
+          authProvider: {
+            type: "string",
+            enum: ["local", "google", "local_and_google"],
+            example: "local",
+            description:
+              "How the account was created. 'local' = email/password, 'google' = Google OAuth, 'local_and_google' = both linked.",
+          },
           createdAt: { type: "string", format: "date-time" },
         },
       },
@@ -2282,6 +2723,43 @@ const swaggerSpec = {
             nullable: true,
           },
           createdAt: { type: "string", format: "date-time" },
+        },
+      },
+      ExternalReview: {
+        type: "object",
+        properties: {
+          id: { type: "string", format: "uuid" },
+          rating: { type: "integer", minimum: 1, maximum: 5 },
+          textSnippet: {
+            type: "string",
+            nullable: true,
+            description:
+              "First ~100 characters of the review text, truncated at word boundary (LGPD compliance)",
+          },
+          sourceUrl: {
+            type: "string",
+            format: "uri",
+            description: "Link to the full review on Google Maps",
+          },
+          source: {
+            type: "string",
+            enum: ["GOOGLE_MAPS"],
+          },
+          originalDate: { type: "string", format: "date-time" },
+          universityId: { type: "string", format: "uuid" },
+          createdAt: { type: "string", format: "date-time" },
+        },
+      },
+      ExternalStats: {
+        type: "object",
+        nullable: true,
+        description:
+          "Google Maps review statistics. Null when no external reviews exist.",
+        properties: {
+          averageRating: { type: "number", format: "float", example: 4.2 },
+          reviewCount: { type: "integer", example: 15 },
+          recommendedCount: { type: "integer", example: 10 },
+          source: { type: "string", enum: ["GOOGLE_MAPS"] },
         },
       },
       Error: {

@@ -1,11 +1,17 @@
 import { createUniversity } from "@/domain/universityService";
 import * as universityRepository from "@/repositories/universityRepository";
+import * as universityDomainRepository from "@/repositories/universityDomainRepository";
 import { requireVerifiedUser } from "@/lib/auth";
 import { requireRole } from "@/lib/authorization";
 import { POST } from "@/app/api/v1/universities/route";
 
 jest.mock("@/repositories/universityRepository", () => ({
   findByName: jest.fn(),
+  create: jest.fn(),
+}));
+
+jest.mock("@/repositories/universityDomainRepository", () => ({
+  findByDomain: jest.fn(),
   create: jest.fn(),
 }));
 
@@ -67,9 +73,10 @@ describe("universityService.createUniversity", () => {
 
     expect(universityRepository.create).toHaveBeenCalledWith({
       name: "MIT",
+      abbreviation: undefined,
       location: "Cambridge",
       website: undefined,
-      image: undefined,
+      images: undefined,
       type: "PUBLIC",
       courses: undefined,
       rating: undefined,
@@ -115,6 +122,76 @@ describe("universityService.createUniversity", () => {
       statusCode: 400,
     });
     expect(universityRepository.create).not.toHaveBeenCalled();
+  });
+
+  it("creates a university and links the domain when domain is provided", async () => {
+    const input = {
+      name: "USP",
+      location: "Sao Paulo",
+      type: "PUBLIC",
+      domain: "usp.br",
+    };
+    const created = {
+      id: "uni-id-123",
+      name: "USP",
+      location: "Sao Paulo",
+      type: "PUBLIC",
+      createdAt: new Date(),
+    };
+    universityRepository.findByName.mockResolvedValue(null);
+    universityDomainRepository.findByDomain.mockResolvedValue(null);
+    universityRepository.create.mockResolvedValue(created);
+    universityDomainRepository.create.mockResolvedValue({
+      id: "domain-id-1",
+      domain: "usp.br",
+      universityId: "uni-id-123",
+    });
+
+    const result = await createUniversity(input);
+
+    expect(universityDomainRepository.findByDomain).toHaveBeenCalledWith(
+      "usp.br",
+    );
+    expect(universityDomainRepository.create).toHaveBeenCalledWith(
+      "usp.br",
+      "uni-id-123",
+    );
+    expect(result).toEqual(created);
+  });
+
+  it("throws 409 when domain is already linked to another university", async () => {
+    const input = {
+      name: "USP",
+      location: "Sao Paulo",
+      type: "PUBLIC",
+      domain: "usp.br",
+    };
+    universityRepository.findByName.mockResolvedValue(null);
+    universityDomainRepository.findByDomain.mockResolvedValue({
+      id: "existing-domain",
+      domain: "usp.br",
+      universityId: "other-uni-id",
+    });
+
+    await expect(createUniversity(input)).rejects.toMatchObject({
+      message: "This domain is already linked to another university",
+      statusCode: 409,
+    });
+    expect(universityRepository.create).not.toHaveBeenCalled();
+  });
+
+  it("does not create a domain record when domain is not provided", async () => {
+    const input = { name: "MIT", location: "Cambridge", type: "PRIVATE" };
+    universityRepository.findByName.mockResolvedValue(null);
+    universityRepository.create.mockResolvedValue({
+      id: "uni-id-456",
+      ...input,
+    });
+
+    await createUniversity(input);
+
+    expect(universityDomainRepository.findByDomain).not.toHaveBeenCalled();
+    expect(universityDomainRepository.create).not.toHaveBeenCalled();
   });
 
   it("throws 409 when university name already exists", async () => {

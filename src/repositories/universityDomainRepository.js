@@ -20,6 +20,12 @@ export async function findByDomain(domain) {
  * @param {string} universityId - UUID of the university
  * @returns {object}
  */
+export async function findManyByDomains(domains) {
+  return prisma.universityDomain.findMany({
+    where: { domain: { in: domains } },
+  });
+}
+
 export async function create(domain, universityId) {
   return prisma.universityDomain.create({
     data: { domain, universityId },

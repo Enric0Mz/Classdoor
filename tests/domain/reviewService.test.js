@@ -3,6 +3,7 @@ import {
   listReviews,
   getReviewById,
   updateReview,
+  deleteReview,
 } from "@/domain/reviewService";
 import * as reviewRepository from "@/repositories/reviewRepository";
 
@@ -291,9 +292,28 @@ describe("reviewService — isVerified computation", () => {
   });
 
   describe("updateReview", () => {
-    it("returns isVerified on the updated review", async () => {
+    it("creates a new child review instead of updating in place", async () => {
       reviewRepository.findById.mockResolvedValue(makeReview(UNIVERSITY_ID));
-      reviewRepository.update.mockResolvedValue(makeReview(UNIVERSITY_ID));
+      reviewRepository.create.mockResolvedValue(makeReview(UNIVERSITY_ID));
+
+      await updateReview("review-1", { rating: 5 }, "user-1", "USER");
+
+      expect(reviewRepository.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          parentReviewId: "review-1",
+          rating: 5,
+          difficultyLevel: 3,
+          comment: "Great university",
+          universityId: UNIVERSITY_ID,
+          authorId: "user-1",
+        }),
+      );
+      expect(reviewRepository.update).not.toHaveBeenCalled();
+    });
+
+    it("returns { review } with isVerified on the created child", async () => {
+      reviewRepository.findById.mockResolvedValue(makeReview(UNIVERSITY_ID));
+      reviewRepository.create.mockResolvedValue(makeReview(UNIVERSITY_ID));
 
       const result = await updateReview(
         "review-1",
@@ -302,7 +322,39 @@ describe("reviewService — isVerified computation", () => {
         "USER",
       );
 
-      expect(result.isVerified).toBe(true);
+      expect(result.review.isVerified).toBe(true);
+    });
+
+    it("links edit of an edit to the original root review", async () => {
+      const childReview = {
+        ...makeReview(UNIVERSITY_ID),
+        id: "review-child-1",
+        parentReviewId: "review-root",
+      };
+      reviewRepository.findById.mockResolvedValue(childReview);
+      reviewRepository.create.mockResolvedValue(makeReview(UNIVERSITY_ID));
+
+      await updateReview("review-child-1", { rating: 5 }, "user-1", "USER");
+
+      expect(reviewRepository.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          parentReviewId: "review-root",
+        }),
+      );
+    });
+
+    it("merges unchanged fields from the original review", async () => {
+      reviewRepository.findById.mockResolvedValue(makeReview(UNIVERSITY_ID));
+      reviewRepository.create.mockResolvedValue(makeReview(UNIVERSITY_ID));
+
+      await updateReview("review-1", { rating: 5 }, "user-1", "USER");
+
+      expect(reviewRepository.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          difficultyLevel: 3,
+          comment: "Great university",
+        }),
+      );
     });
 
     it("throws 400 when an updated comment is too short", async () => {
@@ -330,7 +382,7 @@ describe("reviewService — isVerified computation", () => {
 
     it("re-runs moderation when the comment is updated", async () => {
       reviewRepository.findById.mockResolvedValue(makeReview(UNIVERSITY_ID));
-      reviewRepository.update.mockResolvedValue(makeReview(UNIVERSITY_ID));
+      reviewRepository.create.mockResolvedValue(makeReview(UNIVERSITY_ID));
 
       await updateReview(
         "review-1",
@@ -340,8 +392,7 @@ describe("reviewService — isVerified computation", () => {
       );
 
       expect(mockModerateComment).toHaveBeenCalledWith("Updated comment here");
-      expect(reviewRepository.update).toHaveBeenCalledWith(
-        "review-1",
+      expect(reviewRepository.create).toHaveBeenCalledWith(
         expect.objectContaining({
           moderationStatus: "APPROVED",
           moderationReason: null,
@@ -351,7 +402,7 @@ describe("reviewService — isVerified computation", () => {
 
     it("does not run moderation when only rating is updated", async () => {
       reviewRepository.findById.mockResolvedValue(makeReview(UNIVERSITY_ID));
-      reviewRepository.update.mockResolvedValue(makeReview(UNIVERSITY_ID));
+      reviewRepository.create.mockResolvedValue(makeReview(UNIVERSITY_ID));
 
       await updateReview("review-1", { rating: 5 }, "user-1", "USER");
 
@@ -364,7 +415,7 @@ describe("reviewService — isVerified computation", () => {
         moderationReason: null,
       });
       reviewRepository.findById.mockResolvedValue(makeReview(UNIVERSITY_ID));
-      reviewRepository.update.mockResolvedValue({
+      reviewRepository.create.mockResolvedValue({
         ...makeReview(UNIVERSITY_ID),
         moderationStatus: "PENDING_MODERATION",
         moderationReason: null,
@@ -389,7 +440,7 @@ describe("reviewService — isVerified computation", () => {
         moderationReason: "Linguagem ofensiva.",
       });
       reviewRepository.findById.mockResolvedValue(makeReview(UNIVERSITY_ID));
-      reviewRepository.update.mockResolvedValue({
+      reviewRepository.create.mockResolvedValue({
         ...makeReview(UNIVERSITY_ID),
         moderationStatus: "REJECTED_OFFENSIVE",
         moderationReason: "Linguagem ofensiva.",
@@ -405,6 +456,40 @@ describe("reviewService — isVerified computation", () => {
       expect(result.moderation).toEqual({
         status: "REJECTED_OFFENSIVE",
         reason: "Linguagem ofensiva.",
+      });
+    });
+  });
+
+  describe("deleteReview", () => {
+    it("resolves to root review ID before deleting", async () => {
+      const childReview = {
+        ...makeReview(UNIVERSITY_ID),
+        id: "review-child-1",
+        parentReviewId: "review-root",
+      };
+      reviewRepository.findById.mockResolvedValue(childReview);
+
+      await deleteReview("review-child-1", "user-1", "USER");
+
+      expect(reviewRepository.remove).toHaveBeenCalledWith("review-root");
+    });
+
+    it("deletes using own ID when review is the root", async () => {
+      reviewRepository.findById.mockResolvedValue(makeReview(UNIVERSITY_ID));
+
+      await deleteReview("review-1", "user-1", "USER");
+
+      expect(reviewRepository.remove).toHaveBeenCalledWith("review-1");
+    });
+
+    it("throws 403 when requester is not the author and not admin/mod", async () => {
+      reviewRepository.findById.mockResolvedValue(makeReview(UNIVERSITY_ID));
+
+      await expect(
+        deleteReview("review-1", "other-user", "USER"),
+      ).rejects.toMatchObject({
+        message: "Forbidden",
+        statusCode: 403,
       });
     });
   });

@@ -10,7 +10,7 @@
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  --primary: #6366f1;
+  --primary: #1c4d8d;
   --primary-foreground: #ffffff;
   --secondary: oklch(0.95 0.0058 264.53);
   --secondary-foreground: #030213;
@@ -131,8 +131,8 @@
   /* Card hover glow for indigo */
   .card-glow:hover {
     box-shadow:
-      0 0 0 1px #6366f120,
-      0 8px 32px -8px #6366f130;
+      0 0 0 1px #1c4d8d20,
+      0 8px 32px -8px #1c4d8d30;
   }
 
   /* Stagger entrance animations */
@@ -185,11 +185,22 @@
   }
 
   .brand-gradient {
-    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    background: linear-gradient(135deg, #1c4d8d, #4988c4);
   }
 
   .brand-gradient-text {
-    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    background: linear-gradient(135deg, #1c4d8d, #4988c4);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .blue-gradient {
+    background: linear-gradient(135deg, #1c4d8d, #4988c4);
+  }
+
+  .blue-gradient-text {
+    background: linear-gradient(135deg, #4988c4, #bde8f5);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;

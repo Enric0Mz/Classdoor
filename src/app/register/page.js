@@ -14,6 +14,7 @@ import {
   Zap,
 } from "lucide-react";
 import { generateUsername } from "@/lib/generateUsername";
+import GoogleAuthButton from "@/components/GoogleAuthButton";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -77,6 +78,7 @@ export default function RegisterPage() {
       }
 
       localStorage.setItem("token", data.token);
+      localStorage.setItem("refreshToken", data.refreshToken);
       window.dispatchEvent(new Event("auth-change"));
       router.push("/universities");
     } catch (err) {
@@ -91,7 +93,7 @@ export default function RegisterPage() {
       {/* ── Left branding panel (desktop only) ── */}
       <div
         className="relative hidden overflow-hidden lg:flex lg:w-1/2 flex-col justify-between"
-        style={{ backgroundColor: "#0f0f14" }}
+        style={{ backgroundColor: "#0F2854" }}
       >
         {/* Dot grid overlay */}
         <div className="dot-grid absolute inset-0 opacity-40" />
@@ -191,6 +193,17 @@ export default function RegisterPage() {
                 <p className="text-sm text-red-600">{error}</p>
               </div>
             )}
+
+            <GoogleAuthButton label="Cadastrar com Google" />
+
+            <div className="relative my-1">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-200" />
+              </div>
+              <div className="relative flex justify-center text-xs">
+                <span className="bg-white px-3 text-gray-400">ou</span>
+              </div>
+            </div>
 
             <form onSubmit={handleSubmit} className="flex flex-col gap-5">
               {/* Username */}

@@ -8,6 +8,7 @@ const USER_PUBLIC_SELECT = {
   emailVerified: true,
   verified: true,
   role: true,
+  authProvider: true,
   createdAt: true,
 };
 
@@ -31,6 +32,10 @@ export async function findByUsername(username) {
   return prisma.user.findUnique({ where: { username } });
 }
 
+export async function findByGoogleId(googleId) {
+  return prisma.user.findUnique({ where: { googleId } });
+}
+
 export async function create(data) {
   return prisma.user.create({ data });
 }
@@ -40,13 +45,5 @@ export async function update(id, data) {
 }
 
 export async function deleteUser(id) {
-  return prisma.$transaction([
-    prisma.review.updateMany({
-      where: { authorId: id },
-      data: { authorId: null },
-    }),
-    prisma.emailVerification.deleteMany({ where: { userId: id } }),
-    prisma.universityEmailVerification.deleteMany({ where: { userId: id } }),
-    prisma.user.delete({ where: { id } }),
-  ]);
+  return prisma.user.delete({ where: { id } });
 }

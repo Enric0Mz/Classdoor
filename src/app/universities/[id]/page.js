@@ -15,7 +15,14 @@ import {
   ChevronDown,
   ArrowLeft,
   Trash2,
+  Pencil,
+  X,
+  ShieldX,
 } from "lucide-react";
+import { fetchWithAuth } from "@/lib/fetchWithAuth";
+import StarPicker from "@/components/StarPicker";
+import DifficultyPicker from "@/components/DifficultyPicker";
+import ImageCarousel from "@/components/ImageCarousel";
 
 // ─── JWT Helper ──────────────────────────────────────────────────────────────
 
@@ -149,22 +156,23 @@ function UniversityHeader({
   const [following, setFollowing] = useState(false);
   const [deleteConfirming, setDeleteConfirming] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const initials = getUniversityInitials(university.name);
+  const initials =
+    university.abbreviation || getUniversityInitials(university.name);
   const typeLabel = university.type === "PUBLIC" ? "Pública" : "Privada";
 
   return (
     <div className="overflow-hidden rounded-2xl border border-white/10 bg-white shadow-lg">
       {/* Banner — logo + name are both inside, white on dark = perfect readability */}
       <div className="relative h-44 sm:h-52 overflow-hidden">
-        {university.image ? (
-          <img
-            src={university.image}
-            alt={university.name}
-            className="h-full w-full object-cover"
-          />
-        ) : (
-          <div className="h-full w-full bg-gradient-to-br from-slate-800 via-indigo-900 to-violet-900" />
-        )}
+        <ImageCarousel
+          images={university.images}
+          alt={university.name}
+          showArrows={university.images?.length > 1}
+          showDots={university.images?.length > 1}
+          fallback={
+            <div className="h-full w-full bg-gradient-to-br from-slate-800 via-blue-900 to-blue-800" />
+          }
+        />
         {/* Bottom-heavy gradient so logo + name are always readable */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
 
@@ -193,7 +201,7 @@ function UniversityHeader({
               <span>{university.location}</span>
             </span>
             <span className="text-gray-300">•</span>
-            <span className="font-medium text-indigo-600">{typeLabel}</span>
+            <span className="font-medium text-blue-700">{typeLabel}</span>
             {university.website && (
               <>
                 <span className="text-gray-300">•</span>
@@ -201,7 +209,7 @@ function UniversityHeader({
                   href={university.website}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-indigo-500 hover:underline"
+                  className="text-blue-600 hover:underline"
                 >
                   Site oficial
                 </a>
@@ -215,11 +223,11 @@ function UniversityHeader({
               onClick={() => setFollowing((prev) => !prev)}
               className={`flex cursor-pointer items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium transition-all ${
                 following
-                  ? "border border-indigo-300 bg-indigo-50 text-indigo-600 hover:bg-indigo-100"
+                  ? "border border-blue-300 bg-blue-50 text-blue-700 hover:bg-blue-100"
                   : "brand-gradient border border-transparent text-white hover:opacity-90"
               }`}
             >
-              <Heart size={14} fill={following ? "#6366f1" : "none"} />
+              <Heart size={14} fill={following ? "#1c4d8d" : "none"} />
               {following ? "Seguindo" : "Seguir"}
             </button>
 
@@ -231,15 +239,11 @@ function UniversityHeader({
                     setDeleteConfirming(true);
                     return;
                   }
-                  const token = localStorage.getItem("token");
                   setIsDeleting(true);
                   try {
-                    const response = await fetch(
+                    const response = await fetchWithAuth(
                       `/api/v1/universities/${university.id}`,
-                      {
-                        method: "DELETE",
-                        headers: { Authorization: `Bearer ${token}` },
-                      },
+                      { method: "DELETE" },
                     );
                     if (!response.ok) throw new Error();
                     onDeleteUniversity();
@@ -277,7 +281,7 @@ function UniversityHeader({
                   onClick={() => onTabChange(tab)}
                   className={`cursor-pointer whitespace-nowrap px-4 py-2.5 text-[0.82rem] font-medium transition-colors ${
                     isActive
-                      ? "border-b-2 border-indigo-500 text-indigo-600"
+                      ? "border-b-2 border-blue-600 text-blue-700"
                       : "border-b-2 border-transparent text-gray-400 hover:text-gray-700"
                   }`}
                 >
@@ -294,7 +298,24 @@ function UniversityHeader({
 
 // ─── Rating Overview ──────────────────────────────────────────────────────────
 
-function RatingOverview({ stats }) {
+function GoogleMapsIcon({ size = 16 }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      className="shrink-0"
+    >
+      <path
+        d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5z"
+        fill="#4285F4"
+      />
+    </svg>
+  );
+}
+
+function RatingOverview({ stats, externalStats }) {
   if (!stats || stats.reviewCount === 0) {
     return (
       <div className="rounded-2xl border border-gray-100 bg-white p-8 shadow-sm text-center">
@@ -369,13 +390,40 @@ function RatingOverview({ stats }) {
             </span>
           </div>
         )}
+
+        {/* External reviews stats */}
+        {externalStats && (
+          <div className="mt-4 flex items-center gap-2.5 rounded-xl border border-blue-100 bg-blue-50/60 px-3.5 py-2.5">
+            <GoogleMapsIcon size={18} />
+            <div className="flex-1">
+              <div className="flex items-center gap-2 text-sm">
+                <span className="font-medium text-gray-700">Google Maps</span>
+                <StarRating rating={externalStats.averageRating} size={12} />
+                <span className="font-semibold text-gray-600">
+                  {externalStats.averageRating}
+                </span>
+                <span className="text-gray-400">
+                  ({externalStats.reviewCount}{" "}
+                  {externalStats.reviewCount === 1 ? "avaliação" : "avaliações"}
+                  )
+                </span>
+              </div>
+              <Link
+                href="/sobre/avaliacoes-externas"
+                className="mt-0.5 inline-block text-xs text-blue-500 hover:underline"
+              >
+                Saiba mais sobre avaliações externas
+              </Link>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Trust banner */}
       <div className="flex items-center gap-2.5 border-t border-gray-100 bg-gray-50/40 px-5 py-3">
-        <ShieldCheck size={15} className="shrink-0 text-indigo-500" />
+        <ShieldCheck size={15} className="shrink-0 text-blue-600" />
         <p className="text-xs text-gray-500">
-          <span className="font-semibold text-indigo-600">
+          <span className="font-semibold text-blue-700">
             Avaliações 100% reais 🔒
           </span>{" "}
           Universidades não podem alterar ou remover avaliações. Confiança é
@@ -413,8 +461,7 @@ function FilterBar({ activeFilter, onFilterChange }) {
       <span className="text-sm font-semibold text-gray-700">
         {hasActiveFilter ? (
           <>
-            Ordenando por:{" "}
-            <span className="text-indigo-600">{activeFilter}</span>
+            Ordenando por: <span className="text-blue-700">{activeFilter}</span>
           </>
         ) : (
           activeFilter
@@ -426,7 +473,7 @@ function FilterBar({ activeFilter, onFilterChange }) {
           onClick={() => setIsOpen((prev) => !prev)}
           className={`flex cursor-pointer items-center gap-2 rounded-full px-4 py-2 text-[0.82rem] font-medium transition-all ${
             hasActiveFilter
-              ? "bg-indigo-50 text-indigo-600 ring-1 ring-inset ring-indigo-200"
+              ? "bg-blue-50 text-blue-700 ring-1 ring-inset ring-blue-200"
               : "bg-white text-gray-600 hover:bg-gray-50 ring-1 ring-inset ring-gray-200"
           }`}
         >
@@ -448,14 +495,14 @@ function FilterBar({ activeFilter, onFilterChange }) {
                   onClick={() => selectFilter(filter)}
                   className={`flex w-full cursor-pointer items-center justify-between px-4 py-2.5 text-[0.82rem] transition-colors ${
                     isActive
-                      ? "bg-indigo-50 font-semibold text-indigo-600"
+                      ? "bg-blue-50 font-semibold text-blue-700"
                       : "text-gray-600 hover:bg-gray-50"
                   }`}
                 >
                   {filter}
                   {isActive && (
                     <svg
-                      className="h-3.5 w-3.5 text-indigo-500"
+                      className="h-3.5 w-3.5 text-blue-600"
                       viewBox="0 0 20 20"
                       fill="currentColor"
                     >
@@ -478,21 +525,129 @@ function FilterBar({ activeFilter, onFilterChange }) {
 
 // ─── Review Card ──────────────────────────────────────────────────────────────
 
-function ReviewCard({ review, isAdmin, onDelete }) {
+function ReviewCard({ review, isAdmin, isOwner, onDelete, onEdit }) {
   const [expanded, setExpanded] = useState(false);
   const [helpfulCount, setHelpfulCount] = useState(0);
   const [liked, setLiked] = useState(false);
   const [deleteConfirming, setDeleteConfirming] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
+  // Edit state
+  const [isEditing, setIsEditing] = useState(false);
+  const [editRating, setEditRating] = useState(review.rating);
+  const [editDifficultyLevel, setEditDifficultyLevel] = useState(
+    review.difficultyLevel,
+  );
+  const [editPros, setEditPros] = useState("");
+  const [editCons, setEditCons] = useState("");
+  const [editError, setEditError] = useState(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [editRejectionReason, setEditRejectionReason] = useState(null);
+  const [showPendingModeration, setShowPendingModeration] = useState(false);
+
   const authorInitials = getAuthorInitials(review.author);
   const isAnonymous = !review.author;
   const parsedComment = parseComment(review.comment);
   const TRUNCATE_LENGTH = 180;
+  const canModify = isOwner || isAdmin;
 
   function handleLike() {
     setHelpfulCount((count) => (liked ? count - 1 : count + 1));
     setLiked((prev) => !prev);
+  }
+
+  function startEditing() {
+    setEditRating(review.rating);
+    setEditDifficultyLevel(review.difficultyLevel);
+    if (parsedComment?.structured) {
+      setEditPros(parsedComment.pros);
+      setEditCons(parsedComment.cons);
+    } else {
+      setEditPros(parsedComment?.text || "");
+      setEditCons("");
+    }
+    setEditError(null);
+    setIsEditing(true);
+  }
+
+  function cancelEditing() {
+    setIsEditing(false);
+    setEditError(null);
+  }
+
+  async function handleSaveEdit() {
+    if (!editRating) {
+      setEditError("Escolha uma nota de 1 a 5.");
+      return;
+    }
+    if (!editDifficultyLevel) {
+      setEditError("Escolha o nível de dificuldade.");
+      return;
+    }
+
+    setIsSaving(true);
+    setEditError(null);
+
+    try {
+      const prosText = editPros.trim();
+      const consText = editCons.trim();
+      const comment =
+        prosText || consText
+          ? JSON.stringify({ pros: prosText, cons: consText })
+          : undefined;
+
+      const response = await fetchWithAuth(`/api/v1/reviews/${review.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          rating: editRating,
+          difficultyLevel: editDifficultyLevel,
+          comment,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error?.message || "Erro ao atualizar avaliação.");
+      }
+
+      if (data.moderation?.status === "PENDING_MODERATION") {
+        setIsEditing(false);
+        setShowPendingModeration(true);
+        return;
+      }
+
+      if (data.moderation) {
+        setEditRejectionReason(data.moderation.reason);
+        return;
+      }
+
+      setIsEditing(false);
+      onEdit(review.id, data.review);
+    } catch (err) {
+      setEditError(err.message);
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  async function handleDelete() {
+    if (!deleteConfirming) {
+      setDeleteConfirming(true);
+      return;
+    }
+    setIsDeleting(true);
+    try {
+      const response = await fetchWithAuth(`/api/v1/reviews/${review.id}`, {
+        method: "DELETE",
+      });
+      if (!response.ok) throw new Error();
+      onDelete(review.id);
+    } catch {
+      setIsDeleting(false);
+      setDeleteConfirming(false);
+    }
   }
 
   const needsExpand = parsedComment?.structured
@@ -501,6 +656,218 @@ function ReviewCard({ review, isAdmin, onDelete }) {
         parsedComment.cons.length > TRUNCATE_LENGTH)
     : !expanded && parsedComment?.text?.length > TRUNCATE_LENGTH;
 
+  // ── Edit mode rendering ──
+  if (isEditing) {
+    return (
+      <div className="rounded-2xl border-2 border-blue-200 bg-white p-5 shadow-sm">
+        {/* Rejection modal for edit */}
+        {editRejectionReason && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+            <div className="relative mx-4 flex w-full max-w-sm flex-col items-center gap-5 rounded-2xl border border-white/10 bg-white p-8 text-center shadow-2xl">
+              <button
+                onClick={() => setEditRejectionReason(null)}
+                className="absolute right-4 top-4 cursor-pointer rounded-lg p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
+              >
+                <X size={18} />
+              </button>
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-red-50">
+                <ShieldX size={32} className="text-red-500" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-800">
+                  Edição não publicada
+                </h3>
+                <p className="mt-2 text-sm text-gray-600">
+                  {editRejectionReason}
+                </p>
+              </div>
+              <p className="text-xs text-gray-400">
+                Você pode editar novamente e tentar outra vez.
+              </p>
+              <button
+                onClick={() => setEditRejectionReason(null)}
+                className="brand-gradient w-full cursor-pointer rounded-xl py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+              >
+                Entendi, vou revisar
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Header */}
+        <div className="mb-4 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Pencil size={14} className="text-blue-600" />
+            <span className="text-sm font-semibold text-gray-700">
+              Editando avaliação
+            </span>
+          </div>
+          <button
+            onClick={cancelEditing}
+            className="cursor-pointer rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
+          >
+            <X size={16} />
+          </button>
+        </div>
+
+        {editError && (
+          <div className="mb-4 flex items-start gap-2.5 rounded-xl border border-red-100 bg-red-50 p-3">
+            <svg
+              className="mt-0.5 h-4 w-4 shrink-0 text-red-500"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fillRule="evenodd"
+                d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm-1-5a1 1 0 1 0 2 0V9a1 1 0 1 0-2 0v4zm1-7.5a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5z"
+                clipRule="evenodd"
+              />
+            </svg>
+            <p className="text-sm text-red-600">{editError}</p>
+          </div>
+        )}
+
+        <div className="space-y-5">
+          {/* Rating */}
+          <div className="flex flex-col gap-2">
+            <label className="text-sm font-semibold text-gray-700">
+              Nota geral
+            </label>
+            <div className="flex flex-col items-center gap-1 rounded-xl border border-gray-100 bg-gray-50 py-4">
+              <StarPicker
+                value={editRating}
+                onChange={setEditRating}
+                size="sm"
+              />
+            </div>
+          </div>
+
+          {/* Difficulty */}
+          <div className="flex flex-col gap-2">
+            <div className="flex items-baseline justify-between">
+              <label className="text-sm font-semibold text-gray-700">
+                Nível de dificuldade
+              </label>
+              <span className="text-xs text-gray-400">
+                1 = mais fácil, 5 = mais difícil
+              </span>
+            </div>
+            <DifficultyPicker
+              value={editDifficultyLevel}
+              onChange={setEditDifficultyLevel}
+            />
+          </div>
+
+          {/* Prós */}
+          <div className="flex flex-col gap-1.5">
+            <div className="flex items-center gap-1.5">
+              <span className="text-xs">✅</span>
+              <span className="text-sm font-semibold text-green-700">Prós</span>
+              <span className="ml-auto text-xs text-gray-400">
+                {editPros.length}/500
+              </span>
+            </div>
+            <textarea
+              rows={3}
+              maxLength={500}
+              value={editPros}
+              onChange={(event) => setEditPros(event.target.value)}
+              placeholder="Pontos positivos..."
+              className="w-full resize-none rounded-xl border border-green-200 bg-green-50/50 px-4 py-3 text-sm text-gray-800 outline-none transition-colors placeholder:text-gray-400 focus:border-green-300 focus:bg-white focus:ring-2 focus:ring-green-100"
+            />
+          </div>
+
+          {/* Contras */}
+          <div className="flex flex-col gap-1.5">
+            <div className="flex items-center gap-1.5">
+              <span className="text-xs">⚠️</span>
+              <span className="text-sm font-semibold text-amber-700">
+                Contras
+              </span>
+              <span className="ml-auto text-xs text-gray-400">
+                {editCons.length}/500
+              </span>
+            </div>
+            <textarea
+              rows={3}
+              maxLength={500}
+              value={editCons}
+              onChange={(event) => setEditCons(event.target.value)}
+              placeholder="Pontos negativos..."
+              className="w-full resize-none rounded-xl border border-amber-200 bg-amber-50/50 px-4 py-3 text-sm text-gray-800 outline-none transition-colors placeholder:text-gray-400 focus:border-amber-300 focus:bg-white focus:ring-2 focus:ring-amber-100"
+            />
+          </div>
+
+          {/* Action buttons */}
+          <div className="flex items-center gap-3 pt-1">
+            <button
+              onClick={cancelEditing}
+              disabled={isSaving}
+              className="flex-1 cursor-pointer rounded-xl border border-gray-200 py-2.5 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50 disabled:opacity-60"
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={handleSaveEdit}
+              disabled={isSaving}
+              className="brand-gradient flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-60"
+            >
+              {isSaving ? (
+                <>
+                  <svg
+                    className="h-4 w-4 animate-spin"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    />
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 0 1 8-8v4a4 4 0 0 0-4 4H4z"
+                    />
+                  </svg>
+                  Salvando...
+                </>
+              ) : (
+                "Salvar alterações"
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Pending moderation after edit ──
+  if (showPendingModeration) {
+    return (
+      <div className="rounded-2xl border border-amber-200 bg-amber-50/50 p-5 shadow-sm">
+        <div className="flex items-start gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-600">
+            <ShieldCheck size={20} />
+          </div>
+          <div className="flex-1">
+            <p className="text-sm font-semibold text-gray-800">
+              Avaliação em análise
+            </p>
+            <p className="mt-1 text-[0.82rem] text-gray-600">
+              Sua edição foi recebida e será publicada após a verificação dos
+              nossos moderadores.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Normal display mode ──
   return (
     <div className="card-glow rounded-2xl border border-gray-100 bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-px hover:shadow-md">
       {/* Top row: avatar + rating + verified + difficulty */}
@@ -516,7 +883,7 @@ function ReviewCard({ review, isAdmin, onDelete }) {
               {review.rating.toFixed(1)}
             </span>
             {review.isVerified && (
-              <span className="flex items-center gap-1 rounded-full bg-indigo-50 px-2 py-0.5 text-[0.7rem] font-medium text-indigo-600">
+              <span className="flex items-center gap-1 rounded-full bg-blue-50 px-2 py-0.5 text-[0.7rem] font-medium text-blue-700">
                 <ShieldCheck size={10} />
                 Verificado
               </span>
@@ -585,7 +952,7 @@ function ReviewCard({ review, isAdmin, onDelete }) {
           {needsExpand && (
             <button
               onClick={() => setExpanded(true)}
-              className="flex cursor-pointer items-center gap-0.5 text-[0.82rem] font-medium text-indigo-500 hover:opacity-80"
+              className="flex cursor-pointer items-center gap-0.5 text-[0.82rem] font-medium text-blue-600 hover:opacity-80"
             >
               Ler mais <ChevronDown size={13} />
             </button>
@@ -603,7 +970,7 @@ function ReviewCard({ review, isAdmin, onDelete }) {
           onClick={handleLike}
           className={`flex cursor-pointer items-center gap-1.5 rounded-full px-3 py-1.5 text-[0.8rem] transition-all ${
             liked
-              ? "bg-indigo-50 text-indigo-600"
+              ? "bg-blue-50 text-blue-700"
               : "bg-gray-50 text-gray-400 hover:bg-gray-100"
           }`}
         >
@@ -614,33 +981,29 @@ function ReviewCard({ review, isAdmin, onDelete }) {
           <ThumbsDown size={13} />
         </button>
         <div className="flex-1" />
+
+        {/* Edit button — visible to owner */}
+        {isOwner && (
+          <button
+            onClick={startEditing}
+            className="cursor-pointer rounded-full p-2 text-gray-300 transition-colors hover:bg-blue-50 hover:text-blue-600"
+            title="Editar avaliação"
+          >
+            <Pencil size={14} />
+          </button>
+        )}
+
         <button className="cursor-pointer rounded-full p-2 text-gray-300 transition-colors hover:bg-gray-50 hover:text-gray-500">
           <Share2 size={14} />
         </button>
         <button className="cursor-pointer rounded-full p-2 text-gray-300 transition-colors hover:bg-gray-50 hover:text-gray-500">
           <Flag size={14} />
         </button>
-        {isAdmin && (
+
+        {/* Delete button — visible to owner or admin */}
+        {canModify && (
           <button
-            onClick={async () => {
-              if (!deleteConfirming) {
-                setDeleteConfirming(true);
-                return;
-              }
-              const token = localStorage.getItem("token");
-              setIsDeleting(true);
-              try {
-                const response = await fetch(`/api/v1/reviews/${review.id}`, {
-                  method: "DELETE",
-                  headers: { Authorization: `Bearer ${token}` },
-                });
-                if (!response.ok) throw new Error();
-                onDelete(review.id);
-              } catch {
-                setIsDeleting(false);
-                setDeleteConfirming(false);
-              }
-            }}
+            onClick={handleDelete}
             disabled={isDeleting}
             className={`flex cursor-pointer items-center gap-1.5 rounded-full px-3 py-1.5 text-[0.8rem] font-medium transition-all disabled:opacity-60 ${
               deleteConfirming
@@ -652,6 +1015,71 @@ function ReviewCard({ review, isAdmin, onDelete }) {
             {isDeleting ? "Removendo..." : deleteConfirming ? "Confirmar" : ""}
           </button>
         )}
+      </div>
+    </div>
+  );
+}
+
+// ─── External Review Card ─────────────────────────────────────────────────
+
+function ExternalReviewCard({ review }) {
+  return (
+    <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-px hover:shadow-md">
+      <div className="flex items-start gap-3">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-500">
+          <GoogleMapsIcon size={20} />
+        </div>
+
+        <div className="flex-1 min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
+            <StarRating rating={review.rating} size={14} />
+            <span className="text-[0.82rem] font-semibold text-gray-700">
+              {review.rating.toFixed(1)}
+            </span>
+            <span className="flex items-center gap-1 rounded-full bg-blue-50 px-2 py-0.5 text-[0.7rem] font-medium text-blue-600">
+              Google Maps
+            </span>
+          </div>
+
+          <div className="mt-1 flex flex-wrap items-center gap-2 text-[0.75rem] text-gray-400">
+            <span className="font-medium text-gray-600">Avaliador Externo</span>
+            <span className="text-gray-300">•</span>
+            <span>{formatDate(review.originalDate)}</span>
+          </div>
+        </div>
+      </div>
+
+      {review.textSnippet && (
+        <div className="mt-4 pl-[52px]">
+          <p className="text-[0.85rem] leading-relaxed text-gray-700">
+            {review.textSnippet}
+          </p>
+        </div>
+      )}
+
+      <div className="mt-3 pl-[52px]">
+        <a
+          href={review.sourceUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1.5 text-[0.82rem] font-medium text-blue-500 hover:opacity-80"
+        >
+          Ler no Google Maps
+          <svg
+            width="12"
+            height="12"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+            <polyline points="15 3 21 3 21 9" />
+            <line x1="10" y1="14" x2="21" y2="3" />
+          </svg>
+        </a>
       </div>
     </div>
   );
@@ -682,22 +1110,31 @@ export default function UniversityDetailPage() {
   const [university, setUniversity] = useState(null);
   const [reviews, setReviews] = useState([]);
   const [reviewsPagination, setReviewsPagination] = useState(null);
+  const [externalReviews, setExternalReviews] = useState([]);
+  const [externalReviewsPagination, setExternalReviewsPagination] =
+    useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [isLoadingMoreExternal, setIsLoadingMoreExternal] = useState(false);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState("Avaliações ⭐");
   const [activeFilter, setActiveFilter] = useState("Mais recentes");
   const [userRole, setUserRole] = useState(null);
+  const [userId, setUserId] = useState(null);
 
   useEffect(() => {
     async function fetchAll() {
       try {
-        const [uniResponse, reviewsResponse] = await Promise.all([
-          fetch(`/api/v1/universities/${id}`),
-          fetch(
-            `/api/v1/reviews?universityId=${id}&limit=${REVIEWS_PER_PAGE}&page=1`,
-          ),
-        ]);
+        const [uniResponse, reviewsResponse, externalResponse] =
+          await Promise.all([
+            fetch(`/api/v1/universities/${id}`),
+            fetch(
+              `/api/v1/reviews?universityId=${id}&limit=${REVIEWS_PER_PAGE}&page=1`,
+            ),
+            fetch(
+              `/api/v1/external-reviews?universityId=${id}&limit=${REVIEWS_PER_PAGE}&page=1`,
+            ),
+          ]);
 
         if (!uniResponse.ok) {
           const data = await uniResponse.json();
@@ -708,10 +1145,15 @@ export default function UniversityDetailPage() {
 
         const uniData = await uniResponse.json();
         const reviewsData = await reviewsResponse.json();
+        const externalData = externalResponse.ok
+          ? await externalResponse.json()
+          : { data: [], pagination: null };
 
         setUniversity(uniData);
         setReviews(reviewsData.data ?? []);
         setReviewsPagination(reviewsData.pagination ?? null);
+        setExternalReviews(externalData.data ?? []);
+        setExternalReviewsPagination(externalData.pagination ?? null);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -726,6 +1168,7 @@ export default function UniversityDetailPage() {
     if (token) {
       const decoded = decodeJwtPayload(token);
       if (decoded?.role) setUserRole(decoded.role);
+      if (decoded?.id) setUserId(decoded.id);
     }
   }, []);
 
@@ -733,6 +1176,12 @@ export default function UniversityDetailPage() {
 
   function handleReviewDelete(reviewId) {
     setReviews((prev) => prev.filter((review) => review.id !== reviewId));
+  }
+
+  function handleReviewEdit(reviewId, updatedReview) {
+    setReviews((prev) =>
+      prev.map((review) => (review.id === reviewId ? updatedReview : review)),
+    );
   }
 
   async function loadMoreReviews() {
@@ -760,8 +1209,28 @@ export default function UniversityDetailPage() {
     return copy.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
   }, [reviews, activeFilter]);
 
+  async function loadMoreExternalReviews() {
+    if (!externalReviewsPagination || isLoadingMoreExternal) return;
+    const nextPage = externalReviewsPagination.page + 1;
+    setIsLoadingMoreExternal(true);
+    try {
+      const response = await fetch(
+        `/api/v1/external-reviews?universityId=${id}&limit=${REVIEWS_PER_PAGE}&page=${nextPage}`,
+      );
+      const data = await response.json();
+      setExternalReviews((prev) => [...prev, ...(data.data ?? [])]);
+      setExternalReviewsPagination(data.pagination ?? null);
+    } finally {
+      setIsLoadingMoreExternal(false);
+    }
+  }
+
   const hasMoreReviews =
     reviewsPagination && reviewsPagination.page < reviewsPagination.totalPages;
+
+  const hasMoreExternalReviews =
+    externalReviewsPagination &&
+    externalReviewsPagination.page < externalReviewsPagination.totalPages;
 
   if (isLoading) {
     return (
@@ -794,16 +1263,16 @@ export default function UniversityDetailPage() {
       {/* ── Dark hero strip ── */}
       <div
         className="relative overflow-hidden pb-8 pt-6"
-        style={{ backgroundColor: "#0f0f14" }}
+        style={{ backgroundColor: "#0F2854" }}
       >
         {/* Dot grid overlay */}
         <div className="dot-grid absolute inset-0 opacity-30" />
 
-        {/* Radial purple glow */}
+        {/* Radial blue glow */}
         <div
           className="absolute left-1/2 top-0 h-[400px] w-[700px] -translate-x-1/2 rounded-full opacity-20 blur-3xl"
           style={{
-            background: "radial-gradient(circle, #7c3aed 0%, transparent 70%)",
+            background: "radial-gradient(circle, #1c4d8d 0%, transparent 70%)",
           }}
         />
 
@@ -812,7 +1281,7 @@ export default function UniversityDetailPage() {
           <div className="mb-5 flex items-center justify-between">
             <Link
               href="/universities"
-              className="inline-flex items-center gap-1.5 text-sm text-gray-400 transition-colors hover:text-indigo-400"
+              className="inline-flex items-center gap-1.5 text-sm text-gray-400 transition-colors hover:text-blue-400"
             >
               <ArrowLeft size={14} />
               Todas as universidades
@@ -844,7 +1313,10 @@ export default function UniversityDetailPage() {
         <div className="space-y-4">
           {activeTab === "Avaliações ⭐" && (
             <>
-              <RatingOverview stats={university.stats} />
+              <RatingOverview
+                stats={university.stats}
+                externalStats={university.externalStats}
+              />
               <FilterBar
                 activeFilter={activeFilter}
                 onFilterChange={setActiveFilter}
@@ -868,7 +1340,9 @@ export default function UniversityDetailPage() {
                         key={review.id}
                         review={review}
                         isAdmin={isAdmin}
+                        isOwner={userId !== null && review.authorId === userId}
                         onDelete={handleReviewDelete}
+                        onEdit={handleReviewEdit}
                       />
                     ))}
                   </div>
@@ -877,7 +1351,7 @@ export default function UniversityDetailPage() {
                     <button
                       onClick={loadMoreReviews}
                       disabled={isLoadingMore}
-                      className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-2xl border border-gray-100 bg-white py-3.5 text-sm font-medium text-gray-500 shadow-sm transition-colors hover:border-indigo-200 hover:text-indigo-600 disabled:opacity-60"
+                      className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-2xl border border-gray-100 bg-white py-3.5 text-sm font-medium text-gray-500 shadow-sm transition-colors hover:border-blue-200 hover:text-blue-700 disabled:opacity-60"
                     >
                       {isLoadingMore ? (
                         <>
@@ -916,6 +1390,75 @@ export default function UniversityDetailPage() {
                   {!hasMoreReviews && reviews.length > 0 && (
                     <p className="py-2 text-center text-xs text-gray-300">
                       Todas as {reviews.length} avaliações carregadas
+                    </p>
+                  )}
+                </>
+              )}
+
+              {/* External Reviews Section */}
+              {externalReviews.length > 0 && (
+                <>
+                  <div className="mt-6 flex items-center gap-3">
+                    <div className="h-px flex-1 bg-gray-200" />
+                    <div className="flex items-center gap-2 text-sm font-semibold text-gray-500">
+                      <GoogleMapsIcon size={16} />
+                      Avaliações do Google Maps
+                    </div>
+                    <div className="h-px flex-1 bg-gray-200" />
+                  </div>
+
+                  <div className="space-y-3 mt-3">
+                    {externalReviews.map((review) => (
+                      <ExternalReviewCard key={review.id} review={review} />
+                    ))}
+                  </div>
+
+                  {hasMoreExternalReviews && (
+                    <button
+                      onClick={loadMoreExternalReviews}
+                      disabled={isLoadingMoreExternal}
+                      className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-2xl border border-gray-100 bg-white py-3.5 text-sm font-medium text-gray-500 shadow-sm transition-colors hover:border-blue-200 hover:text-blue-600 disabled:opacity-60"
+                    >
+                      {isLoadingMoreExternal ? (
+                        <>
+                          <svg
+                            className="h-4 w-4 animate-spin"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                          >
+                            <circle
+                              className="opacity-25"
+                              cx="12"
+                              cy="12"
+                              r="10"
+                              stroke="currentColor"
+                              strokeWidth="4"
+                            />
+                            <path
+                              className="opacity-75"
+                              fill="currentColor"
+                              d="M4 12a8 8 0 0 1 8-8v4a4 4 0 0 0-4 4H4z"
+                            />
+                          </svg>
+                          Carregando...
+                        </>
+                      ) : (
+                        <>
+                          Carregar mais avaliações externas
+                          <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-400">
+                            {externalReviewsPagination.total -
+                              externalReviews.length}{" "}
+                            restantes
+                          </span>
+                        </>
+                      )}
+                    </button>
+                  )}
+
+                  {!hasMoreExternalReviews && externalReviews.length > 0 && (
+                    <p className="py-2 text-center text-xs text-gray-300">
+                      Todas as {externalReviews.length} avaliações externas
+                      carregadas
                     </p>
                   )}
                 </>

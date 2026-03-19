@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { processPendingReviews } from "@/domain/moderationQueueService";
+import { withErrorHandler } from "@/lib/errorHandler";
 
-export async function POST(request) {
+export const POST = withErrorHandler(async function POST(request) {
   const authHeader = request.headers.get("authorization");
   const expectedToken = `Bearer ${process.env.CRON_SECRET}`;
 
@@ -12,4 +13,4 @@ export async function POST(request) {
   const stats = await processPendingReviews();
 
   return NextResponse.json(stats);
-}
+});
