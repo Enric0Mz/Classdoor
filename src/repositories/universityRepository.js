@@ -206,17 +206,7 @@ export async function create({ images, ...data }) {
  * @returns {object|null} The University record or null if not found
  */
 export async function remove(id) {
-  return prisma.$transaction(async (tx) => {
-    await tx.review.deleteMany({ where: { universityId: id } });
-    await tx.externalReview.deleteMany({ where: { universityId: id } });
-    await tx.universityDomain.deleteMany({ where: { universityId: id } });
-    await tx.universityImage.deleteMany({ where: { universityId: id } });
-    await tx.user.updateMany({
-      where: { universityId: id },
-      data: { universityId: null },
-    });
-    return tx.university.delete({ where: { id } });
-  });
+  return prisma.university.delete({ where: { id } });
 }
 
 export async function createManyWithDomains(universitiesData) {

@@ -45,14 +45,5 @@ export async function update(id, data) {
 }
 
 export async function deleteUser(id) {
-  return prisma.$transaction([
-    prisma.review.updateMany({
-      where: { authorId: id },
-      data: { authorId: null },
-    }),
-    prisma.emailVerification.deleteMany({ where: { userId: id } }),
-    prisma.universityEmailVerification.deleteMany({ where: { userId: id } }),
-    prisma.universitySubmission.deleteMany({ where: { submitterId: id } }),
-    prisma.user.delete({ where: { id } }),
-  ]);
+  return prisma.user.delete({ where: { id } });
 }
