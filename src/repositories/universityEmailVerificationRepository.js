@@ -12,7 +12,9 @@ export async function findByToken(token) {
 
 export async function claimByToken(token) {
   try {
-    return await prisma.universityEmailVerification.delete({ where: { token } });
+    return await prisma.universityEmailVerification.delete({
+      where: { token },
+    });
   } catch (error) {
     if (error.code === "P2025") return null;
     throw error;
