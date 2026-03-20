@@ -1,14 +1,14 @@
 import { submitUniversityEmail } from "@/domain/universityEmailVerificationService";
-import * as verificationRepository from "@/repositories/universityEmailVerificationRepository";
+import * as emailVerificationTokenRepository from "@/repositories/emailVerificationTokenRepository";
 import * as userRepository from "@/repositories/userRepository";
 import { sendVerificationEmail } from "@/lib/emailService";
 import { requireVerifiedUser } from "@/lib/auth";
 import { POST } from "@/app/api/v1/users/me/university-email/route";
 
-jest.mock("@/repositories/universityEmailVerificationRepository", () => ({
+jest.mock("@/repositories/emailVerificationTokenRepository", () => ({
   create: jest.fn(),
   findByToken: jest.fn(),
-  deleteByUserId: jest.fn(),
+  revokeByUserIdAndType: jest.fn(),
 }));
 
 jest.mock("@/repositories/userRepository", () => ({
@@ -39,8 +39,12 @@ beforeEach(() => jest.clearAllMocks());
 
 describe("universityEmailVerificationService.submitUniversityEmail", () => {
   it("creates a verification token and sends an email", async () => {
-    verificationRepository.deleteByUserId.mockResolvedValue(undefined);
-    verificationRepository.create.mockResolvedValue({ id: "verif-1" });
+    emailVerificationTokenRepository.revokeByUserIdAndType.mockResolvedValue({
+      count: 0,
+    });
+    emailVerificationTokenRepository.create.mockResolvedValue({
+      id: "verif-1",
+    });
     sendVerificationEmail.mockResolvedValue(undefined);
 
     const result = await submitUniversityEmail(
@@ -49,15 +53,16 @@ describe("universityEmailVerificationService.submitUniversityEmail", () => {
       "me@uni.br",
     );
 
-    expect(verificationRepository.deleteByUserId).toHaveBeenCalledWith(
-      "user-1",
-    );
-    expect(verificationRepository.create).toHaveBeenCalledWith(
+    expect(
+      emailVerificationTokenRepository.revokeByUserIdAndType,
+    ).toHaveBeenCalledWith("user-1", "UNIVERSITY");
+    expect(emailVerificationTokenRepository.create).toHaveBeenCalledWith(
       expect.objectContaining({
         userId: "user-1",
-        universityEmail: "me@uni.br",
+        email: "me@uni.br",
         token: expect.any(String),
         expiresAt: expect.any(Date),
+        type: "UNIVERSITY",
       }),
     );
     expect(sendVerificationEmail).toHaveBeenCalledWith(
@@ -74,7 +79,7 @@ describe("universityEmailVerificationService.submitUniversityEmail", () => {
       message: "Anonymous accounts cannot submit a university email",
       statusCode: 403,
     });
-    expect(verificationRepository.create).not.toHaveBeenCalled();
+    expect(emailVerificationTokenRepository.create).not.toHaveBeenCalled();
   });
 
   it("throws 400 when university email format is invalid", async () => {
@@ -84,25 +89,29 @@ describe("universityEmailVerificationService.submitUniversityEmail", () => {
       message: "Invalid university email format",
       statusCode: 400,
     });
-    expect(verificationRepository.create).not.toHaveBeenCalled();
+    expect(emailVerificationTokenRepository.create).not.toHaveBeenCalled();
   });
 
-  it("deletes any existing pending verification before creating a new one", async () => {
-    verificationRepository.deleteByUserId.mockResolvedValue(undefined);
-    verificationRepository.create.mockResolvedValue({ id: "verif-2" });
+  it("revokes any existing pending verification before creating a new one", async () => {
+    emailVerificationTokenRepository.revokeByUserIdAndType.mockResolvedValue({
+      count: 1,
+    });
+    emailVerificationTokenRepository.create.mockResolvedValue({
+      id: "verif-2",
+    });
     sendVerificationEmail.mockResolvedValue(undefined);
 
     await submitUniversityEmail("user-1", "user@email.com", "me@uni.br");
 
-    expect(verificationRepository.deleteByUserId).toHaveBeenCalledWith(
-      "user-1",
-    );
-    // deleteByUserId must be called before create
-    const deleteCallOrder =
-      verificationRepository.deleteByUserId.mock.invocationCallOrder[0];
+    expect(
+      emailVerificationTokenRepository.revokeByUserIdAndType,
+    ).toHaveBeenCalledWith("user-1", "UNIVERSITY");
+    const revokeCallOrder =
+      emailVerificationTokenRepository.revokeByUserIdAndType.mock
+        .invocationCallOrder[0];
     const createCallOrder =
-      verificationRepository.create.mock.invocationCallOrder[0];
-    expect(deleteCallOrder).toBeLessThan(createCallOrder);
+      emailVerificationTokenRepository.create.mock.invocationCallOrder[0];
+    expect(revokeCallOrder).toBeLessThan(createCallOrder);
   });
 });
 
@@ -121,8 +130,12 @@ describe("POST /api/v1/users/me/university-email", () => {
       email: "user@email.com",
       role: "USER",
     });
-    verificationRepository.deleteByUserId.mockResolvedValue(undefined);
-    verificationRepository.create.mockResolvedValue({ id: "verif-1" });
+    emailVerificationTokenRepository.revokeByUserIdAndType.mockResolvedValue({
+      count: 0,
+    });
+    emailVerificationTokenRepository.create.mockResolvedValue({
+      id: "verif-1",
+    });
     sendVerificationEmail.mockResolvedValue(undefined);
 
     const response = await POST(

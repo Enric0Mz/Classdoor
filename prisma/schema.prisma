@@ -32,6 +32,17 @@ enum SubmissionStatus {
   REJECTED
 }
 
+enum EmailVerificationType {
+  PERSONAL
+  UNIVERSITY
+}
+
+enum EmailVerificationStatus {
+  PENDING
+  USED
+  REVOKED
+}
+
 enum ExternalReviewSource {
   GOOGLE_MAPS
 }
@@ -130,34 +141,23 @@ model User {
 
   reviews                      Review[]
   courses                      Course[]
-  universityEmailVerifications UniversityEmailVerification[]
-  emailVerifications           EmailVerification[]
+  emailVerificationTokens      EmailVerificationToken[]
   refreshTokens                RefreshToken[]
   universitySubmissions        UniversitySubmission[]
 }
 
-model EmailVerification {
-  id        String   @id @default(uuid())
+model EmailVerificationToken {
+  id        String                  @id @default(uuid())
   userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
   email     String
-  token     String   @unique
+  type      EmailVerificationType
+  token     String                  @unique
+  status    EmailVerificationStatus @default(PENDING)
   expiresAt DateTime
-  createdAt DateTime @default(now())
+  createdAt DateTime                @default(now())
 
-  @@index([userId])
-}
-
-model UniversityEmailVerification {
-  id              String   @id @default(uuid())
-  userId          String
-  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  universityEmail String
-  token           String   @unique
-  expiresAt       DateTime
-  createdAt       DateTime @default(now())
-
-  @@index([userId])
+  @@index([userId, type, status])
 }
 
 model RefreshToken {

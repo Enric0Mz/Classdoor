@@ -1,13 +1,13 @@
-import * as emailVerificationRepository from "@/repositories/emailVerificationRepository";
+import * as emailVerificationTokenRepository from "@/repositories/emailVerificationTokenRepository";
 import * as userRepository from "@/repositories/userRepository";
 import { sendEmailVerification } from "@/lib/emailService";
 import { verifyToken } from "@/lib/auth";
 import { POST } from "@/app/api/v1/users/me/email/verify/route";
 
-jest.mock("@/repositories/emailVerificationRepository", () => ({
+jest.mock("@/repositories/emailVerificationTokenRepository", () => ({
   create: jest.fn(),
   findByToken: jest.fn(),
-  deleteByUserId: jest.fn(),
+  revokeByUserIdAndType: jest.fn(),
 }));
 
 jest.mock("@/repositories/userRepository", () => ({
@@ -39,8 +39,12 @@ describe("POST /api/v1/users/me/email/verify", () => {
       id: "user-1",
       emailVerified: false,
     });
-    emailVerificationRepository.deleteByUserId.mockResolvedValue(undefined);
-    emailVerificationRepository.create.mockResolvedValue({ id: "verif-1" });
+    emailVerificationTokenRepository.revokeByUserIdAndType.mockResolvedValue({
+      count: 0,
+    });
+    emailVerificationTokenRepository.create.mockResolvedValue({
+      id: "verif-1",
+    });
     sendEmailVerification.mockResolvedValue(undefined);
 
     const response = await POST(makeRequest());
