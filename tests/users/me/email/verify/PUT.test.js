@@ -5,6 +5,7 @@ import { PUT } from "@/app/api/v1/users/me/email/verify/route";
 jest.mock("@/repositories/emailVerificationRepository", () => ({
   create: jest.fn(),
   findByToken: jest.fn(),
+  claimByToken: jest.fn(),
   deleteByUserId: jest.fn(),
 }));
 
@@ -38,14 +39,13 @@ function makeRequest(body = {}) {
 describe("PUT /api/v1/users/me/email/verify", () => {
   it("returns 200 when token is valid", async () => {
     const futureDate = new Date(Date.now() + 60 * 60 * 1000);
-    emailVerificationRepository.findByToken.mockResolvedValue({
+    emailVerificationRepository.claimByToken.mockResolvedValue({
       userId: "user-1",
       email: "user@test.com",
       token: "valid-token",
       expiresAt: futureDate,
     });
     userRepository.update.mockResolvedValue({ id: "user-1" });
-    emailVerificationRepository.deleteByUserId.mockResolvedValue(undefined);
 
     const response = await PUT(makeRequest({ token: "valid-token" }));
 
@@ -63,7 +63,7 @@ describe("PUT /api/v1/users/me/email/verify", () => {
   });
 
   it("returns 404 when token is not found", async () => {
-    emailVerificationRepository.findByToken.mockResolvedValue(null);
+    emailVerificationRepository.claimByToken.mockResolvedValue(null);
 
     const response = await PUT(makeRequest({ token: "ghost-token" }));
 
@@ -75,7 +75,7 @@ describe("PUT /api/v1/users/me/email/verify", () => {
 
   it("returns 400 when token has expired", async () => {
     const pastDate = new Date(Date.now() - 1000);
-    emailVerificationRepository.findByToken.mockResolvedValue({
+    emailVerificationRepository.claimByToken.mockResolvedValue({
       userId: "user-1",
       email: "user@test.com",
       token: "expired-token",

@@ -30,7 +30,8 @@ export async function sendEmailVerificationToUser(userId, email) {
 }
 
 export async function verifyEmail(token) {
-  const record = await emailVerificationRepository.findByToken(token);
+  const record = await emailVerificationRepository.claimByToken(token);
+  console.log("Token On Verify", record);
   if (!record) {
     throw new AppError("Verification token not found", 404);
   }
@@ -51,7 +52,6 @@ export async function verifyEmail(token) {
   }
 
   await userRepository.update(record.userId, updateData);
-  await emailVerificationRepository.deleteByUserId(record.userId);
 
   return { message: "Email verified successfully" };
 }

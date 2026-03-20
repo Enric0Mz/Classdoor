@@ -5,6 +5,7 @@ import { POST } from "@/app/api/v1/users/me/university-email/verify/route";
 
 jest.mock("@/repositories/universityEmailVerificationRepository", () => ({
   findByToken: jest.fn(),
+  claimByToken: jest.fn(),
   deleteByUserId: jest.fn(),
 }));
 
@@ -46,9 +47,8 @@ const EXPIRED_RECORD = {
 
 describe("universityEmailVerificationService.verifyUniversityEmail", () => {
   it("verifies email, updates user and cleans up record on valid token", async () => {
-    verificationRepository.findByToken.mockResolvedValue(VALID_RECORD);
+    verificationRepository.claimByToken.mockResolvedValue(VALID_RECORD);
     userRepository.update.mockResolvedValue({ id: "user-1", verified: true });
-    verificationRepository.deleteByUserId.mockResolvedValue(undefined);
 
     const result = await verifyUniversityEmail("valid-token");
 
@@ -57,16 +57,13 @@ describe("universityEmailVerificationService.verifyUniversityEmail", () => {
       verified: true,
       universityId: null,
     });
-    expect(verificationRepository.deleteByUserId).toHaveBeenCalledWith(
-      "user-1",
-    );
     expect(result).toEqual({
       message: "University email verified successfully",
     });
   });
 
   it("throws 404 when token is not found", async () => {
-    verificationRepository.findByToken.mockResolvedValue(null);
+    verificationRepository.claimByToken.mockResolvedValue(null);
 
     await expect(verifyUniversityEmail("unknown-token")).rejects.toMatchObject({
       message: "Verification token not found",
@@ -76,7 +73,7 @@ describe("universityEmailVerificationService.verifyUniversityEmail", () => {
   });
 
   it("throws 400 when token has expired", async () => {
-    verificationRepository.findByToken.mockResolvedValue(EXPIRED_RECORD);
+    verificationRepository.claimByToken.mockResolvedValue(EXPIRED_RECORD);
 
     await expect(verifyUniversityEmail("expired-token")).rejects.toMatchObject({
       message: "Token has expired",
@@ -95,9 +92,8 @@ function makeRequest(body = {}) {
 
 describe("POST /api/v1/users/me/university-email/verify", () => {
   it("returns 200 with success message on valid token", async () => {
-    verificationRepository.findByToken.mockResolvedValue(VALID_RECORD);
+    verificationRepository.claimByToken.mockResolvedValue(VALID_RECORD);
     userRepository.update.mockResolvedValue({ id: "user-1", verified: true });
-    verificationRepository.deleteByUserId.mockResolvedValue(undefined);
 
     const response = await POST(makeRequest({ token: "valid-token" }));
 
@@ -117,7 +113,7 @@ describe("POST /api/v1/users/me/university-email/verify", () => {
   });
 
   it("returns 404 when token is unknown", async () => {
-    verificationRepository.findByToken.mockResolvedValue(null);
+    verificationRepository.claimByToken.mockResolvedValue(null);
 
     const response = await POST(makeRequest({ token: "unknown-token" }));
 
@@ -128,7 +124,7 @@ describe("POST /api/v1/users/me/university-email/verify", () => {
   });
 
   it("returns 400 when token has expired", async () => {
-    verificationRepository.findByToken.mockResolvedValue(EXPIRED_RECORD);
+    verificationRepository.claimByToken.mockResolvedValue(EXPIRED_RECORD);
 
     const response = await POST(makeRequest({ token: "expired-token" }));
 

@@ -10,6 +10,7 @@ import { sendEmailVerification } from "@/lib/emailService";
 jest.mock("@/repositories/emailVerificationRepository", () => ({
   create: jest.fn(),
   findByToken: jest.fn(),
+  claimByToken: jest.fn(),
   deleteByUserId: jest.fn(),
 }));
 
@@ -97,7 +98,7 @@ describe("emailVerificationService.sendEmailVerificationToUser", () => {
 describe("emailVerificationService.verifyEmail", () => {
   it("sets only emailVerified=true for a personal email domain", async () => {
     const futureDate = new Date(Date.now() + 60 * 60 * 1000);
-    emailVerificationRepository.findByToken.mockResolvedValue({
+    emailVerificationRepository.claimByToken.mockResolvedValue({
       userId: "user-1",
       email: "user@gmail.com",
       token: "valid-token",
@@ -108,8 +109,6 @@ describe("emailVerificationService.verifyEmail", () => {
       id: "user-1",
       emailVerified: true,
     });
-    emailVerificationRepository.deleteByUserId.mockResolvedValue(undefined);
-
     const result = await verifyEmail("valid-token");
 
     expect(universityRepository.findByEmailDomain).toHaveBeenCalledWith(
@@ -123,7 +122,7 @@ describe("emailVerificationService.verifyEmail", () => {
 
   it("also sets universityEmail, verified, and universityId when the email belongs to a known university domain", async () => {
     const futureDate = new Date(Date.now() + 60 * 60 * 1000);
-    emailVerificationRepository.findByToken.mockResolvedValue({
+    emailVerificationRepository.claimByToken.mockResolvedValue({
       userId: "user-1",
       email: "student@usp.br",
       token: "valid-token",
@@ -133,7 +132,6 @@ describe("emailVerificationService.verifyEmail", () => {
       id: "univ-usp",
     });
     userRepository.update.mockResolvedValue({ id: "user-1" });
-    emailVerificationRepository.deleteByUserId.mockResolvedValue(undefined);
 
     const result = await verifyEmail("valid-token");
 
@@ -151,7 +149,7 @@ describe("emailVerificationService.verifyEmail", () => {
 
   it("sets only emailVerified when domain is not found in the database", async () => {
     const futureDate = new Date(Date.now() + 60 * 60 * 1000);
-    emailVerificationRepository.findByToken.mockResolvedValue({
+    emailVerificationRepository.claimByToken.mockResolvedValue({
       userId: "user-1",
       email: "student@unknownuni.br",
       token: "valid-token",
@@ -159,7 +157,6 @@ describe("emailVerificationService.verifyEmail", () => {
     });
     universityRepository.findByEmailDomain.mockResolvedValue(null);
     userRepository.update.mockResolvedValue({ id: "user-1" });
-    emailVerificationRepository.deleteByUserId.mockResolvedValue(undefined);
 
     await verifyEmail("valid-token");
 
@@ -169,7 +166,7 @@ describe("emailVerificationService.verifyEmail", () => {
   });
 
   it("throws 404 when token does not exist", async () => {
-    emailVerificationRepository.findByToken.mockResolvedValue(null);
+    emailVerificationRepository.claimByToken.mockResolvedValue(null);
 
     await expect(verifyEmail("ghost-token")).rejects.toMatchObject({
       message: "Verification token not found",
@@ -178,9 +175,9 @@ describe("emailVerificationService.verifyEmail", () => {
     expect(userRepository.update).not.toHaveBeenCalled();
   });
 
-  it("throws 400 when token has expired", async () => {
+  it("throws 400 when token has expired (token is still deleted)", async () => {
     const pastDate = new Date(Date.now() - 1000);
-    emailVerificationRepository.findByToken.mockResolvedValue({
+    emailVerificationRepository.claimByToken.mockResolvedValue({
       userId: "user-1",
       email: "user@test.com",
       token: "expired-token",
