@@ -22,17 +22,18 @@ export async function sendEmailVerificationToUser(userId, email) {
     Date.now() + VERIFICATION_TOKEN_EXPIRY_HOURS * 60 * 60 * 1000,
   );
 
-  await emailVerificationTokenRepository.revokeByUserIdAndType(
-    userId,
-    "PERSONAL",
-  );
+  const domain = email.split("@")[1].toLowerCase();
+  const linkedUniversity = await universityRepository.findByEmailDomain(domain);
+  const type = linkedUniversity ? "UNIVERSITY" : "PERSONAL";
+
+  await emailVerificationTokenRepository.revokeByUserIdAndType(userId, type);
 
   await emailVerificationTokenRepository.create({
     userId,
     email,
     token,
     expiresAt,
-    type: "PERSONAL",
+    type,
   });
 
   await sendEmailVerification(email, token);

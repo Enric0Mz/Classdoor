@@ -30,11 +30,12 @@ jest.mock("@/lib/emailService", () => ({
 beforeEach(() => jest.clearAllMocks());
 
 describe("emailVerificationService.sendEmailVerificationToUser", () => {
-  it("revokes existing tokens, creates a new one, and sends the email", async () => {
+  it("revokes existing tokens, creates a new one with type PERSONAL, and sends the email", async () => {
     userRepository.findById.mockResolvedValue({
       id: "user-1",
       emailVerified: false,
     });
+    universityRepository.findByEmailDomain.mockResolvedValue(null);
     emailVerificationTokenRepository.revokeByUserIdAndType.mockResolvedValue({
       count: 0,
     });
@@ -64,11 +65,42 @@ describe("emailVerificationService.sendEmailVerificationToUser", () => {
     expect(result).toEqual({ message: "Verification email sent" });
   });
 
+  it("creates token with type UNIVERSITY when email belongs to a known university domain", async () => {
+    userRepository.findById.mockResolvedValue({
+      id: "user-1",
+      emailVerified: false,
+    });
+    universityRepository.findByEmailDomain.mockResolvedValue({
+      id: "univ-usp",
+    });
+    emailVerificationTokenRepository.revokeByUserIdAndType.mockResolvedValue({
+      count: 0,
+    });
+    emailVerificationTokenRepository.create.mockResolvedValue({
+      id: "verif-1",
+    });
+    sendEmailVerification.mockResolvedValue(undefined);
+
+    await sendEmailVerificationToUser("user-1", "student@usp.br");
+
+    expect(
+      emailVerificationTokenRepository.revokeByUserIdAndType,
+    ).toHaveBeenCalledWith("user-1", "UNIVERSITY");
+    expect(emailVerificationTokenRepository.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        userId: "user-1",
+        email: "student@usp.br",
+        type: "UNIVERSITY",
+      }),
+    );
+  });
+
   it("revokes existing tokens before creating a new one", async () => {
     userRepository.findById.mockResolvedValue({
       id: "user-1",
       emailVerified: false,
     });
+    universityRepository.findByEmailDomain.mockResolvedValue(null);
     emailVerificationTokenRepository.revokeByUserIdAndType.mockResolvedValue({
       count: 0,
     });

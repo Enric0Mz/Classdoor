@@ -23,6 +23,10 @@ jest.mock("@/lib/emailService", () => ({
   sendEmailVerification: jest.fn(),
 }));
 
+jest.mock("@/repositories/universityRepository", () => ({
+  findByEmailDomain: jest.fn().mockResolvedValue(null),
+}));
+
 jest.mock("bcryptjs", () => ({
   hash: jest.fn(),
 }));

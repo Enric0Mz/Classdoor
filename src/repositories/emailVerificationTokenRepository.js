@@ -12,7 +12,7 @@ export async function findByToken(token) {
 
 export async function markAsUsed(token) {
   const { count } = await prisma.emailVerificationToken.updateMany({
-    where: { token, status: "PENDING" },
+    where: { token, status: "PENDING", expiresAt: { gt: new Date() } },
     data: { status: "USED" },
   });
 
