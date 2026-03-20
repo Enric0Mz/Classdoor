@@ -24,8 +24,12 @@ export async function markAsUsed(token) {
     return { record: null, alreadyUsed: false };
   }
 
-  if (count === 0) {
+  if (count === 0 && record.status === "USED") {
     return { record, alreadyUsed: true };
+  }
+
+  if (count === 0 && record.status === "REVOKED") {
+    return { record: null, alreadyUsed: false };
   }
 
   return { record, alreadyUsed: false };

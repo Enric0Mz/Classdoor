@@ -205,6 +205,19 @@ describe("universityEmailVerificationService.verifyUniversityEmail", () => {
     expect(userRepository.update).not.toHaveBeenCalled();
   });
 
+  it("throws 404 when token has been revoked", async () => {
+    emailVerificationTokenRepository.markAsUsed.mockResolvedValue({
+      record: null,
+      alreadyUsed: false,
+    });
+
+    await expect(verifyUniversityEmail("revoked-token")).rejects.toMatchObject({
+      message: "Verification token not found",
+      statusCode: 404,
+    });
+    expect(userRepository.update).not.toHaveBeenCalled();
+  });
+
   it("returns success without updating user when token was already used (idempotent)", async () => {
     emailVerificationTokenRepository.markAsUsed.mockResolvedValue({
       record: {
