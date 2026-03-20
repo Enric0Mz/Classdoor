@@ -12,8 +12,6 @@ import {
   Loader2,
 } from "lucide-react";
 
-const submittedTokens = new Set();
-
 function VerifyUniversityEmailContent() {
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
@@ -22,9 +20,6 @@ function VerifyUniversityEmailContent() {
   const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
-    if (submittedTokens.has(token)) return;
-    submittedTokens.add(token);
-
     if (!token) {
       setStatus("error");
       setErrorMessage("O link de verificação está sem o token necessário.");
@@ -45,15 +40,21 @@ function VerifyUniversityEmailContent() {
         if (response.ok) {
           setStatus("success");
         } else {
+          setStatus((previous) => {
+            if (previous === "success") return previous;
+            return "error";
+          });
           const data = await response.json();
-          setStatus("error");
           setErrorMessage(
             data?.error?.message ||
               "Não foi possível verificar o e-mail institucional.",
           );
         }
       } catch {
-        setStatus("error");
+        setStatus((previous) => {
+          if (previous === "success") return previous;
+          return "error";
+        });
         setErrorMessage(
           "Ocorreu um erro inesperado. Por favor, tente novamente.",
         );

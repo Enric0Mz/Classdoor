@@ -1,6 +1,6 @@
 import crypto from "crypto";
 import { AppError } from "@/errors/AppError";
-import * as verificationRepository from "@/repositories/universityEmailVerificationRepository";
+import * as emailVerificationTokenRepository from "@/repositories/emailVerificationTokenRepository";
 import * as userRepository from "@/repositories/userRepository";
 import * as universityRepository from "@/repositories/universityRepository";
 import { sendVerificationEmail } from "@/lib/emailService";
@@ -39,14 +39,17 @@ export async function submitUniversityEmail(
     Date.now() + VERIFICATION_TOKEN_EXPIRY_HOURS * 60 * 60 * 1000,
   );
 
-  // Remove any existing pending verification for this user
-  await verificationRepository.deleteByUserId(userId);
-
-  await verificationRepository.create({
+  await emailVerificationTokenRepository.revokeByUserIdAndType(
     userId,
-    universityEmail,
+    "UNIVERSITY",
+  );
+
+  await emailVerificationTokenRepository.create({
+    userId,
+    email: universityEmail,
     token,
     expiresAt,
+    type: "UNIVERSITY",
   });
 
   await sendVerificationEmail(universityEmail, token);
@@ -55,21 +58,26 @@ export async function submitUniversityEmail(
 }
 
 export async function verifyUniversityEmail(token) {
-  const record = await verificationRepository.claimByToken(token);
-  console.log("Deleted Token", record);
+  const { record, alreadyUsed } =
+    await emailVerificationTokenRepository.markAsUsed(token);
+
   if (!record) {
     throw new AppError("Verification token not found", 404);
+  }
+
+  if (alreadyUsed) {
+    return { message: "University email verified successfully" };
   }
 
   if (record.expiresAt < new Date()) {
     throw new AppError("Token has expired", 400);
   }
 
-  const domain = record.universityEmail.split("@")[1].toLowerCase();
+  const domain = record.email.split("@")[1].toLowerCase();
   const linkedUniversity = await universityRepository.findByEmailDomain(domain);
 
   await userRepository.update(record.userId, {
-    universityEmail: record.universityEmail,
+    universityEmail: record.email,
     verified: true,
     universityId: linkedUniversity?.id ?? null,
   });
