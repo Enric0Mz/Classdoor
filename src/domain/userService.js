@@ -96,6 +96,8 @@ export async function registerUser({ email, password, username } = {}) {
   }
 
   const user = await userRepository.create(userData);
+  console.log("[RegisterUser] User created", { userId: user.id, email: user.email });
+
   const token = signToken({
     id: user.id,
     email: user.email || null,
@@ -104,10 +106,21 @@ export async function registerUser({ email, password, username } = {}) {
   const refreshToken = await createRefreshToken(user.id);
 
   if (user.email) {
+    console.log("[RegisterUser] Calling sendEmailVerificationToUser", {
+      userId: user.id,
+      email: user.email,
+    });
     await emailVerificationService.sendEmailVerificationToUser(
       user.id,
       user.email,
     );
+    console.log("[RegisterUser] sendEmailVerificationToUser completed", {
+      userId: user.id,
+    });
+  } else {
+    console.log("[RegisterUser] No email, skipping verification", {
+      userId: user.id,
+    });
   }
 
   return { user: stripPassword(user), token, refreshToken };
