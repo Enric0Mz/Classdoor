@@ -33,7 +33,7 @@ export async function sendEmailVerificationToUser(userId, email) {
   const deleted = await emailVerificationRepository.deleteByUserId(userId);
   console.log("[EmailVerification] Deleted old tokens", {
     userId,
-    deletedCount: deleted.count,
+    deletedCount: deleted?.count ?? 0,
   });
 
   console.log("[EmailVerification] Creating new token", { userId, token });

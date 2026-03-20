@@ -96,7 +96,10 @@ export async function registerUser({ email, password, username } = {}) {
   }
 
   const user = await userRepository.create(userData);
-  console.log("[RegisterUser] User created", { userId: user.id, email: user.email });
+  console.log("[RegisterUser] User created", {
+    userId: user.id,
+    email: user.email,
+  });
 
   const token = signToken({
     id: user.id,
