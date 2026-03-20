@@ -55,7 +55,8 @@ export async function submitUniversityEmail(
 }
 
 export async function verifyUniversityEmail(token) {
-  const record = await verificationRepository.findByToken(token);
+  const record = await verificationRepository.claimByToken(token);
+  console.log("Deleted Token", record);
   if (!record) {
     throw new AppError("Verification token not found", 404);
   }
@@ -72,8 +73,6 @@ export async function verifyUniversityEmail(token) {
     verified: true,
     universityId: linkedUniversity?.id ?? null,
   });
-
-  await verificationRepository.deleteByUserId(record.userId);
 
   return { message: "University email verified successfully" };
 }
