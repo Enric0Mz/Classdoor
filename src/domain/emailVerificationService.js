@@ -1,6 +1,6 @@
 import crypto from "crypto";
 import { AppError } from "@/errors/AppError";
-import * as emailVerificationRepository from "@/repositories/emailVerificationRepository";
+import * as emailVerificationTokenRepository from "@/repositories/emailVerificationTokenRepository";
 import * as userRepository from "@/repositories/userRepository";
 import * as universityRepository from "@/repositories/universityRepository";
 import { sendEmailVerification } from "@/lib/emailService";
@@ -22,17 +22,35 @@ export async function sendEmailVerificationToUser(userId, email) {
     Date.now() + VERIFICATION_TOKEN_EXPIRY_HOURS * 60 * 60 * 1000,
   );
 
-  await emailVerificationRepository.deleteByUserId(userId);
-  await emailVerificationRepository.create({ userId, email, token, expiresAt });
+  const domain = email.split("@")[1].toLowerCase();
+  const linkedUniversity = await universityRepository.findByEmailDomain(domain);
+  const type = linkedUniversity ? "UNIVERSITY" : "PERSONAL";
+
+  await emailVerificationTokenRepository.revokeByUserIdAndType(userId, type);
+
+  await emailVerificationTokenRepository.create({
+    userId,
+    email,
+    token,
+    expiresAt,
+    type,
+  });
+
   await sendEmailVerification(email, token);
 
   return { message: "Verification email sent" };
 }
 
 export async function verifyEmail(token) {
-  const record = await emailVerificationRepository.findByToken(token);
+  const { record, alreadyUsed } =
+    await emailVerificationTokenRepository.markAsUsed(token);
+
   if (!record) {
     throw new AppError("Verification token not found", 404);
+  }
+
+  if (alreadyUsed) {
+    return { message: "Email verified successfully" };
   }
 
   if (record.expiresAt < new Date()) {
@@ -51,7 +69,6 @@ export async function verifyEmail(token) {
   }
 
   await userRepository.update(record.userId, updateData);
-  await emailVerificationRepository.deleteByUserId(record.userId);
 
   return { message: "Email verified successfully" };
 }

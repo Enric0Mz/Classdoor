@@ -96,6 +96,7 @@ export async function registerUser({ email, password, username } = {}) {
   }
 
   const user = await userRepository.create(userData);
+
   const token = signToken({
     id: user.id,
     email: user.email || null,

@@ -1,6 +1,6 @@
 import { registerUser } from "@/domain/userService";
 import * as userRepository from "@/repositories/userRepository";
-import * as emailVerificationRepository from "@/repositories/emailVerificationRepository";
+import * as emailVerificationTokenRepository from "@/repositories/emailVerificationTokenRepository";
 import { sendEmailVerification } from "@/lib/emailService";
 import bcrypt from "bcryptjs";
 import { signToken } from "@/lib/auth";
@@ -14,13 +14,17 @@ jest.mock("@/repositories/userRepository", () => ({
   update: jest.fn(),
 }));
 
-jest.mock("@/repositories/emailVerificationRepository", () => ({
+jest.mock("@/repositories/emailVerificationTokenRepository", () => ({
   create: jest.fn(),
-  deleteByUserId: jest.fn(),
+  revokeByUserIdAndType: jest.fn(),
 }));
 
 jest.mock("@/lib/emailService", () => ({
   sendEmailVerification: jest.fn(),
+}));
+
+jest.mock("@/repositories/universityRepository", () => ({
+  findByEmailDomain: jest.fn().mockResolvedValue(null),
 }));
 
 jest.mock("bcryptjs", () => ({
@@ -94,8 +98,12 @@ describe("userService.registerUser", () => {
     bcrypt.hash.mockResolvedValue("hashed");
     userRepository.create.mockResolvedValue(created);
     signToken.mockReturnValue("jwt-token");
-    emailVerificationRepository.deleteByUserId.mockResolvedValue(undefined);
-    emailVerificationRepository.create.mockResolvedValue({ id: "verif-1" });
+    emailVerificationTokenRepository.revokeByUserIdAndType.mockResolvedValue({
+      count: 0,
+    });
+    emailVerificationTokenRepository.create.mockResolvedValue({
+      id: "verif-1",
+    });
     sendEmailVerification.mockResolvedValue(undefined);
 
     const result = await registerUser({
@@ -134,8 +142,12 @@ describe("userService.registerUser", () => {
     bcrypt.hash.mockResolvedValue("hashed");
     userRepository.create.mockResolvedValue(created);
     signToken.mockReturnValue("jwt-token");
-    emailVerificationRepository.deleteByUserId.mockResolvedValue(undefined);
-    emailVerificationRepository.create.mockResolvedValue({ id: "verif-1" });
+    emailVerificationTokenRepository.revokeByUserIdAndType.mockResolvedValue({
+      count: 0,
+    });
+    emailVerificationTokenRepository.create.mockResolvedValue({
+      id: "verif-1",
+    });
     sendEmailVerification.mockResolvedValue(undefined);
 
     await registerUser({
@@ -370,8 +382,12 @@ describe("POST /api/v1/users", () => {
     bcrypt.hash.mockResolvedValue("hashed");
     userRepository.create.mockResolvedValue(created);
     signToken.mockReturnValue("jwt-token");
-    emailVerificationRepository.deleteByUserId.mockResolvedValue(undefined);
-    emailVerificationRepository.create.mockResolvedValue({ id: "verif-1" });
+    emailVerificationTokenRepository.revokeByUserIdAndType.mockResolvedValue({
+      count: 0,
+    });
+    emailVerificationTokenRepository.create.mockResolvedValue({
+      id: "verif-1",
+    });
     sendEmailVerification.mockResolvedValue(undefined);
 
     const response = await POST(

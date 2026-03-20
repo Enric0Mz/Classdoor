@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
@@ -18,12 +18,8 @@ function VerifyUniversityEmailContent() {
 
   const [status, setStatus] = useState("verifying");
   const [errorMessage, setErrorMessage] = useState("");
-  const hasSubmitted = useRef(false);
 
   useEffect(() => {
-    if (hasSubmitted.current) return;
-    hasSubmitted.current = true;
-
     if (!token) {
       setStatus("error");
       setErrorMessage("O link de verificação está sem o token necessário.");
@@ -44,15 +40,21 @@ function VerifyUniversityEmailContent() {
         if (response.ok) {
           setStatus("success");
         } else {
+          setStatus((previous) => {
+            if (previous === "success") return previous;
+            return "error";
+          });
           const data = await response.json();
-          setStatus("error");
           setErrorMessage(
             data?.error?.message ||
               "Não foi possível verificar o e-mail institucional.",
           );
         }
       } catch {
-        setStatus("error");
+        setStatus((previous) => {
+          if (previous === "success") return previous;
+          return "error";
+        });
         setErrorMessage(
           "Ocorreu um erro inesperado. Por favor, tente novamente.",
         );

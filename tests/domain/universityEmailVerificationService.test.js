@@ -2,15 +2,16 @@ import {
   submitUniversityEmail,
   verifyUniversityEmail,
 } from "@/domain/universityEmailVerificationService";
-import * as verificationRepository from "@/repositories/universityEmailVerificationRepository";
+import * as emailVerificationTokenRepository from "@/repositories/emailVerificationTokenRepository";
 import * as userRepository from "@/repositories/userRepository";
 import * as universityRepository from "@/repositories/universityRepository";
 import { sendVerificationEmail } from "@/lib/emailService";
 
-jest.mock("@/repositories/universityEmailVerificationRepository", () => ({
+jest.mock("@/repositories/emailVerificationTokenRepository", () => ({
   create: jest.fn(),
   findByToken: jest.fn(),
-  deleteByUserId: jest.fn(),
+  markAsUsed: jest.fn(),
+  revokeByUserIdAndType: jest.fn(),
 }));
 
 jest.mock("@/repositories/userRepository", () => ({
@@ -38,7 +39,7 @@ describe("universityEmailVerificationService.submitUniversityEmail", () => {
       statusCode: 400,
     });
 
-    expect(verificationRepository.create).not.toHaveBeenCalled();
+    expect(emailVerificationTokenRepository.create).not.toHaveBeenCalled();
     expect(sendVerificationEmail).not.toHaveBeenCalled();
   });
 
@@ -47,8 +48,12 @@ describe("universityEmailVerificationService.submitUniversityEmail", () => {
       id: "univ-usp",
       name: "Universidade de São Paulo",
     });
-    verificationRepository.deleteByUserId.mockResolvedValue(undefined);
-    verificationRepository.create.mockResolvedValue({ id: "verif-1" });
+    emailVerificationTokenRepository.revokeByUserIdAndType.mockResolvedValue({
+      count: 0,
+    });
+    emailVerificationTokenRepository.create.mockResolvedValue({
+      id: "verif-1",
+    });
     sendVerificationEmail.mockResolvedValue(undefined);
 
     const result = await submitUniversityEmail(
@@ -60,10 +65,11 @@ describe("universityEmailVerificationService.submitUniversityEmail", () => {
     expect(universityRepository.findByEmailDomain).toHaveBeenCalledWith(
       "usp.br",
     );
-    expect(verificationRepository.create).toHaveBeenCalledWith(
+    expect(emailVerificationTokenRepository.create).toHaveBeenCalledWith(
       expect.objectContaining({
         userId: "user-1",
-        universityEmail: "me@usp.br",
+        email: "me@usp.br",
+        type: "UNIVERSITY",
       }),
     );
     expect(result).toEqual({ message: "Verification email sent" });
@@ -93,19 +99,20 @@ describe("universityEmailVerificationService.submitUniversityEmail", () => {
 describe("universityEmailVerificationService.verifyUniversityEmail", () => {
   it("normalizes the domain to lowercase before the DB lookup", async () => {
     const futureDate = new Date(Date.now() + 60 * 60 * 1000);
-    verificationRepository.findByToken.mockResolvedValue({
-      userId: "user-1",
-      universityEmail: "me@USP.BR",
-      token: "valid-token",
-      expiresAt: futureDate,
+    emailVerificationTokenRepository.markAsUsed.mockResolvedValue({
+      record: {
+        userId: "user-1",
+        email: "me@USP.BR",
+        token: "valid-token",
+        expiresAt: futureDate,
+      },
+      alreadyUsed: false,
     });
     universityRepository.findByEmailDomain.mockResolvedValue({
       id: "univ-usp",
       name: "Universidade de São Paulo",
     });
     userRepository.update.mockResolvedValue({ id: "user-1" });
-    verificationRepository.deleteByUserId.mockResolvedValue(undefined);
-
     await verifyUniversityEmail("valid-token");
 
     expect(universityRepository.findByEmailDomain).toHaveBeenCalledWith(
@@ -115,19 +122,20 @@ describe("universityEmailVerificationService.verifyUniversityEmail", () => {
 
   it("sets verified=true and links universityId when a matching university is in the DB", async () => {
     const futureDate = new Date(Date.now() + 60 * 60 * 1000);
-    verificationRepository.findByToken.mockResolvedValue({
-      userId: "user-1",
-      universityEmail: "me@usp.br",
-      token: "valid-token",
-      expiresAt: futureDate,
+    emailVerificationTokenRepository.markAsUsed.mockResolvedValue({
+      record: {
+        userId: "user-1",
+        email: "me@usp.br",
+        token: "valid-token",
+        expiresAt: futureDate,
+      },
+      alreadyUsed: false,
     });
     universityRepository.findByEmailDomain.mockResolvedValue({
       id: "univ-usp",
       name: "Universidade de São Paulo",
     });
     userRepository.update.mockResolvedValue({ id: "user-1" });
-    verificationRepository.deleteByUserId.mockResolvedValue(undefined);
-
     const result = await verifyUniversityEmail("valid-token");
 
     expect(universityRepository.findByEmailDomain).toHaveBeenCalledWith(
@@ -145,16 +153,17 @@ describe("universityEmailVerificationService.verifyUniversityEmail", () => {
 
   it("sets universityId to null when no matching university is found in the DB", async () => {
     const futureDate = new Date(Date.now() + 60 * 60 * 1000);
-    verificationRepository.findByToken.mockResolvedValue({
-      userId: "user-1",
-      universityEmail: "me@unknownuni.br",
-      token: "valid-token",
-      expiresAt: futureDate,
+    emailVerificationTokenRepository.markAsUsed.mockResolvedValue({
+      record: {
+        userId: "user-1",
+        email: "me@unknownuni.br",
+        token: "valid-token",
+        expiresAt: futureDate,
+      },
+      alreadyUsed: false,
     });
     universityRepository.findByEmailDomain.mockResolvedValue(null);
     userRepository.update.mockResolvedValue({ id: "user-1" });
-    verificationRepository.deleteByUserId.mockResolvedValue(undefined);
-
     await verifyUniversityEmail("valid-token");
 
     expect(userRepository.update).toHaveBeenCalledWith("user-1", {
@@ -165,7 +174,10 @@ describe("universityEmailVerificationService.verifyUniversityEmail", () => {
   });
 
   it("throws 404 when token does not exist", async () => {
-    verificationRepository.findByToken.mockResolvedValue(null);
+    emailVerificationTokenRepository.markAsUsed.mockResolvedValue({
+      record: null,
+      alreadyUsed: false,
+    });
 
     await expect(verifyUniversityEmail("ghost-token")).rejects.toMatchObject({
       message: "Verification token not found",
@@ -176,16 +188,52 @@ describe("universityEmailVerificationService.verifyUniversityEmail", () => {
 
   it("throws 400 when token has expired", async () => {
     const pastDate = new Date(Date.now() - 1000);
-    verificationRepository.findByToken.mockResolvedValue({
-      userId: "user-1",
-      universityEmail: "me@usp.br",
-      token: "expired-token",
-      expiresAt: pastDate,
+    emailVerificationTokenRepository.markAsUsed.mockResolvedValue({
+      record: {
+        userId: "user-1",
+        email: "me@usp.br",
+        token: "expired-token",
+        expiresAt: pastDate,
+      },
+      alreadyUsed: false,
     });
 
     await expect(verifyUniversityEmail("expired-token")).rejects.toMatchObject({
       message: "Token has expired",
       statusCode: 400,
+    });
+    expect(userRepository.update).not.toHaveBeenCalled();
+  });
+
+  it("throws 404 when token has been revoked", async () => {
+    emailVerificationTokenRepository.markAsUsed.mockResolvedValue({
+      record: null,
+      alreadyUsed: false,
+    });
+
+    await expect(verifyUniversityEmail("revoked-token")).rejects.toMatchObject({
+      message: "Verification token not found",
+      statusCode: 404,
+    });
+    expect(userRepository.update).not.toHaveBeenCalled();
+  });
+
+  it("returns success without updating user when token was already used (idempotent)", async () => {
+    emailVerificationTokenRepository.markAsUsed.mockResolvedValue({
+      record: {
+        userId: "user-1",
+        email: "me@usp.br",
+        token: "used-token",
+        expiresAt: new Date(Date.now() + 60 * 60 * 1000),
+        status: "USED",
+      },
+      alreadyUsed: true,
+    });
+
+    const result = await verifyUniversityEmail("used-token");
+
+    expect(result).toEqual({
+      message: "University email verified successfully",
     });
     expect(userRepository.update).not.toHaveBeenCalled();
   });
