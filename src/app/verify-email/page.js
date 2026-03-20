@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
@@ -12,17 +12,18 @@ import {
   Loader2,
 } from "lucide-react";
 
+const submittedTokens = new Set();
+
 function VerifyEmailContent() {
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
 
   const [status, setStatus] = useState("verifying");
   const [errorMessage, setErrorMessage] = useState("");
-  const hasSubmitted = useRef(false);
 
   useEffect(() => {
-    if (hasSubmitted.current) return;
-    hasSubmitted.current = true;
+    if (submittedTokens.has(token)) return;
+    submittedTokens.add(token);
 
     if (!token) {
       setStatus("error");
