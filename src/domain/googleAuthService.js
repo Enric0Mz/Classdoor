@@ -179,9 +179,12 @@ async function loginExistingUser(user) {
 }
 
 async function linkGoogleToExistingAccount(existingUser, googleUser) {
+  const hasLocalAuth =
+    existingUser.authProvider === "local" ||
+    existingUser.authProvider === "local_and_google";
   const updatedUser = await userRepository.update(existingUser.id, {
     googleId: googleUser.googleId,
-    authProvider: existingUser.password ? "local_and_google" : "google",
+    authProvider: hasLocalAuth ? "local_and_google" : "google",
     emailVerified: true,
   });
 

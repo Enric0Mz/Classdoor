@@ -130,15 +130,16 @@ describe("googleAuthService.handleGoogleCallback", () => {
       expect(result.user).not.toHaveProperty("password");
     });
 
-    it("sets authProvider to 'google' when existing user has no password", async () => {
-      const userWithoutPassword = {
+    it("sets authProvider to 'google' when existing user has no local auth", async () => {
+      const googleOnlyUser = {
         ...EXISTING_USER,
         password: null,
+        authProvider: "google",
       };
       userRepository.findByGoogleId.mockResolvedValue(null);
-      userRepository.findByEmail.mockResolvedValue(userWithoutPassword);
+      userRepository.findByEmail.mockResolvedValue(googleOnlyUser);
       userRepository.update.mockResolvedValue({
-        ...userWithoutPassword,
+        ...googleOnlyUser,
         googleId: "google-123",
         authProvider: "google",
       });

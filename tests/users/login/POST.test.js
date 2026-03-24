@@ -7,6 +7,8 @@ import { POST } from "@/app/api/v1/users/login/route";
 jest.mock("@/repositories/userRepository", () => ({
   findByEmail: jest.fn(),
   findByUsername: jest.fn(),
+  findByEmailForAuth: jest.fn(),
+  findByUsernameForAuth: jest.fn(),
 }));
 
 jest.mock("bcryptjs", () => ({
@@ -46,7 +48,7 @@ beforeEach(() => jest.clearAllMocks());
 
 describe("userService.loginUser", () => {
   it("logs in with valid email identifier and password", async () => {
-    userRepository.findByEmail.mockResolvedValue(USER_IN_DB);
+    userRepository.findByEmailForAuth.mockResolvedValue(USER_IN_DB);
     bcrypt.compare.mockResolvedValue(true);
     signToken.mockReturnValue("jwt-token");
 
@@ -55,13 +57,13 @@ describe("userService.loginUser", () => {
       password: "secret",
     });
 
-    expect(userRepository.findByEmail).toHaveBeenCalledWith("test@test.com");
+    expect(userRepository.findByEmailForAuth).toHaveBeenCalledWith("test@test.com");
     expect(result.user).not.toHaveProperty("password");
     expect(result.token).toBe("jwt-token");
   });
 
   it("logs in with valid username identifier and password", async () => {
-    userRepository.findByUsername.mockResolvedValue(USER_NO_EMAIL);
+    userRepository.findByUsernameForAuth.mockResolvedValue(USER_NO_EMAIL);
     bcrypt.compare.mockResolvedValue(true);
     signToken.mockReturnValue("jwt-token");
 
@@ -70,7 +72,7 @@ describe("userService.loginUser", () => {
       password: "secret",
     });
 
-    expect(userRepository.findByUsername).toHaveBeenCalledWith("AgilOnca123");
+    expect(userRepository.findByUsernameForAuth).toHaveBeenCalledWith("AgilOnca123");
     expect(result.user).not.toHaveProperty("password");
     expect(result.token).toBe("jwt-token");
   });
@@ -92,7 +94,7 @@ describe("userService.loginUser", () => {
   });
 
   it("throws 401 when email is not found", async () => {
-    userRepository.findByEmail.mockResolvedValue(null);
+    userRepository.findByEmailForAuth.mockResolvedValue(null);
 
     await expect(
       loginUser({ identifier: "no@test.com", password: "secret" }),
@@ -103,7 +105,7 @@ describe("userService.loginUser", () => {
   });
 
   it("throws 401 when username is not found", async () => {
-    userRepository.findByUsername.mockResolvedValue(null);
+    userRepository.findByUsernameForAuth.mockResolvedValue(null);
 
     await expect(
       loginUser({ identifier: "GhostUser123", password: "secret" }),
@@ -114,7 +116,7 @@ describe("userService.loginUser", () => {
   });
 
   it("throws 401 when password is wrong", async () => {
-    userRepository.findByEmail.mockResolvedValue(USER_IN_DB);
+    userRepository.findByEmailForAuth.mockResolvedValue(USER_IN_DB);
     bcrypt.compare.mockResolvedValue(false);
 
     await expect(
@@ -125,7 +127,7 @@ describe("userService.loginUser", () => {
     });
   });
 
-  it("throws 400 when user has Google-only auth and tries password login", async () => {
+  it("throws 401 when user has Google-only auth and tries password login", async () => {
     const googleOnlyUser = {
       id: "user-3",
       email: "google@test.com",
@@ -134,13 +136,13 @@ describe("userService.loginUser", () => {
       role: "USER",
       createdAt: new Date(),
     };
-    userRepository.findByEmail.mockResolvedValue(googleOnlyUser);
+    userRepository.findByEmailForAuth.mockResolvedValue(googleOnlyUser);
 
     await expect(
       loginUser({ identifier: "google@test.com", password: "secret" }),
     ).rejects.toMatchObject({
-      message: "This account uses Google sign-in. Please log in with Google.",
-      statusCode: 400,
+      message: "Invalid credentials",
+      statusCode: 401,
     });
 
     expect(bcrypt.compare).not.toHaveBeenCalled();
@@ -149,7 +151,7 @@ describe("userService.loginUser", () => {
 
 describe("POST /api/v1/users/login", () => {
   it("returns 200 with user and token on email login", async () => {
-    userRepository.findByEmail.mockResolvedValue(USER_IN_DB);
+    userRepository.findByEmailForAuth.mockResolvedValue(USER_IN_DB);
     bcrypt.compare.mockResolvedValue(true);
     signToken.mockReturnValue("jwt-token");
 
@@ -163,7 +165,7 @@ describe("POST /api/v1/users/login", () => {
   });
 
   it("returns 200 with user and token on username login", async () => {
-    userRepository.findByUsername.mockResolvedValue(USER_NO_EMAIL);
+    userRepository.findByUsernameForAuth.mockResolvedValue(USER_NO_EMAIL);
     bcrypt.compare.mockResolvedValue(true);
     signToken.mockReturnValue("jwt-token");
 
@@ -195,7 +197,7 @@ describe("POST /api/v1/users/login", () => {
   });
 
   it("returns 401 on bad credentials", async () => {
-    userRepository.findByEmail.mockResolvedValue(null);
+    userRepository.findByEmailForAuth.mockResolvedValue(null);
 
     const response = await POST(
       makeRequest({ identifier: "no@test.com", password: "secret" }),

@@ -81,12 +81,13 @@ export async function rotateRefreshToken(oldToken) {
     throw new AppError("Refresh token expired", 401);
   }
 
-  await refreshTokenRepository.deleteByToken(oldToken);
-
   const user = await userRepository.findById(storedToken.userId);
   if (!user) {
+    await refreshTokenRepository.deleteByToken(oldToken);
     throw new AppError("User not found", 401);
   }
+
+  await refreshTokenRepository.deleteByToken(oldToken);
 
   const accessToken = signToken({
     id: user.id,

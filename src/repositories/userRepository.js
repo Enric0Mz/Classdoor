@@ -25,10 +25,29 @@ export async function findById(id) {
 }
 
 export async function findByEmail(email) {
-  return prisma.user.findUnique({ where: { email } });
+  return prisma.user.findUnique({ where: { email }, select: USER_PUBLIC_SELECT });
 }
 
 export async function findByUsername(username) {
+  return prisma.user.findUnique({
+    where: { username },
+    select: USER_PUBLIC_SELECT,
+  });
+}
+
+/**
+ * Returns the full user record including password hash.
+ * Only use this for authentication flows (login, password verification).
+ */
+export async function findByEmailForAuth(email) {
+  return prisma.user.findUnique({ where: { email } });
+}
+
+/**
+ * Returns the full user record including password hash.
+ * Only use this for authentication flows (login, password verification).
+ */
+export async function findByUsernameForAuth(username) {
   return prisma.user.findUnique({ where: { username } });
 }
 

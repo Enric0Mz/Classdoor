@@ -31,10 +31,12 @@ function sanitizeComment(comment) {
   if (!comment || typeof comment !== "string") return comment;
   try {
     const parsed = JSON.parse(comment);
-    if (parsed && (parsed.pros || parsed.cons)) {
+    const hasPros = typeof parsed?.pros === "string";
+    const hasCons = typeof parsed?.cons === "string";
+    if (parsed && (hasPros || hasCons)) {
       return JSON.stringify({
-        pros: parsed.pros ? sanitizeString(parsed.pros) : "",
-        cons: parsed.cons ? sanitizeString(parsed.cons) : "",
+        pros: hasPros ? sanitizeString(parsed.pros) : "",
+        cons: hasCons ? sanitizeString(parsed.cons) : "",
       });
     }
   } catch {
@@ -189,8 +191,8 @@ export async function updateReview(id, data, requesterId, requesterRole) {
   if (difficultyLevel !== undefined) validateDifficultyLevel(difficultyLevel);
 
   let newComment = review.comment;
-  let moderationStatus = "APPROVED";
-  let moderationReason = null;
+  let moderationStatus = review.moderationStatus;
+  let moderationReason = review.moderationReason;
 
   if (comment !== undefined) {
     const sanitizedComment = sanitizeComment(comment);
