@@ -25,7 +25,10 @@ export async function findById(id) {
 }
 
 export async function findByEmail(email) {
-  return prisma.user.findUnique({ where: { email }, select: USER_PUBLIC_SELECT });
+  return prisma.user.findUnique({
+    where: { email },
+    select: USER_PUBLIC_SELECT,
+  });
 }
 
 export async function findByUsername(username) {

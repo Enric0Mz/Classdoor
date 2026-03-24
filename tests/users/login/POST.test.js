@@ -57,7 +57,9 @@ describe("userService.loginUser", () => {
       password: "secret",
     });
 
-    expect(userRepository.findByEmailForAuth).toHaveBeenCalledWith("test@test.com");
+    expect(userRepository.findByEmailForAuth).toHaveBeenCalledWith(
+      "test@test.com",
+    );
     expect(result.user).not.toHaveProperty("password");
     expect(result.token).toBe("jwt-token");
   });
@@ -72,7 +74,9 @@ describe("userService.loginUser", () => {
       password: "secret",
     });
 
-    expect(userRepository.findByUsernameForAuth).toHaveBeenCalledWith("AgilOnca123");
+    expect(userRepository.findByUsernameForAuth).toHaveBeenCalledWith(
+      "AgilOnca123",
+    );
     expect(result.user).not.toHaveProperty("password");
     expect(result.token).toBe("jwt-token");
   });
