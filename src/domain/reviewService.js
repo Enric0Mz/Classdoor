@@ -194,7 +194,9 @@ export async function updateReview(id, data, requesterId, requesterRole) {
   let moderationStatus = review.moderationStatus;
   let moderationReason = review.moderationReason;
 
-  if (comment !== undefined) {
+  const commentChanged = comment !== undefined;
+
+  if (commentChanged) {
     const sanitizedComment = sanitizeComment(comment);
     validateComment(sanitizedComment);
     newComment = sanitizedComment;
@@ -204,20 +206,31 @@ export async function updateReview(id, data, requesterId, requesterRole) {
     moderationReason = moderation.moderationReason;
   }
 
-  const rootId = review.parentReviewId || review.id;
+  let updatedReview;
 
-  const newReview = await reviewRepository.create({
-    rating: newRating,
-    difficultyLevel: newDifficultyLevel,
-    comment: newComment,
-    universityId: review.universityId,
-    authorId: review.authorId,
-    moderationStatus,
-    moderationReason,
-    parentReviewId: rootId,
-  });
+  if (commentChanged) {
+    // Comment changed — create a child review so moderation can re-check it
+    const rootId = review.parentReviewId || review.id;
 
-  const result = { review: withIsVerified(newReview) };
+    updatedReview = await reviewRepository.create({
+      rating: newRating,
+      difficultyLevel: newDifficultyLevel,
+      comment: newComment,
+      universityId: review.universityId,
+      authorId: review.authorId,
+      moderationStatus,
+      moderationReason,
+      parentReviewId: rootId,
+    });
+  } else {
+    // Only rating/difficultyLevel changed — update in place
+    updatedReview = await reviewRepository.update(id, {
+      rating: newRating,
+      difficultyLevel: newDifficultyLevel,
+    });
+  }
+
+  const result = { review: withIsVerified(updatedReview) };
 
   if (moderationStatus === "PENDING_MODERATION") {
     result.moderation = {

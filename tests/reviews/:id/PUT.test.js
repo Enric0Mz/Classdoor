@@ -176,20 +176,18 @@ describe("reviewService.updateReview", () => {
     });
   });
 
-  it("merges unchanged fields from original when only rating is updated", async () => {
-    const createdReview = { ...REVIEW, rating: 4, id: "review-2" };
+  it("updates in place when only rating is changed (no child review created)", async () => {
+    const updatedReview = { ...REVIEW, rating: 4 };
     reviewRepository.findById.mockResolvedValue(REVIEW);
-    reviewRepository.create.mockResolvedValue(createdReview);
+    reviewRepository.update.mockResolvedValue(updatedReview);
 
     await updateReview("review-1", { rating: 4 }, "user-1");
 
-    expect(reviewRepository.create).toHaveBeenCalledWith(
-      expect.objectContaining({
-        rating: 4,
-        difficultyLevel: 2,
-        comment: "Original comment",
-      }),
-    );
+    expect(reviewRepository.update).toHaveBeenCalledWith("review-1", {
+      rating: 4,
+      difficultyLevel: 2,
+    });
+    expect(reviewRepository.create).not.toHaveBeenCalled();
   });
 });
 
