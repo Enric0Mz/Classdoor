@@ -25,35 +25,70 @@ const ALL_MIGRATION_DIRS = [
 
 beforeEach(() => jest.clearAllMocks());
 
-describe("migrationService.getPendingMigrations", () => {
-  it("returns pending migrations not yet applied", async () => {
-    fs.promises.readdir.mockResolvedValue(ALL_MIGRATION_DIRS);
-    prisma.$queryRaw.mockResolvedValue(APPLIED_MIGRATIONS);
+describe("migrationService.getMigrations", () => {
+  describe("with status=pending", () => {
+    it("returns only pending migrations", async () => {
+      fs.promises.readdir.mockResolvedValue(ALL_MIGRATION_DIRS);
+      prisma.$queryRaw.mockResolvedValue(APPLIED_MIGRATIONS);
 
-    const result = await migrationService.getPendingMigrations();
+      const result = await migrationService.getMigrations("pending");
 
-    expect(result.pending).toEqual(["20260218232852_add_user_role"]);
-    expect(result.total).toBe(1);
+      expect(result.migrations).toEqual(["20260218232852_add_user_role"]);
+      expect(result.total).toBe(1);
+      expect(result.status).toBe("pending");
+    });
+
+    it("returns empty list when all migrations are applied", async () => {
+      fs.promises.readdir.mockResolvedValue(ALL_MIGRATION_DIRS.slice(0, 2));
+      prisma.$queryRaw.mockResolvedValue(APPLIED_MIGRATIONS);
+
+      const result = await migrationService.getMigrations("pending");
+
+      expect(result.migrations).toEqual([]);
+      expect(result.total).toBe(0);
+    });
   });
 
-  it("returns empty list when all migrations are applied", async () => {
-    fs.promises.readdir.mockResolvedValue(ALL_MIGRATION_DIRS.slice(0, 2));
-    prisma.$queryRaw.mockResolvedValue(APPLIED_MIGRATIONS);
+  describe("with status=applied", () => {
+    it("returns only applied migrations", async () => {
+      fs.promises.readdir.mockResolvedValue(ALL_MIGRATION_DIRS);
+      prisma.$queryRaw.mockResolvedValue(APPLIED_MIGRATIONS);
 
-    const result = await migrationService.getPendingMigrations();
+      const result = await migrationService.getMigrations("applied");
 
-    expect(result.pending).toEqual([]);
-    expect(result.total).toBe(0);
+      expect(result.migrations).toEqual([
+        "20260217232444_switch_to_postgres",
+        "20260218044512_add_university_fields",
+      ]);
+      expect(result.total).toBe(2);
+      expect(result.status).toBe("applied");
+    });
+  });
+
+  describe("with no status filter", () => {
+    it("defaults to applied migrations", async () => {
+      fs.promises.readdir.mockResolvedValue(ALL_MIGRATION_DIRS);
+      prisma.$queryRaw.mockResolvedValue(APPLIED_MIGRATIONS);
+
+      const result = await migrationService.getMigrations();
+
+      expect(result.migrations).toEqual([
+        "20260217232444_switch_to_postgres",
+        "20260218044512_add_university_fields",
+      ]);
+      expect(result.total).toBe(2);
+      expect(result.status).toBe("applied");
+    });
   });
 
   it("returns all migrations as pending when none are applied", async () => {
     fs.promises.readdir.mockResolvedValue(ALL_MIGRATION_DIRS);
     prisma.$queryRaw.mockResolvedValue([]);
 
-    const result = await migrationService.getPendingMigrations();
+    const result = await migrationService.getMigrations("pending");
 
     expect(result.total).toBe(3);
-    expect(result.pending).toHaveLength(3);
+    expect(result.migrations).toHaveLength(3);
   });
 
   it("ignores non-directory entries like migration_lock.toml", async () => {
@@ -64,9 +99,9 @@ describe("migrationService.getPendingMigrations", () => {
     fs.promises.readdir.mockResolvedValue(entriesWithFile);
     prisma.$queryRaw.mockResolvedValue(APPLIED_MIGRATIONS);
 
-    const result = await migrationService.getPendingMigrations();
+    const result = await migrationService.getMigrations("pending");
 
-    expect(result.pending).toEqual([]);
+    expect(result.migrations).toEqual([]);
     expect(result.total).toBe(0);
   });
 
@@ -74,7 +109,7 @@ describe("migrationService.getPendingMigrations", () => {
     fs.promises.readdir.mockResolvedValue(ALL_MIGRATION_DIRS);
     prisma.$queryRaw.mockRejectedValue(new Error("DB error"));
 
-    await expect(migrationService.getPendingMigrations()).rejects.toThrow(
+    await expect(migrationService.getMigrations("pending")).rejects.toThrow(
       "DB error",
     );
   });

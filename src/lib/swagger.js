@@ -2474,24 +2474,54 @@ const swaggerSpec = {
     "/api/v1/migrations": {
       get: {
         tags: ["Migrations"],
-        summary: "List pending migrations",
+        summary: "List migrations",
         description:
-          "Returns all database migrations that have not yet been applied. Requires ADMIN role.",
+          "Returns database migrations filtered by status. Requires ADMIN role.",
         security: [{ BearerAuth: [] }],
+        parameters: [
+          {
+            name: "status",
+            in: "query",
+            required: false,
+            description: "Filter by migration status. Defaults to applied.",
+            schema: {
+              type: "string",
+              enum: ["pending", "applied"],
+              default: "applied",
+            },
+          },
+        ],
         responses: {
           200: {
-            description: "List of pending migrations",
+            description: "List of migrations",
             content: {
               "application/json": {
                 schema: {
                   type: "object",
                   properties: {
-                    pending: {
+                    migrations: {
                       type: "array",
-                      items: { type: "string" },
-                      example: ["20260218232852_add_user_role"],
+                      items: {
+                        oneOf: [
+                          { type: "string" },
+                          {
+                            type: "object",
+                            properties: {
+                              name: { type: "string" },
+                              status: {
+                                type: "string",
+                                enum: ["applied", "pending"],
+                              },
+                            },
+                          },
+                        ],
+                      },
                     },
                     total: { type: "integer", example: 1 },
+                    status: {
+                      type: "string",
+                      enum: ["pending", "applied", "all"],
+                    },
                   },
                 },
               },

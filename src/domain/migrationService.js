@@ -2,7 +2,7 @@ import fs from "fs";
 import path from "path";
 import prisma from "@/lib/prisma";
 
-export async function getPendingMigrations() {
+export async function getMigrations(status) {
   const migrationsDir = path.join(process.cwd(), "prisma", "migrations");
 
   const entries = await fs.promises.readdir(migrationsDir, {
@@ -23,12 +23,11 @@ export async function getPendingMigrations() {
     appliedMigrations.map((migration) => migration.migration_name),
   );
 
-  const pendingMigrations = migrationFolders.filter(
-    (migrationName) => !appliedNames.has(migrationName),
-  );
+  if (status === "pending") {
+    const pending = migrationFolders.filter((name) => !appliedNames.has(name));
+    return { migrations: pending, total: pending.length, status: "pending" };
+  }
 
-  return {
-    pending: pendingMigrations,
-    total: pendingMigrations.length,
-  };
+  const applied = migrationFolders.filter((name) => appliedNames.has(name));
+  return { migrations: applied, total: applied.length, status: "applied" };
 }
