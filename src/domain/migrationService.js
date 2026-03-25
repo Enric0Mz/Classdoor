@@ -53,9 +53,7 @@ export async function runPendingMigrations() {
     ".bin",
     "prisma",
   );
-  const { stdout, stderr } = await execAsync(
-    `${prismaBinary} migrate deploy`,
-  );
+  const { stdout, stderr } = await execAsync(`${prismaBinary} migrate deploy`);
 
   return {
     message: "Migrations applied successfully",
