@@ -110,7 +110,9 @@ describe("migrationService.runPendingMigrations", () => {
 
     const result = await migrationService.runPendingMigrations();
 
-    expect(exec).toHaveBeenCalledWith("npx prisma migrate deploy");
+    expect(exec).toHaveBeenCalledWith(
+      expect.stringContaining("prisma migrate deploy"),
+    );
     expect(result.migrationsRun).toBe(1);
     expect(result.message).toBe("Migrations applied successfully");
     expect(result.output).toBe("1 migration applied.");

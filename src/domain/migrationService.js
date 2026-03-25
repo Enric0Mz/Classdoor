@@ -47,7 +47,15 @@ export async function runPendingMigrations() {
     };
   }
 
-  const { stdout, stderr } = await execAsync("npx prisma migrate deploy");
+  const prismaBinary = path.join(
+    process.cwd(),
+    "node_modules",
+    ".bin",
+    "prisma",
+  );
+  const { stdout, stderr } = await execAsync(
+    `${prismaBinary} migrate deploy`,
+  );
 
   return {
     message: "Migrations applied successfully",
