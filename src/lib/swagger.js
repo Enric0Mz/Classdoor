@@ -2471,6 +2471,81 @@ const swaggerSpec = {
         },
       },
     },
+    "/api/v1/migrations": {
+      get: {
+        tags: ["Migrations"],
+        summary: "List migrations",
+        description:
+          "Returns database migrations filtered by status. Requires ADMIN role.",
+        security: [{ BearerAuth: [] }],
+        parameters: [
+          {
+            name: "status",
+            in: "query",
+            required: false,
+            description: "Filter by migration status. Defaults to applied.",
+            schema: {
+              type: "string",
+              enum: ["pending", "applied"],
+              default: "applied",
+            },
+          },
+        ],
+        responses: {
+          200: {
+            description: "List of migrations",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    migrations: {
+                      type: "array",
+                      items: {
+                        oneOf: [
+                          { type: "string" },
+                          {
+                            type: "object",
+                            properties: {
+                              name: { type: "string" },
+                              status: {
+                                type: "string",
+                                enum: ["applied", "pending"],
+                              },
+                            },
+                          },
+                        ],
+                      },
+                    },
+                    total: { type: "integer", example: 1 },
+                    status: {
+                      type: "string",
+                      enum: ["pending", "applied", "all"],
+                    },
+                  },
+                },
+              },
+            },
+          },
+          401: {
+            description: "Authentication required",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
+          403: {
+            description: "Forbidden — admin role required",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
+        },
+      },
+    },
   },
   components: {
     securitySchemes: {
