@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { translateError } from "@/lib/errorMessages";
 import {
   GraduationCap,
   Mail,
@@ -119,7 +120,10 @@ export default function MePage() {
         if (!response.ok) {
           const data = await response.json().catch(() => ({}));
           throw new Error(
-            data.error?.message || "Não foi possível carregar seu perfil.",
+            translateError(
+              data.error?.message,
+              "Não foi possível carregar seu perfil.",
+            ),
           );
         }
 
@@ -171,7 +175,9 @@ export default function MePage() {
       });
       if (!response.ok) {
         const data = await response.json().catch(() => ({}));
-        throw new Error(data.error?.message || "Erro ao deletar conta.");
+        throw new Error(
+          translateError(data.error?.message, "Erro ao deletar conta."),
+        );
       }
       clearTokens();
       router.push("/");
@@ -893,7 +899,9 @@ function MyReviewCard({ review, onUpdate, onRemove }) {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error?.message || "Erro ao atualizar avaliação.");
+        throw new Error(
+          translateError(data.error?.message, "Erro ao atualizar avaliação."),
+        );
       }
 
       if (data.moderation?.status === "PENDING_MODERATION") {

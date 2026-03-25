@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { translateError } from "@/lib/errorMessages";
 import {
   GraduationCap,
   RefreshCw,
@@ -71,9 +72,10 @@ export default function RegisterPage() {
 
       if (!response.ok) {
         throw new Error(
-          data.error?.message ||
-            data.error ||
+          translateError(
+            data.error?.message || data.error,
             "Erro ao criar conta. Tente novamente.",
+          ),
         );
       }
 

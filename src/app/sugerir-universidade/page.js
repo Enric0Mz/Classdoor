@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { GraduationCap, ArrowLeft, Lightbulb } from "lucide-react";
+import { translateError } from "@/lib/errorMessages";
 import {
   fetchWithAuth,
   AuthExpiredError,
@@ -96,7 +97,9 @@ export default function SugerirUniversidadePage() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error?.message || "Erro ao enviar sugestao.");
+        throw new Error(
+          translateError(data.error?.message, "Erro ao enviar sugestão."),
+        );
       }
 
       setSuccess(true);

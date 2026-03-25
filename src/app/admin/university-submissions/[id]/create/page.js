@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import { translateError } from "@/lib/errorMessages";
 import {
   fetchWithAuth,
   AuthExpiredError,
@@ -117,7 +118,10 @@ export default function CreateUniversityFromSubmissionPage() {
 
       if (!createResponse.ok) {
         throw new Error(
-          createData.error?.message || "Erro ao criar universidade.",
+          translateError(
+            createData.error?.message,
+            "Erro ao criar universidade.",
+          ),
         );
       }
 
@@ -137,7 +141,10 @@ export default function CreateUniversityFromSubmissionPage() {
       if (!approveResponse.ok) {
         const approveData = await approveResponse.json().catch(() => ({}));
         throw new Error(
-          approveData.error?.message || "Erro ao aprovar sugestao.",
+          translateError(
+            approveData.error?.message,
+            "Erro ao aprovar sugestão.",
+          ),
         );
       }
 

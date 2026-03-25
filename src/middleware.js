@@ -1,11 +1,15 @@
 import { NextResponse } from "next/server";
 import { isRequestAllowed } from "@/lib/rateLimiter";
 
-const ALLOWED_ORIGINS = [
+const PRODUCTION_ORIGINS = [
   "https://www.infocampus.com.br",
   "https://qa.infocampus.com.br",
-  "http://localhost:3000",
 ];
+
+const ALLOWED_ORIGINS =
+  process.env.NODE_ENV === "development"
+    ? [...PRODUCTION_ORIGINS, "http://localhost:3000"]
+    : PRODUCTION_ORIGINS;
 
 const VERCEL_PREVIEW_PATTERN = /^https:\/\/[\w-]+\.vercel\.app$/;
 

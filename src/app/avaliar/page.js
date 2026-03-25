@@ -3,6 +3,7 @@
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { translateError } from "@/lib/errorMessages";
 import {
   GraduationCap,
   Search,
@@ -310,7 +311,9 @@ function AvaliarContent() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error?.message || "Erro ao enviar avaliação.");
+        throw new Error(
+          translateError(data.error?.message, "Erro ao enviar avaliação."),
+        );
       }
 
       if (data.moderation?.status === "PENDING_MODERATION") {

@@ -125,18 +125,15 @@ export async function loginUser({ identifier, password }) {
 
   const isEmail = EMAIL_REGEX.test(identifier);
   const user = isEmail
-    ? await userRepository.findByEmail(identifier)
-    : await userRepository.findByUsername(identifier);
+    ? await userRepository.findByEmailForAuth(identifier)
+    : await userRepository.findByUsernameForAuth(identifier);
 
   if (!user) {
     throw new AppError("Invalid credentials", 401);
   }
 
-  if (!user.password && user.authProvider === "google") {
-    throw new AppError(
-      "This account uses Google sign-in. Please log in with Google.",
-      400,
-    );
+  if (!user.password) {
+    throw new AppError("Invalid credentials", 401);
   }
 
   const valid = await bcrypt.compare(password, user.password);

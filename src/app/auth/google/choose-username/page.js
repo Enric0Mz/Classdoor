@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { GraduationCap, User, RefreshCw } from "lucide-react";
 import { generateUsername } from "@/lib/generateUsername";
+import { translateError } from "@/lib/errorMessages";
 
 function ChooseUsernameContent() {
   const router = useRouter();
@@ -38,9 +39,10 @@ function ChooseUsernameContent() {
 
       if (!response.ok) {
         throw new Error(
-          data.error?.message ||
-            data.error ||
+          translateError(
+            data.error?.message || data.error,
             "Erro ao criar conta. Tente novamente.",
+          ),
         );
       }
 

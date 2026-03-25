@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { translateError } from "@/lib/errorMessages";
 import {
   Clock,
   CheckCircle,
@@ -125,7 +126,9 @@ export default function AdminUniversitySubmissionsPage() {
 
         if (!response.ok) {
           const data = await response.json().catch(() => ({}));
-          throw new Error(data.error?.message || "Erro ao carregar sugestoes.");
+          throw new Error(
+            translateError(data.error?.message, "Erro ao carregar sugestões."),
+          );
         }
 
         const data = await response.json();

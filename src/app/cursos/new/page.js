@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, BookOpen } from "lucide-react";
+import { translateError } from "@/lib/errorMessages";
 import {
   fetchWithAuth,
   AuthExpiredError,
@@ -90,7 +91,9 @@ export default function NewCoursePage() {
 
       const data = await res.json();
       if (!res.ok) {
-        throw new Error(data.error?.message || "Erro ao criar curso");
+        throw new Error(
+          translateError(data.error?.message, "Erro ao criar curso."),
+        );
       }
 
       router.push(`/courses/${data.id}`);

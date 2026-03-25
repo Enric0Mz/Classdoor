@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, MapPin, Globe, User, Calendar } from "lucide-react";
+import { translateError } from "@/lib/errorMessages";
 import {
   fetchWithAuth,
   AuthExpiredError,
@@ -104,7 +105,9 @@ export default function RejectSubmissionPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error?.message || "Erro ao rejeitar sugestao.");
+        throw new Error(
+          translateError(data.error?.message, "Erro ao rejeitar sugestão."),
+        );
       }
 
       router.push("/admin/university-submissions");
