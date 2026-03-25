@@ -2529,7 +2529,10 @@ const swaggerSpec = {
                 schema: {
                   type: "object",
                   properties: {
-                    message: { type: "string", example: "Migrations applied successfully" },
+                    message: {
+                      type: "string",
+                      example: "Migrations applied successfully",
+                    },
                     migrationsRun: { type: "integer", example: 1 },
                     output: {
                       type: "string",
