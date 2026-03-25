@@ -8,7 +8,10 @@ export const GET = withErrorHandler(async (request) => {
   const decoded = await requireVerifiedUser(request);
   requireRole(decoded, ["ADMIN"]);
 
-  const result = await migrationService.getPendingMigrations();
+  const { searchParams } = new URL(request.url);
+  const status = searchParams.get("status");
+
+  const result = await migrationService.getMigrations(status);
 
   return NextResponse.json(result);
 });
