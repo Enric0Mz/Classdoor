@@ -2471,7 +2471,6 @@ const swaggerSpec = {
         },
       },
     },
-  },
     "/api/v1/migrations": {
       get: {
         tags: ["Migrations"],
