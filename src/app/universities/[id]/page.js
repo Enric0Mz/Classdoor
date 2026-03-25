@@ -1152,10 +1152,7 @@ export default function UniversityDetailPage() {
         if (!uniResponse.ok) {
           const data = await uniResponse.json();
           throw new Error(
-            translateError(
-              data.error?.message,
-              "Universidade não encontrada.",
-            ),
+            translateError(data.error?.message, "Universidade não encontrada."),
           );
         }
 
