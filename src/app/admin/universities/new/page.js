@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { GraduationCap, ArrowLeft, Building2 } from "lucide-react";
+import { translateError } from "@/lib/errorMessages";
 import {
   fetchWithAuth,
   AuthExpiredError,
@@ -98,7 +99,9 @@ export default function CreateUniversityPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error?.message || "Erro ao criar universidade.");
+        throw new Error(
+          translateError(data.error?.message, "Erro ao criar universidade."),
+        );
       }
 
       router.push(`/universities/${data.id}`);

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { GraduationCap, AtSign, Lock, Eye, EyeOff, Zap } from "lucide-react";
 import GoogleAuthButton from "@/components/GoogleAuthButton";
+import { translateError } from "@/lib/errorMessages";
 
 const GOOGLE_AUTH_ERRORS = {
   google_auth_denied: "Login com Google foi cancelado.",
@@ -52,7 +53,9 @@ function LoginPageContent() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error?.message || "Email ou senha inválidos.");
+        throw new Error(
+          translateError(data.error?.message, "Email ou senha inválidos."),
+        );
       }
 
       localStorage.setItem("token", data.token);

@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
+import { translateError } from "@/lib/errorMessages";
 import {
   MapPin,
   Heart,
@@ -619,7 +620,9 @@ function ReviewCard({ review, isAdmin, isOwner, onDelete, onEdit }) {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error?.message || "Erro ao atualizar avaliação.");
+        throw new Error(
+          translateError(data.error?.message, "Erro ao atualizar avaliação."),
+        );
       }
 
       if (data.moderation?.status === "PENDING_MODERATION") {
@@ -1149,7 +1152,10 @@ export default function UniversityDetailPage() {
         if (!uniResponse.ok) {
           const data = await uniResponse.json();
           throw new Error(
-            data.error?.message || "Universidade não encontrada.",
+            translateError(
+              data.error?.message,
+              "Universidade não encontrada.",
+            ),
           );
         }
 
