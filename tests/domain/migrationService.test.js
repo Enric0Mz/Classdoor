@@ -1,7 +1,6 @@
 import * as migrationService from "@/domain/migrationService";
 import prisma from "@/lib/prisma";
 import fs from "fs";
-import { exec } from "child_process";
 
 jest.mock("@/lib/prisma", () => ({
   $queryRaw: jest.fn(),
@@ -11,14 +10,6 @@ jest.mock("fs", () => ({
   promises: {
     readdir: jest.fn(),
   },
-}));
-
-jest.mock("child_process", () => ({
-  exec: jest.fn(),
-}));
-
-jest.mock("util", () => ({
-  promisify: (fn) => fn,
 }));
 
 const APPLIED_MIGRATIONS = [
@@ -85,56 +76,6 @@ describe("migrationService.getPendingMigrations", () => {
 
     await expect(migrationService.getPendingMigrations()).rejects.toThrow(
       "DB error",
-    );
-  });
-});
-
-describe("migrationService.runPendingMigrations", () => {
-  it("returns early when no pending migrations", async () => {
-    fs.promises.readdir.mockResolvedValue(ALL_MIGRATION_DIRS.slice(0, 2));
-    prisma.$queryRaw.mockResolvedValue(APPLIED_MIGRATIONS);
-
-    const result = await migrationService.runPendingMigrations();
-
-    expect(result).toEqual({
-      message: "No pending migrations",
-      migrationsRun: 0,
-    });
-    expect(exec).not.toHaveBeenCalled();
-  });
-
-  it("runs deploy command when there are pending migrations", async () => {
-    fs.promises.readdir.mockResolvedValue(ALL_MIGRATION_DIRS);
-    prisma.$queryRaw.mockResolvedValue(APPLIED_MIGRATIONS);
-    exec.mockResolvedValue({ stdout: "1 migration applied.", stderr: "" });
-
-    const result = await migrationService.runPendingMigrations();
-
-    expect(exec).toHaveBeenCalledWith(
-      expect.stringContaining("prisma migrate deploy"),
-    );
-    expect(result.migrationsRun).toBe(1);
-    expect(result.message).toBe("Migrations applied successfully");
-    expect(result.output).toBe("1 migration applied.");
-  });
-
-  it("uses stderr output when stdout is empty", async () => {
-    fs.promises.readdir.mockResolvedValue(ALL_MIGRATION_DIRS);
-    prisma.$queryRaw.mockResolvedValue(APPLIED_MIGRATIONS);
-    exec.mockResolvedValue({ stdout: "", stderr: "Applied migration." });
-
-    const result = await migrationService.runPendingMigrations();
-
-    expect(result.output).toBe("Applied migration.");
-  });
-
-  it("throws when exec command fails", async () => {
-    fs.promises.readdir.mockResolvedValue(ALL_MIGRATION_DIRS);
-    prisma.$queryRaw.mockResolvedValue(APPLIED_MIGRATIONS);
-    exec.mockRejectedValue(new Error("Command failed"));
-
-    await expect(migrationService.runPendingMigrations()).rejects.toThrow(
-      "Command failed",
     );
   });
 });

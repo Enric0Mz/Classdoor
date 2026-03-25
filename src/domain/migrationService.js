@@ -1,10 +1,6 @@
-import { exec } from "child_process";
-import { promisify } from "util";
 import fs from "fs";
 import path from "path";
 import prisma from "@/lib/prisma";
-
-const execAsync = promisify(exec);
 
 export async function getPendingMigrations() {
   const migrationsDir = path.join(process.cwd(), "prisma", "migrations");
@@ -34,30 +30,5 @@ export async function getPendingMigrations() {
   return {
     pending: pendingMigrations,
     total: pendingMigrations.length,
-  };
-}
-
-export async function runPendingMigrations() {
-  const { pending } = await getPendingMigrations();
-
-  if (pending.length === 0) {
-    return {
-      message: "No pending migrations",
-      migrationsRun: 0,
-    };
-  }
-
-  const prismaBinary = path.join(
-    process.cwd(),
-    "node_modules",
-    ".bin",
-    "prisma",
-  );
-  const { stdout, stderr } = await execAsync(`${prismaBinary} migrate deploy`);
-
-  return {
-    message: "Migrations applied successfully",
-    migrationsRun: pending.length,
-    output: stdout || stderr,
   };
 }

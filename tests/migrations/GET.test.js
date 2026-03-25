@@ -14,7 +14,6 @@ jest.mock("@/lib/authorization", () => ({
 
 jest.mock("@/domain/migrationService", () => ({
   getPendingMigrations: jest.fn(),
-  runPendingMigrations: jest.fn(),
 }));
 
 jest.mock("next/server", () => ({

@@ -2515,53 +2515,6 @@ const swaggerSpec = {
           },
         },
       },
-      post: {
-        tags: ["Migrations"],
-        summary: "Run pending migrations",
-        description:
-          "Applies all pending database migrations using prisma migrate deploy. Requires ADMIN role.",
-        security: [{ BearerAuth: [] }],
-        responses: {
-          200: {
-            description: "Migration result",
-            content: {
-              "application/json": {
-                schema: {
-                  type: "object",
-                  properties: {
-                    message: {
-                      type: "string",
-                      example: "Migrations applied successfully",
-                    },
-                    migrationsRun: { type: "integer", example: 1 },
-                    output: {
-                      type: "string",
-                      nullable: true,
-                      example: "1 migration applied.",
-                    },
-                  },
-                },
-              },
-            },
-          },
-          401: {
-            description: "Authentication required",
-            content: {
-              "application/json": {
-                schema: { $ref: "#/components/schemas/Error" },
-              },
-            },
-          },
-          403: {
-            description: "Forbidden — admin role required",
-            content: {
-              "application/json": {
-                schema: { $ref: "#/components/schemas/Error" },
-              },
-            },
-          },
-        },
-      },
     },
   },
   components: {

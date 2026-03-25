@@ -12,12 +12,3 @@ export const GET = withErrorHandler(async (request) => {
 
   return NextResponse.json(result);
 });
-
-export const POST = withErrorHandler(async (request) => {
-  const decoded = await requireVerifiedUser(request);
-  requireRole(decoded, ["ADMIN"]);
-
-  const result = await migrationService.runPendingMigrations();
-
-  return NextResponse.json(result);
-});
