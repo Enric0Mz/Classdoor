@@ -12,6 +12,8 @@ const NAV_LINKS = [
   { label: "Salários", href: "/em-breve" },
 ];
 
+const HIDDEN_ROUTES = ["/login", "/logout", "/register"];
+
 function getEmailFromToken(token) {
   try {
     const payload = JSON.parse(atob(token.split(".")[1]));
@@ -67,6 +69,10 @@ export default function Navbar() {
   function handleLogout() {
     setIsDropdownOpen(false);
     router.push("/logout");
+  }
+
+  if (HIDDEN_ROUTES.includes(pathname)) {
+    return null;
   }
 
   return (

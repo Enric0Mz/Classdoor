@@ -149,6 +149,8 @@
   --color-surface-container-lowest: var(--surface-container-lowest);
   --color-surface-container-low: var(--surface-container-low);
   --color-surface-container: var(--surface-container);
+  --color-surface-container-high: #e7e8e9;
+  --color-outline: #757780;
 }
 
 @layer components {

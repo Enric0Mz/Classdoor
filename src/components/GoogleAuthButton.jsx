@@ -38,7 +38,7 @@ export default function GoogleAuthButton({ label, intent = "register" }) {
       type="button"
       onClick={handleClick}
       disabled={isLoading}
-      className="flex w-full cursor-pointer items-center justify-center gap-2.5 rounded-xl border border-gray-200 bg-white py-2.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:opacity-60"
+      className="flex w-full cursor-pointer items-center justify-center gap-3 rounded-xl border border-outline-variant bg-white px-4 py-3.5 font-semibold text-primary transition-all duration-200 hover:bg-surface active:scale-[0.98] disabled:opacity-60"
     >
       {isLoading ? (
         <>
