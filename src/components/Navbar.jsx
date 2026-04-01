@@ -3,22 +3,13 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import {
-  Search,
-  Bell,
-  GraduationCap,
-  Menu,
-  X,
-  Zap,
-  UserCircle,
-  LogOut,
-} from "lucide-react";
+import { Search, Menu, X, UserCircle, LogOut } from "lucide-react";
 
 const NAV_LINKS = [
-  { label: "Explorar 🔍", href: "/universities" },
-  { label: "Rankings 🏆", href: "/em-breve" },
-  { label: "Cursos 📚", href: "/courses" },
-  { label: "Salários 💰", href: "/em-breve" },
+  { label: "Explorar", href: "/universities" },
+  { label: "Rankings", href: "/em-breve" },
+  { label: "Cursos", href: "/courses" },
+  { label: "Salários", href: "/em-breve" },
 ];
 
 function getEmailFromToken(token) {
@@ -79,91 +70,64 @@ export default function Navbar() {
   }
 
   return (
-    <header
-      className="sticky top-0 z-50 border-b border-sky-400/20 backdrop-blur-xl shadow-[0_1px_30px_-4px_rgba(28,77,141,0.25)]"
-      style={{
-        background:
-          "linear-gradient(135deg, #0F2854 0%, #1C4D8D 50%, #0F2854 100%)",
-      }}
-    >
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        {/* Logo */}
-        <Link href="/" className="flex shrink-0 items-center gap-2.5">
-          <div className="blue-gradient flex h-9 w-9 items-center justify-center rounded-xl text-white shadow-lg shadow-sky-500/30">
-            <GraduationCap size={20} />
-          </div>
-          <span className="blue-gradient-text text-[1.3rem] font-extrabold tracking-tight">
+    <header className="fixed top-0 z-50 w-full bg-white/70 shadow-sm backdrop-blur-md">
+      <nav className="mx-auto flex max-w-7xl items-center justify-between px-6 py-3">
+        {/* Left: Logo + Search */}
+        <div className="flex items-center gap-8">
+          <Link
+            href="/"
+            className="font-headline text-2xl font-bold tracking-tight text-blue-950"
+          >
             InfoCampus
-          </span>
-        </Link>
+          </Link>
 
-        {/* Desktop nav links */}
-        <nav className="ml-8 hidden items-center gap-1 md:flex">
+          {/* Desktop search */}
+          <div className="hidden items-center rounded-lg border border-outline-variant/20 bg-slate-50 px-3 py-1.5 lg:flex">
+            <Search size={16} className="text-slate-400" />
+            <input
+              type="text"
+              placeholder="Buscar universidades..."
+              className="w-56 border-none bg-transparent text-sm text-on-surface outline-none placeholder:text-slate-400 focus:ring-0"
+            />
+          </div>
+        </div>
+
+        {/* Center: Nav links */}
+        <div className="hidden items-center gap-8 md:flex">
           {NAV_LINKS.map((link) => {
-            const isActive = pathname === link.href;
+            const isActive = pathname === link.href || pathname === "/" && link.href === "/universities";
             return (
               <Link
                 key={link.label}
                 href={link.href}
-                className={`rounded-xl px-3 py-2 text-[0.88rem] transition-all ${
+                className={`text-sm transition-colors ${
                   isActive
-                    ? "bg-white/10 font-semibold text-white"
-                    : "font-normal text-gray-400 hover:bg-white/5 hover:text-gray-200"
+                    ? "border-b-2 border-yellow-500 pb-1 font-bold text-blue-700"
+                    : "font-normal text-slate-600 hover:text-blue-900"
                 }`}
               >
                 {link.label}
               </Link>
             );
           })}
-        </nav>
+        </div>
 
-        {/* Right side */}
-        <div className="flex items-center gap-2">
-          {/* Search — hidden on mobile */}
-          <div className="hidden items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3.5 py-2 sm:flex">
-            <Search size={16} className="text-gray-500" />
-            <input
-              type="text"
-              placeholder="Busca aí..."
-              className="w-40 bg-transparent text-[0.85rem] text-gray-200 outline-none placeholder:text-gray-600"
-            />
-          </div>
-
-          {/* Bell */}
-          <button className="relative cursor-pointer rounded-xl p-2.5 text-gray-400 transition-colors hover:bg-white/8 hover:text-gray-200">
-            <Bell size={20} />
-            <span className="absolute right-1.5 top-1.5 h-2.5 w-2.5 rounded-full border-2 border-[#0F2854] bg-sky-400" />
-          </button>
-
-          {/* Avaliar — hidden on mobile */}
-          <Link
-            href={userEmail ? "/avaliar" : "/register"}
-            className="blue-gradient hidden items-center gap-2 rounded-xl px-4 py-2 text-[0.85rem] text-white shadow-md shadow-sky-500/20 transition-opacity hover:opacity-90 sm:flex"
-          >
-            <Zap size={16} />
-            Avaliar
-          </Link>
-
-          {/* Auth area */}
+        {/* Right: Auth */}
+        <div className="flex items-center gap-4">
           {userEmail ? (
             <div className="relative" ref={dropdownRef}>
               <button
                 onClick={() => setIsDropdownOpen((prev) => !prev)}
-                className="blue-gradient flex h-9 w-9 cursor-pointer items-center justify-center rounded-full text-[0.75rem] font-semibold text-white shadow-md shadow-sky-500/30 transition-opacity hover:opacity-80"
+                className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full bg-primary text-xs font-semibold text-white transition-opacity hover:opacity-80"
                 title={userEmail}
               >
                 {getInitials(userEmail)}
               </button>
 
               {isDropdownOpen && (
-                <div
-                  className="absolute right-0 top-11 w-52 rounded-xl border border-white/10 shadow-xl shadow-black/40 backdrop-blur-xl"
-                  style={{
-                    background: "linear-gradient(135deg, #0F2854, #1C4D8D)",
-                  }}
-                >
-                  <div className="border-b border-white/10 px-4 py-3">
-                    <p className="truncate text-sm text-gray-400">
+                <div className="absolute right-0 top-11 w-52 rounded-xl border border-gray-200 bg-white shadow-xl">
+                  <div className="border-b border-gray-100 px-4 py-3">
+                    <p className="truncate text-sm text-slate-500">
                       {userEmail}
                     </p>
                   </div>
@@ -171,14 +135,14 @@ export default function Navbar() {
                     <Link
                       href="/me"
                       onClick={() => setIsDropdownOpen(false)}
-                      className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-gray-300 transition-colors hover:bg-white/10 hover:text-white"
+                      className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-slate-700 transition-colors hover:bg-slate-50"
                     >
                       <UserCircle size={15} />
                       Ver perfil
                     </Link>
                     <button
                       onClick={handleLogout}
-                      className="flex w-full cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-sm text-red-400 transition-colors hover:bg-red-500/10 hover:text-red-300"
+                      className="flex w-full cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-sm text-red-500 transition-colors hover:bg-red-50"
                     >
                       <LogOut size={15} />
                       Sair
@@ -191,42 +155,39 @@ export default function Navbar() {
             <>
               <Link
                 href="/login"
-                className="rounded-xl border border-white/15 px-4 py-2 text-sm font-medium text-gray-300 transition-colors hover:border-sky-400/50 hover:text-sky-300"
+                className="hidden rounded-lg px-4 py-2 text-sm text-slate-600 transition-colors hover:bg-slate-100/50 sm:block"
               >
                 Entrar
               </Link>
               <Link
-                href="/register"
-                className="blue-gradient rounded-xl px-4 py-2 text-sm font-medium text-white shadow-md shadow-sky-500/20 transition-opacity hover:opacity-90"
+                href={userEmail ? "/avaliar" : "/register"}
+                className="hidden rounded-lg bg-primary px-5 py-2 text-sm font-semibold text-white transition-all duration-150 ease-in-out active:scale-95 sm:block"
               >
-                Cadastrar
+                Avaliar
               </Link>
             </>
           )}
 
           {/* Mobile hamburger */}
           <button
-            className="cursor-pointer p-2 text-gray-400 transition-colors hover:text-gray-200 md:hidden"
+            className="cursor-pointer p-2 text-slate-600 transition-colors hover:text-slate-900 md:hidden"
             onClick={() => setIsMobileMenuOpen((prev) => !prev)}
           >
-            {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+            {isMobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
           </button>
         </div>
-      </div>
+      </nav>
 
       {/* Mobile menu */}
       {isMobileMenuOpen && (
-        <div
-          className="border-t border-white/10 px-4 py-3 md:hidden"
-          style={{ background: "linear-gradient(135deg, #0F2854, #1C4D8D)" }}
-        >
+        <div className="border-t border-gray-100 bg-white px-6 py-3 md:hidden">
           {/* Mobile search */}
-          <div className="mb-3 flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3.5 py-2.5 sm:hidden">
-            <Search size={16} className="text-gray-500" />
+          <div className="mb-3 flex items-center rounded-lg border border-outline-variant/20 bg-slate-50 px-3 py-2.5 sm:hidden">
+            <Search size={16} className="text-slate-400" />
             <input
               type="text"
-              placeholder="Busca aí..."
-              className="w-full bg-transparent text-[0.85rem] text-gray-200 outline-none placeholder:text-gray-600"
+              placeholder="Buscar universidades..."
+              className="w-full border-none bg-transparent text-sm text-on-surface outline-none placeholder:text-slate-400 focus:ring-0"
             />
           </div>
 
@@ -235,22 +196,32 @@ export default function Navbar() {
             <Link
               key={link.label}
               href={link.href}
-              className="block py-2.5 text-[0.9rem] text-gray-400 transition-colors hover:text-gray-100"
+              className="block py-2.5 text-sm text-slate-600 transition-colors hover:text-blue-900"
               onClick={() => setIsMobileMenuOpen(false)}
             >
               {link.label}
             </Link>
           ))}
 
-          {/* Mobile Avaliar button */}
-          <Link
-            href={userEmail ? "/avaliar" : "/register"}
-            className="blue-gradient mt-2 flex w-full items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-[0.85rem] text-white shadow-md shadow-sky-500/20"
-            onClick={() => setIsMobileMenuOpen(false)}
-          >
-            <Zap size={16} />
-            Avaliar uma universidade
-          </Link>
+          {/* Mobile auth */}
+          {!userEmail && (
+            <div className="mt-3 flex flex-col gap-2 border-t border-gray-100 pt-3">
+              <Link
+                href="/login"
+                className="text-center text-sm text-slate-600"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Entrar
+              </Link>
+              <Link
+                href="/register"
+                className="rounded-lg bg-primary py-2.5 text-center text-sm font-semibold text-white"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Avaliar
+              </Link>
+            </div>
+          )}
         </div>
       )}
     </header>
