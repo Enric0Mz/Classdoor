@@ -6,7 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { Search, Menu, X, UserCircle, LogOut } from "lucide-react";
 
 const NAV_LINKS = [
-  { label: "Explorar", href: "/universities" },
+  { label: "Explorar", href: "/" },
   { label: "Rankings", href: "/em-breve" },
   { label: "Cursos", href: "/courses" },
   { label: "Salários", href: "/em-breve" },
@@ -101,7 +101,7 @@ export default function Navbar() {
         {/* Center: Nav links */}
         <div className="hidden items-center gap-8 md:flex">
           {NAV_LINKS.map((link) => {
-            const isActive = pathname === link.href || pathname === "/" && link.href === "/universities";
+            const isActive = pathname === link.href;
             return (
               <Link
                 key={link.label}
