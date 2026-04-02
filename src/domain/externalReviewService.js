@@ -50,6 +50,7 @@ export async function importReviews(payload) {
     if (validReviews.length > 0) {
       const result = await externalReviewRepository.createMany(validReviews);
       importedCount += result.count;
+      await universityRepository.updateRating(university.id);
     }
   }
 

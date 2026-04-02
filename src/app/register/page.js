@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { translateError } from "@/lib/errorMessages";
@@ -17,6 +17,14 @@ export default function RegisterPage() {
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [platformStats, setPlatformStats] = useState(null);
+
+  useEffect(() => {
+    fetch("/api/v1/stats")
+      .then((response) => response.json())
+      .then((data) => setPlatformStats(data))
+      .catch(() => {});
+  }, []);
 
   function refreshUsername() {
     setUsername(generateUsername());
@@ -122,7 +130,7 @@ export default function RegisterPage() {
           <div className="grid grid-cols-2 gap-4">
             <div className="glass-effect rounded-xl border border-white/10 bg-white/[0.05] p-6">
               <div className="mb-1 font-headline text-3xl font-bold text-tertiary-fixed-dim">
-                500+
+                +{platformStats?.universityCount ?? "..."}
               </div>
               <div className="text-xs uppercase tracking-widest text-blue-200/60">
                 Universidades
@@ -130,10 +138,10 @@ export default function RegisterPage() {
             </div>
             <div className="glass-effect rounded-xl border border-white/10 bg-white/[0.05] p-6">
               <div className="mb-1 font-headline text-3xl font-bold text-tertiary-fixed-dim">
-                100%
+                {platformStats?.averageRating ?? "..."}
               </div>
               <div className="text-xs uppercase tracking-widest text-blue-200/60">
-                Verificado
+                Nota Média
               </div>
             </div>
           </div>
@@ -154,8 +162,12 @@ export default function RegisterPage() {
               </div>
             </div>
             <p className="text-sm text-blue-100/80">
-              <span className="font-bold text-white">5k+ estudantes</span> já
-              avaliaram este mês.
+              <span className="font-bold text-white">
+                {platformStats
+                  ? `${platformStats.reviewCount}+ avaliações`
+                  : "Estudantes"}
+              </span>{" "}
+              publicadas na plataforma.
             </p>
           </div>
         </div>

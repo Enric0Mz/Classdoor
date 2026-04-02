@@ -31,6 +31,7 @@ function LoginPageContent() {
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [platformStats, setPlatformStats] = useState(null);
 
   useEffect(() => {
     const googleError = searchParams.get("error");
@@ -38,6 +39,13 @@ function LoginPageContent() {
       setError(GOOGLE_AUTH_ERRORS[googleError]);
     }
   }, [searchParams]);
+
+  useEffect(() => {
+    fetch("/api/v1/stats")
+      .then((response) => response.json())
+      .then((data) => setPlatformStats(data))
+      .catch(() => {});
+  }, []);
 
   async function handleSubmit(event) {
     event.preventDefault();
@@ -113,7 +121,7 @@ function LoginPageContent() {
           <div className="mt-16 grid grid-cols-2 gap-4">
             <div className="glass-effect rounded-xl border border-white/10 bg-white/[0.03] p-6">
               <div className="mb-1 font-headline text-3xl font-bold text-tertiary-fixed-dim">
-                500+
+                +{platformStats?.universityCount ?? "..."}
               </div>
               <div className="text-sm uppercase tracking-widest text-on-primary-container">
                 Universidades
@@ -121,10 +129,10 @@ function LoginPageContent() {
             </div>
             <div className="glass-effect rounded-xl border border-white/10 bg-white/[0.03] p-6">
               <div className="mb-1 font-headline text-3xl font-bold text-tertiary-fixed-dim">
-                100%
+                {platformStats?.averageRating ?? "..."}
               </div>
               <div className="text-sm uppercase tracking-widest text-on-primary-container">
-                Verificadas
+                Nota Média
               </div>
             </div>
           </div>

@@ -1,5 +1,6 @@
 import { AppError } from "@/errors/AppError";
 import * as reviewRepository from "@/repositories/reviewRepository";
+import * as universityRepository from "@/repositories/universityRepository";
 import { sanitizeString } from "@/lib/sanitize";
 import { moderateComment } from "@/domain/moderationService";
 
@@ -121,6 +122,10 @@ export async function createReview(body, authorId) {
     moderationReason,
   });
 
+  if (moderationStatus === "APPROVED") {
+    await universityRepository.updateRating(universityId);
+  }
+
   const result = { review: withIsVerified(review) };
 
   if (moderationStatus === "PENDING_MODERATION") {
@@ -230,6 +235,8 @@ export async function updateReview(id, data, requesterId, requesterRole) {
     });
   }
 
+  await universityRepository.updateRating(review.universityId);
+
   const result = { review: withIsVerified(updatedReview) };
 
   if (moderationStatus === "PENDING_MODERATION") {
@@ -261,5 +268,6 @@ export async function deleteReview(id, requesterId, requesterRole) {
   }
 
   const rootId = review.parentReviewId || review.id;
-  return reviewRepository.remove(rootId);
+  await reviewRepository.remove(rootId);
+  await universityRepository.updateRating(review.universityId);
 }

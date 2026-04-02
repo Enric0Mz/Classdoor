@@ -14,6 +14,7 @@ jest.mock("@/repositories/externalReviewRepository", () => ({
 
 jest.mock("@/repositories/universityRepository", () => ({
   findByName: jest.fn(),
+  updateRating: jest.fn(),
 }));
 
 beforeEach(() => jest.clearAllMocks());

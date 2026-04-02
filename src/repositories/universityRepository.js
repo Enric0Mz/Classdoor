@@ -200,6 +200,47 @@ export async function create({ images, ...data }) {
  * @param {string} domain - e.g. "usp.br"
  * @returns {object|null} The University record or null if not found
  */
+export async function updateRating(universityId) {
+  const [reviewStats, externalStats] = await Promise.all([
+    prisma.review.aggregate({
+      _avg: { rating: true },
+      _count: { rating: true },
+      where: {
+        universityId,
+        moderationStatus: "APPROVED",
+        parentReviewId: null,
+      },
+    }),
+    prisma.externalReview.aggregate({
+      _avg: { rating: true },
+      _count: { rating: true },
+      where: { universityId },
+    }),
+  ]);
+
+  const internalCount = reviewStats._count.rating;
+  const externalCount = externalStats._count.rating;
+  const totalCount = internalCount + externalCount;
+
+  if (totalCount === 0) {
+    return prisma.university.update({
+      where: { id: universityId },
+      data: { rating: null },
+    });
+  }
+
+  const internalSum = (reviewStats._avg.rating || 0) * internalCount;
+  const externalSum = (externalStats._avg.rating || 0) * externalCount;
+  const averageRating = Number(
+    ((internalSum + externalSum) / totalCount).toFixed(1),
+  );
+
+  return prisma.university.update({
+    where: { id: universityId },
+    data: { rating: averageRating },
+  });
+}
+
 export async function remove(id) {
   return prisma.university.delete({ where: { id } });
 }

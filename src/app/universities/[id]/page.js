@@ -19,6 +19,10 @@ import {
   Pencil,
   X,
   ShieldX,
+  Globe,
+  Users,
+  TrendingUp,
+  MessageSquare,
 } from "lucide-react";
 import { fetchWithAuth } from "@/lib/fetchWithAuth";
 import StarPicker from "@/components/StarPicker";
@@ -89,7 +93,7 @@ function parseComment(raw) {
   return { structured: false, text: unescaped };
 }
 
-const TABS = ["Visão geral 👀", "Avaliações ⭐", "Cursos 📖", "Salários 💸"];
+const TABS = ["Visão Geral", "Avaliações", "Avaliações Externas", "Cursos", "Salários"];
 const FILTERS = ["Mais recentes", "Nota alta", "Nota baixa"];
 const DEFAULT_FILTER = "Mais recentes";
 
@@ -99,8 +103,6 @@ function StarRating({ rating, size = 15 }) {
   const fullStars = Math.floor(rating);
   const hasHalf = rating - fullStars >= 0.25 && rating - fullStars < 0.75;
   const dim = `${size}px`;
-  const yellowClass = "shrink-0 text-yellow-400";
-  const grayClass = "shrink-0 text-gray-200";
 
   return (
     <div className="flex items-center gap-0.5">
@@ -110,7 +112,7 @@ function StarRating({ rating, size = 15 }) {
             <svg
               key={i}
               style={{ width: dim, height: dim }}
-              className={yellowClass}
+              className="shrink-0 text-tertiary-fixed-dim"
               viewBox="0 0 20 20"
               fill="currentColor"
             >
@@ -123,7 +125,7 @@ function StarRating({ rating, size = 15 }) {
             <svg
               key={i}
               style={{ width: dim, height: dim }}
-              className={yellowClass}
+              className="shrink-0 text-tertiary-fixed-dim"
               viewBox="0 0 20 20"
             >
               <defs>
@@ -143,7 +145,7 @@ function StarRating({ rating, size = 15 }) {
           <svg
             key={i}
             style={{ width: dim, height: dim }}
-            className={grayClass}
+            className="shrink-0 text-gray-200"
             viewBox="0 0 20 20"
             fill="currentColor"
           >
@@ -155,159 +157,7 @@ function StarRating({ rating, size = 15 }) {
   );
 }
 
-// ─── University Header ────────────────────────────────────────────────────────
-
-function UniversityHeader({
-  university,
-  activeTab,
-  onTabChange,
-  isAdmin,
-  onDeleteUniversity,
-}) {
-  const [following, setFollowing] = useState(false);
-  const [deleteConfirming, setDeleteConfirming] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const initials =
-    university.abbreviation || getUniversityInitials(university.name);
-  const typeLabel = university.type === "PUBLIC" ? "Pública" : "Privada";
-
-  return (
-    <div className="overflow-hidden rounded-2xl border border-white/10 bg-white shadow-lg">
-      {/* Banner — logo + name are both inside, white on dark = perfect readability */}
-      <div className="relative h-44 sm:h-52 overflow-hidden">
-        <ImageCarousel
-          images={university.images}
-          alt={university.name}
-          showArrows={university.images?.length > 1}
-          showDots={university.images?.length > 1}
-          fallback={
-            <div className="h-full w-full bg-gradient-to-br from-slate-800 via-blue-900 to-blue-800" />
-          }
-        />
-        {/* Bottom-heavy gradient so logo + name are always readable */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-
-        {/* Logo + name anchored to banner bottom */}
-        <div className="absolute bottom-0 left-0 right-0 flex items-end gap-3 px-5 pb-5 sm:px-6">
-          {/* Initials logo */}
-          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-white/15 text-sm font-extrabold text-white shadow-inner backdrop-blur-md ring-2 ring-white/25">
-            {initials.slice(0, 3)}
-          </div>
-          {/* Name */}
-          <div className="min-w-0 flex-1 pb-0.5">
-            <h1 className="text-xl font-bold leading-tight text-white drop-shadow-md sm:text-2xl">
-              {university.name}
-            </h1>
-          </div>
-        </div>
-      </div>
-
-      {/* Info strip: meta row + follow button */}
-      <div className="px-5 sm:px-6">
-        <div className="flex items-center gap-3 py-3.5 border-b border-gray-100">
-          {/* Location + type + website */}
-          <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-2 gap-y-1 text-sm text-gray-500">
-            <span className="flex items-center gap-1">
-              <MapPin size={13} className="shrink-0 text-gray-400" />
-              <span>{university.location}</span>
-            </span>
-            <span className="text-gray-300">•</span>
-            <span className="font-medium text-blue-700">{typeLabel}</span>
-            {university.website && (
-              <>
-                <span className="text-gray-300">•</span>
-                <a
-                  href={university.website}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-blue-600 hover:underline"
-                >
-                  Site oficial
-                </a>
-              </>
-            )}
-          </div>
-
-          <div className="flex shrink-0 items-center gap-2">
-            {/* Follow button */}
-            <button
-              onClick={() => setFollowing((prev) => !prev)}
-              className={`flex cursor-pointer items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium transition-all ${
-                following
-                  ? "border border-blue-300 bg-blue-50 text-blue-700 hover:bg-blue-100"
-                  : "brand-gradient border border-transparent text-white hover:opacity-90"
-              }`}
-            >
-              <Heart size={14} fill={following ? "#1c4d8d" : "none"} />
-              {following ? "Seguindo" : "Seguir"}
-            </button>
-
-            {/* Admin delete button */}
-            {isAdmin && (
-              <button
-                onClick={async () => {
-                  if (!deleteConfirming) {
-                    setDeleteConfirming(true);
-                    return;
-                  }
-                  setIsDeleting(true);
-                  try {
-                    const response = await fetchWithAuth(
-                      `/api/v1/universities/${university.id}`,
-                      { method: "DELETE" },
-                    );
-                    if (!response.ok) throw new Error();
-                    onDeleteUniversity();
-                  } catch {
-                    setIsDeleting(false);
-                    setDeleteConfirming(false);
-                  }
-                }}
-                disabled={isDeleting}
-                className={`flex cursor-pointer items-center gap-1.5 rounded-full px-3 py-2 text-sm font-medium transition-all disabled:opacity-60 ${
-                  deleteConfirming
-                    ? "bg-red-500 text-white hover:bg-red-600"
-                    : "border border-red-200 text-red-500 hover:bg-red-50"
-                }`}
-              >
-                <Trash2 size={14} />
-                {isDeleting
-                  ? "Removendo..."
-                  : deleteConfirming
-                    ? "Confirmar"
-                    : ""}
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* Tabs */}
-        <div className="-mx-5 overflow-x-auto sm:-mx-6">
-          <div className="flex min-w-max px-5 sm:px-6">
-            {TABS.map((tab) => {
-              const isActive = activeTab === tab;
-              return (
-                <button
-                  key={tab}
-                  onClick={() => onTabChange(tab)}
-                  className={`cursor-pointer whitespace-nowrap px-4 py-2.5 text-[0.82rem] font-medium transition-colors ${
-                    isActive
-                      ? "border-b-2 border-blue-600 text-blue-700"
-                      : "border-b-2 border-transparent text-gray-400 hover:text-gray-700"
-                  }`}
-                >
-                  {tab}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ─── Rating Overview ──────────────────────────────────────────────────────────
+// ─── Google Maps Icon ────────────────────────────────────────────────────────
 
 function GoogleMapsIcon({ size = 16 }) {
   return (
@@ -326,15 +176,16 @@ function GoogleMapsIcon({ size = 16 }) {
   );
 }
 
-function RatingOverview({ stats, externalStats }) {
+// ─── Rating Overview ─────────────────────────────────────────────────────────
+
+function RatingOverview({ stats }) {
   if (!stats || stats.reviewCount === 0) {
     return (
-      <div className="rounded-2xl border border-gray-100 bg-white p-8 shadow-sm text-center">
-        <p className="text-2xl mb-2">🎓</p>
-        <p className="text-sm font-medium text-gray-500">
-          Ainda não há avaliações.
+      <div className="rounded-2xl border border-outline-variant/20 bg-white p-8 text-center">
+        <p className="mb-2 font-headline text-2xl font-bold text-primary">
+          Sem avaliações
         </p>
-        <p className="mt-0.5 text-xs text-gray-400">
+        <p className="text-sm text-on-surface-variant">
           Seja o primeiro a avaliar esta universidade!
         </p>
       </div>
@@ -342,40 +193,42 @@ function RatingOverview({ stats, externalStats }) {
   }
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
-      <div className="p-5">
-        <h2 className="mb-4 text-base font-semibold text-gray-900">
-          O que a galera acha? 🤔
+    <div className="overflow-hidden rounded-2xl border border-outline-variant/20 bg-white">
+      <div className="p-6">
+        <h2 className="mb-5 font-headline text-lg font-bold text-primary">
+          O que dizem os estudantes
         </h2>
 
-        {/* Big rating */}
-        <div className="brand-gradient rounded-2xl p-5 text-white">
-          <div className="flex flex-wrap items-center gap-5">
+        {/* Big rating card */}
+        <div className="rounded-2xl bg-primary p-6 text-white">
+          <div className="flex flex-wrap items-center gap-6">
             <div>
-              <span className="text-5xl font-extrabold tracking-tight">
+              <span className="font-headline text-5xl font-bold tracking-tight">
                 {stats.averageRating}
               </span>
-              <span className="ml-1 text-sm text-white/70">de 5.0</span>
-              <div className="mt-2">
+              <span className="ml-1.5 text-sm text-white/60">de 5.0</span>
+              <div className="mt-2.5">
                 <StarRating rating={stats.averageRating} size={18} />
               </div>
             </div>
             <div className="flex flex-wrap gap-2">
-              <span className="flex items-center gap-1.5 rounded-full bg-white/20 px-3.5 py-1.5 text-sm font-medium backdrop-blur-sm">
-                📈 {stats.recommendationPercentage}% recomendam
+              <span className="glass-effect flex items-center gap-1.5 rounded-full bg-white/10 px-4 py-2 text-sm font-medium">
+                <TrendingUp size={14} />
+                {stats.recommendationPercentage}% recomendam
               </span>
-              <span className="flex items-center gap-1.5 rounded-full bg-white/20 px-3.5 py-1.5 text-sm font-medium backdrop-blur-sm">
-                👥 {stats.reviewCount}{" "}
+              <span className="glass-effect flex items-center gap-1.5 rounded-full bg-white/10 px-4 py-2 text-sm font-medium">
+                <Users size={14} />
+                {stats.reviewCount}{" "}
                 {stats.reviewCount === 1 ? "avaliação" : "avaliações"}
               </span>
             </div>
           </div>
         </div>
 
-        {/* Difficulty */}
+        {/* Difficulty bar */}
         {stats.averageDifficultyLevel && (
-          <div className="mt-4 flex items-center gap-3">
-            <span className="shrink-0 text-sm text-gray-500">
+          <div className="mt-5 flex items-center gap-3">
+            <span className="shrink-0 text-sm text-on-surface-variant">
               Dificuldade média
             </span>
             <div className="flex flex-1 gap-1">
@@ -385,9 +238,9 @@ function RatingOverview({ stats, externalStats }) {
                   ? i < 2
                     ? "bg-green-400"
                     : i < 4
-                      ? "bg-amber-400"
+                      ? "bg-tertiary-fixed-dim"
                       : "bg-red-400"
-                  : "bg-gray-100";
+                  : "bg-surface-container";
                 return (
                   <div
                     key={i}
@@ -396,56 +249,29 @@ function RatingOverview({ stats, externalStats }) {
                 );
               })}
             </div>
-            <span className="text-sm font-semibold text-gray-700">
+            <span className="text-sm font-semibold text-on-surface">
               {stats.averageDifficultyLevel}/5
             </span>
           </div>
         )}
 
-        {/* External reviews stats */}
-        {externalStats && (
-          <div className="mt-4 flex items-center gap-2.5 rounded-xl border border-blue-100 bg-blue-50/60 px-3.5 py-2.5">
-            <GoogleMapsIcon size={18} />
-            <div className="flex-1">
-              <div className="flex items-center gap-2 text-sm">
-                <span className="font-medium text-gray-700">Google Maps</span>
-                <StarRating rating={externalStats.averageRating} size={12} />
-                <span className="font-semibold text-gray-600">
-                  {externalStats.averageRating}
-                </span>
-                <span className="text-gray-400">
-                  ({externalStats.reviewCount}{" "}
-                  {externalStats.reviewCount === 1 ? "avaliação" : "avaliações"}
-                  )
-                </span>
-              </div>
-              <Link
-                href="/sobre/avaliacoes-externas"
-                className="mt-0.5 inline-block text-xs text-blue-500 hover:underline"
-              >
-                Saiba mais sobre avaliações externas
-              </Link>
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Trust banner */}
-      <div className="flex items-center gap-2.5 border-t border-gray-100 bg-gray-50/40 px-5 py-3">
-        <ShieldCheck size={15} className="shrink-0 text-blue-600" />
-        <p className="text-xs text-gray-500">
-          <span className="font-semibold text-blue-700">
-            Avaliações 100% reais 🔒
+      <div className="flex items-center gap-2.5 border-t border-outline-variant/20 bg-surface-container-low px-6 py-3.5">
+        <ShieldCheck size={15} className="shrink-0 text-secondary" />
+        <p className="text-xs text-on-surface-variant">
+          <span className="font-semibold text-secondary">
+            Avaliações 100% reais
           </span>{" "}
-          Universidades não podem alterar ou remover avaliações. Confiança é
-          tudo!
+          — Universidades não podem alterar ou remover avaliações.
         </p>
       </div>
     </div>
   );
 }
 
-// ─── Filter Bar ───────────────────────────────────────────────────────────────
+// ─── Filter Bar ──────────────────────────────────────────────────────────────
 
 function FilterBar({ activeFilter, onFilterChange }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -468,11 +294,12 @@ function FilterBar({ activeFilter, onFilterChange }) {
   }
 
   return (
-    <div className="flex items-center justify-between py-2">
-      <span className="text-sm font-semibold text-gray-700">
+    <div className="flex items-center justify-between py-3">
+      <span className="text-sm font-semibold text-on-surface">
         {hasActiveFilter ? (
           <>
-            Ordenando por: <span className="text-blue-700">{activeFilter}</span>
+            Ordenando por:{" "}
+            <span className="text-secondary">{activeFilter}</span>
           </>
         ) : (
           activeFilter
@@ -482,10 +309,10 @@ function FilterBar({ activeFilter, onFilterChange }) {
       <div className="relative" ref={dropdownRef}>
         <button
           onClick={() => setIsOpen((prev) => !prev)}
-          className={`flex cursor-pointer items-center gap-2 rounded-full px-4 py-2 text-[0.82rem] font-medium transition-all ${
+          className={`flex cursor-pointer items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-all ${
             hasActiveFilter
-              ? "bg-blue-50 text-blue-700 ring-1 ring-inset ring-blue-200"
-              : "bg-white text-gray-600 hover:bg-gray-50 ring-1 ring-inset ring-gray-200"
+              ? "bg-secondary-container/20 text-secondary ring-1 ring-inset ring-secondary-container"
+              : "bg-white text-on-surface-variant ring-1 ring-inset ring-outline-variant/30 hover:bg-surface-container-low"
           }`}
         >
           <SlidersHorizontal size={13} />
@@ -497,23 +324,23 @@ function FilterBar({ activeFilter, onFilterChange }) {
         </button>
 
         {isOpen && (
-          <div className="absolute right-0 top-full z-20 mt-1.5 w-44 overflow-hidden rounded-xl border border-gray-100 bg-white shadow-lg">
+          <div className="absolute right-0 top-full z-20 mt-1.5 w-44 overflow-hidden rounded-xl border border-outline-variant/20 bg-white shadow-lg">
             {FILTERS.map((filter) => {
               const isActive = activeFilter === filter;
               return (
                 <button
                   key={filter}
                   onClick={() => selectFilter(filter)}
-                  className={`flex w-full cursor-pointer items-center justify-between px-4 py-2.5 text-[0.82rem] transition-colors ${
+                  className={`flex w-full cursor-pointer items-center justify-between px-4 py-2.5 text-sm transition-colors ${
                     isActive
-                      ? "bg-blue-50 font-semibold text-blue-700"
-                      : "text-gray-600 hover:bg-gray-50"
+                      ? "bg-secondary-container/15 font-semibold text-secondary"
+                      : "text-on-surface-variant hover:bg-surface-container-low"
                   }`}
                 >
                   {filter}
                   {isActive && (
                     <svg
-                      className="h-3.5 w-3.5 text-blue-600"
+                      className="h-3.5 w-3.5 text-secondary"
                       viewBox="0 0 20 20"
                       fill="currentColor"
                     >
@@ -534,7 +361,7 @@ function FilterBar({ activeFilter, onFilterChange }) {
   );
 }
 
-// ─── Review Card ──────────────────────────────────────────────────────────────
+// ─── Review Card ─────────────────────────────────────────────────────────────
 
 function ReviewCard({ review, isAdmin, isOwner, onDelete, onEdit }) {
   const [expanded, setExpanded] = useState(false);
@@ -672,14 +499,14 @@ function ReviewCard({ review, isAdmin, isOwner, onDelete, onEdit }) {
   // ── Edit mode rendering ──
   if (isEditing) {
     return (
-      <div className="rounded-2xl border-2 border-blue-200 bg-white p-5 shadow-sm">
+      <div className="rounded-2xl border-2 border-secondary-container bg-white p-5">
         {/* Rejection modal for edit */}
         {editRejectionReason && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-            <div className="relative mx-4 flex w-full max-w-sm flex-col items-center gap-5 rounded-2xl border border-white/10 bg-white p-8 text-center shadow-2xl">
+            <div className="relative mx-4 flex w-full max-w-sm flex-col items-center gap-5 rounded-2xl bg-white p-8 text-center shadow-2xl">
               <button
                 onClick={() => setEditRejectionReason(null)}
-                className="absolute right-4 top-4 cursor-pointer rounded-lg p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
+                className="absolute right-4 top-4 cursor-pointer rounded-lg p-1 text-on-surface-variant transition-colors hover:bg-surface-container hover:text-on-surface"
               >
                 <X size={18} />
               </button>
@@ -687,19 +514,19 @@ function ReviewCard({ review, isAdmin, isOwner, onDelete, onEdit }) {
                 <ShieldX size={32} className="text-red-500" />
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-gray-800">
+                <h3 className="font-headline text-lg font-semibold text-primary">
                   Edição não publicada
                 </h3>
-                <p className="mt-2 text-sm text-gray-600">
+                <p className="mt-2 text-sm text-on-surface-variant">
                   {editRejectionReason}
                 </p>
               </div>
-              <p className="text-xs text-gray-400">
+              <p className="text-xs text-outline">
                 Você pode editar novamente e tentar outra vez.
               </p>
               <button
                 onClick={() => setEditRejectionReason(null)}
-                className="brand-gradient w-full cursor-pointer rounded-xl py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+                className="w-full cursor-pointer rounded-xl bg-primary py-2.5 text-sm font-semibold text-on-primary transition-opacity hover:opacity-90"
               >
                 Entendi, vou revisar
               </button>
@@ -710,14 +537,14 @@ function ReviewCard({ review, isAdmin, isOwner, onDelete, onEdit }) {
         {/* Header */}
         <div className="mb-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Pencil size={14} className="text-blue-600" />
-            <span className="text-sm font-semibold text-gray-700">
+            <Pencil size={14} className="text-secondary" />
+            <span className="text-sm font-semibold text-on-surface">
               Editando avaliação
             </span>
           </div>
           <button
             onClick={cancelEditing}
-            className="cursor-pointer rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
+            className="cursor-pointer rounded-lg p-1.5 text-on-surface-variant transition-colors hover:bg-surface-container hover:text-on-surface"
           >
             <X size={16} />
           </button>
@@ -743,10 +570,10 @@ function ReviewCard({ review, isAdmin, isOwner, onDelete, onEdit }) {
         <div className="space-y-5">
           {/* Rating */}
           <div className="flex flex-col gap-2">
-            <label className="text-sm font-semibold text-gray-700">
+            <label className="text-sm font-semibold text-on-surface">
               Nota geral
             </label>
-            <div className="flex flex-col items-center gap-1 rounded-xl border border-gray-100 bg-gray-50 py-4">
+            <div className="flex flex-col items-center gap-1 rounded-xl border border-outline-variant/20 bg-surface-container-low py-4">
               <StarPicker
                 value={editRating}
                 onChange={setEditRating}
@@ -758,10 +585,10 @@ function ReviewCard({ review, isAdmin, isOwner, onDelete, onEdit }) {
           {/* Difficulty */}
           <div className="flex flex-col gap-2">
             <div className="flex items-baseline justify-between">
-              <label className="text-sm font-semibold text-gray-700">
+              <label className="text-sm font-semibold text-on-surface">
                 Nível de dificuldade
               </label>
-              <span className="text-xs text-gray-400">
+              <span className="text-xs text-outline">
                 1 = mais fácil, 5 = mais difícil
               </span>
             </div>
@@ -771,12 +598,12 @@ function ReviewCard({ review, isAdmin, isOwner, onDelete, onEdit }) {
             />
           </div>
 
-          {/* Prós */}
+          {/* Pros */}
           <div className="flex flex-col gap-1.5">
             <div className="flex items-center gap-1.5">
-              <span className="text-xs">✅</span>
+              <ThumbsUp size={12} className="text-green-600" />
               <span className="text-sm font-semibold text-green-700">Prós</span>
-              <span className="ml-auto text-xs text-gray-400">
+              <span className="ml-auto text-xs text-outline">
                 {editPros.length}/500
               </span>
             </div>
@@ -786,18 +613,18 @@ function ReviewCard({ review, isAdmin, isOwner, onDelete, onEdit }) {
               value={editPros}
               onChange={(event) => setEditPros(event.target.value)}
               placeholder="Pontos positivos..."
-              className="w-full resize-none rounded-xl border border-green-200 bg-green-50/50 px-4 py-3 text-sm text-gray-800 outline-none transition-colors placeholder:text-gray-400 focus:border-green-300 focus:bg-white focus:ring-2 focus:ring-green-100"
+              className="w-full resize-none rounded-xl border border-green-200 bg-green-50/50 px-4 py-3 text-sm text-on-surface outline-none transition-colors placeholder:text-outline focus:border-green-300 focus:bg-white focus:ring-2 focus:ring-green-100"
             />
           </div>
 
-          {/* Contras */}
+          {/* Cons */}
           <div className="flex flex-col gap-1.5">
             <div className="flex items-center gap-1.5">
-              <span className="text-xs">⚠️</span>
+              <ThumbsDown size={12} className="text-amber-600" />
               <span className="text-sm font-semibold text-amber-700">
                 Contras
               </span>
-              <span className="ml-auto text-xs text-gray-400">
+              <span className="ml-auto text-xs text-outline">
                 {editCons.length}/500
               </span>
             </div>
@@ -807,7 +634,7 @@ function ReviewCard({ review, isAdmin, isOwner, onDelete, onEdit }) {
               value={editCons}
               onChange={(event) => setEditCons(event.target.value)}
               placeholder="Pontos negativos..."
-              className="w-full resize-none rounded-xl border border-amber-200 bg-amber-50/50 px-4 py-3 text-sm text-gray-800 outline-none transition-colors placeholder:text-gray-400 focus:border-amber-300 focus:bg-white focus:ring-2 focus:ring-amber-100"
+              className="w-full resize-none rounded-xl border border-amber-200 bg-amber-50/50 px-4 py-3 text-sm text-on-surface outline-none transition-colors placeholder:text-outline focus:border-amber-300 focus:bg-white focus:ring-2 focus:ring-amber-100"
             />
           </div>
 
@@ -816,14 +643,14 @@ function ReviewCard({ review, isAdmin, isOwner, onDelete, onEdit }) {
             <button
               onClick={cancelEditing}
               disabled={isSaving}
-              className="flex-1 cursor-pointer rounded-xl border border-gray-200 py-2.5 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50 disabled:opacity-60"
+              className="flex-1 cursor-pointer rounded-xl border border-outline-variant/30 py-2.5 text-sm font-medium text-on-surface-variant transition-colors hover:bg-surface-container-low disabled:opacity-60"
             >
               Cancelar
             </button>
             <button
               onClick={handleSaveEdit}
               disabled={isSaving}
-              className="brand-gradient flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-60"
+              className="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-xl bg-primary py-2.5 text-sm font-semibold text-on-primary transition-opacity hover:opacity-90 disabled:opacity-60"
             >
               {isSaving ? (
                 <>
@@ -861,16 +688,16 @@ function ReviewCard({ review, isAdmin, isOwner, onDelete, onEdit }) {
   // ── Pending moderation after edit ──
   if (showPendingModeration) {
     return (
-      <div className="rounded-2xl border border-amber-200 bg-amber-50/50 p-5 shadow-sm">
+      <div className="rounded-2xl border border-tertiary-fixed-dim/30 bg-tertiary-fixed-dim/5 p-5">
         <div className="flex items-start gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-600">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-tertiary-fixed-dim/15 text-tertiary-fixed-dim">
             <ShieldCheck size={20} />
           </div>
           <div className="flex-1">
-            <p className="text-sm font-semibold text-gray-800">
+            <p className="text-sm font-semibold text-on-surface">
               Avaliação em análise
             </p>
-            <p className="mt-1 text-[0.82rem] text-gray-600">
+            <p className="mt-1 text-sm text-on-surface-variant">
               Sua edição foi recebida e será publicada após a verificação dos
               nossos moderadores.
             </p>
@@ -882,56 +709,56 @@ function ReviewCard({ review, isAdmin, isOwner, onDelete, onEdit }) {
 
   // ── Normal display mode ──
   return (
-    <div className="card-glow rounded-2xl border border-gray-100 bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-px hover:shadow-md">
+    <div className="rounded-2xl border border-outline-variant/20 bg-white p-5 transition-all duration-200 hover:shadow-md">
       {/* Top row: avatar + rating + verified + difficulty */}
       <div className="flex items-start gap-3">
-        <div className="brand-gradient flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-[0.85rem] font-bold text-white">
-          {isAnonymous ? "👤" : authorInitials}
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-bold text-on-primary">
+          {isAnonymous ? "?" : authorInitials}
         </div>
 
-        <div className="flex-1 min-w-0">
+        <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <StarRating rating={review.rating} size={14} />
-            <span className="text-[0.82rem] font-semibold text-gray-700">
+            <span className="text-sm font-semibold text-on-surface">
               {review.rating.toFixed(1)}
             </span>
             {review.isVerified && (
-              <span className="flex items-center gap-1 rounded-full bg-blue-50 px-2 py-0.5 text-[0.7rem] font-medium text-blue-700">
+              <span className="flex items-center gap-1 rounded-full bg-secondary-container/20 px-2 py-0.5 text-xs font-medium text-secondary">
                 <ShieldCheck size={10} />
                 Verificado
               </span>
             )}
           </div>
 
-          <div className="mt-1 flex flex-wrap items-center gap-2 text-[0.75rem] text-gray-400">
-            <span className="font-medium text-gray-600">
+          <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-outline">
+            <span className="font-medium text-on-surface-variant">
               {isAnonymous ? "Anônimo" : `@${review.author.username}`}
             </span>
-            <span className="text-gray-300">•</span>
+            <span className="text-outline-variant">·</span>
             <span>{formatDate(review.createdAt)}</span>
           </div>
         </div>
 
         {/* Difficulty badge */}
-        <span className="shrink-0 rounded-full bg-gray-100 px-2.5 py-1 text-[0.7rem] font-medium text-gray-500">
+        <span className="shrink-0 rounded-full bg-surface-container px-2.5 py-1 text-xs font-medium text-on-surface-variant">
           dif. {review.difficultyLevel}/5
         </span>
       </div>
 
       {/* Comment body */}
       {parsedComment ? (
-        <div className="mt-4 pl-[52px] space-y-3">
+        <div className="mt-4 space-y-3 pl-[52px]">
           {parsedComment.structured ? (
             <>
               {parsedComment.pros && (
-                <div className="rounded-xl border border-green-100 bg-green-50/60 px-3.5 py-2.5">
+                <div className="rounded-xl border border-green-100 bg-green-50/60 px-4 py-3">
                   <div className="mb-1.5 flex items-center gap-1.5">
-                    <span className="text-xs">✅</span>
-                    <span className="text-[0.7rem] font-semibold uppercase tracking-wide text-green-700">
+                    <ThumbsUp size={11} className="text-green-600" />
+                    <span className="text-xs font-semibold uppercase tracking-wide text-green-700">
                       Prós
                     </span>
                   </div>
-                  <p className="whitespace-pre-line text-[0.85rem] leading-relaxed text-gray-700">
+                  <p className="whitespace-pre-line text-sm leading-relaxed text-on-surface">
                     {expanded || parsedComment.pros.length <= TRUNCATE_LENGTH
                       ? parsedComment.pros
                       : parsedComment.pros.slice(0, TRUNCATE_LENGTH) + "..."}
@@ -939,14 +766,14 @@ function ReviewCard({ review, isAdmin, isOwner, onDelete, onEdit }) {
                 </div>
               )}
               {parsedComment.cons && (
-                <div className="rounded-xl border border-amber-100 bg-amber-50/60 px-3.5 py-2.5">
+                <div className="rounded-xl border border-red-100 bg-red-50/60 px-4 py-3">
                   <div className="mb-1.5 flex items-center gap-1.5">
-                    <span className="text-xs">⚠️</span>
-                    <span className="text-[0.7rem] font-semibold uppercase tracking-wide text-amber-700">
+                    <ThumbsDown size={11} className="text-red-500" />
+                    <span className="text-xs font-semibold uppercase tracking-wide text-red-600">
                       Contras
                     </span>
                   </div>
-                  <p className="whitespace-pre-line text-[0.85rem] leading-relaxed text-gray-700">
+                  <p className="whitespace-pre-line text-sm leading-relaxed text-on-surface">
                     {expanded || parsedComment.cons.length <= TRUNCATE_LENGTH
                       ? parsedComment.cons
                       : parsedComment.cons.slice(0, TRUNCATE_LENGTH) + "..."}
@@ -955,7 +782,7 @@ function ReviewCard({ review, isAdmin, isOwner, onDelete, onEdit }) {
               )}
             </>
           ) : (
-            <p className="whitespace-pre-line text-[0.85rem] leading-relaxed text-gray-700">
+            <p className="whitespace-pre-line text-sm italic leading-relaxed text-on-surface">
               {expanded || parsedComment.text.length <= TRUNCATE_LENGTH
                 ? parsedComment.text
                 : parsedComment.text.slice(0, TRUNCATE_LENGTH) + "..."}
@@ -965,60 +792,60 @@ function ReviewCard({ review, isAdmin, isOwner, onDelete, onEdit }) {
           {needsExpand && (
             <button
               onClick={() => setExpanded(true)}
-              className="flex cursor-pointer items-center gap-0.5 text-[0.82rem] font-medium text-blue-600 hover:opacity-80"
+              className="flex cursor-pointer items-center gap-0.5 text-sm font-medium text-secondary hover:opacity-80"
             >
               Ler mais <ChevronDown size={13} />
             </button>
           )}
         </div>
       ) : (
-        <p className="mt-4 pl-[52px] text-[0.82rem] italic text-gray-300">
+        <p className="mt-4 pl-[52px] text-sm italic text-outline">
           Sem comentário.
         </p>
       )}
 
       {/* Action row */}
-      <div className="mt-4 flex items-center gap-2 border-t border-gray-100 pt-3 pl-[52px]">
+      <div className="mt-4 flex items-center gap-2 border-t border-outline-variant/15 pl-[52px] pt-3">
         <button
           onClick={handleLike}
-          className={`flex cursor-pointer items-center gap-1.5 rounded-full px-3 py-1.5 text-[0.8rem] transition-all ${
+          className={`flex cursor-pointer items-center gap-1.5 rounded-full px-3 py-1.5 text-xs transition-all ${
             liked
-              ? "bg-blue-50 text-blue-700"
-              : "bg-gray-50 text-gray-400 hover:bg-gray-100"
+              ? "bg-secondary-container/20 text-secondary"
+              : "bg-surface-container-low text-outline hover:bg-surface-container"
           }`}
         >
           <ThumbsUp size={13} fill={liked ? "currentColor" : "none"} />
           {helpfulCount > 0 && helpfulCount}
         </button>
-        <button className="flex cursor-pointer items-center gap-1.5 rounded-full bg-gray-50 px-3 py-1.5 text-[0.8rem] text-gray-400 transition-colors hover:bg-gray-100">
+        <button className="flex cursor-pointer items-center gap-1.5 rounded-full bg-surface-container-low px-3 py-1.5 text-xs text-outline transition-colors hover:bg-surface-container">
           <ThumbsDown size={13} />
         </button>
         <div className="flex-1" />
 
-        {/* Edit button — visible to owner */}
+        {/* Edit button */}
         {isOwner && (
           <button
             onClick={startEditing}
-            className="cursor-pointer rounded-full p-2 text-gray-300 transition-colors hover:bg-blue-50 hover:text-blue-600"
+            className="cursor-pointer rounded-full p-2 text-outline transition-colors hover:bg-secondary-container/15 hover:text-secondary"
             title="Editar avaliação"
           >
             <Pencil size={14} />
           </button>
         )}
 
-        <button className="cursor-pointer rounded-full p-2 text-gray-300 transition-colors hover:bg-gray-50 hover:text-gray-500">
+        <button className="cursor-pointer rounded-full p-2 text-outline transition-colors hover:bg-surface-container hover:text-on-surface-variant">
           <Share2 size={14} />
         </button>
-        <button className="cursor-pointer rounded-full p-2 text-gray-300 transition-colors hover:bg-gray-50 hover:text-gray-500">
+        <button className="cursor-pointer rounded-full p-2 text-outline transition-colors hover:bg-surface-container hover:text-on-surface-variant">
           <Flag size={14} />
         </button>
 
-        {/* Delete button — visible to owner or admin */}
+        {/* Delete button */}
         {canModify && (
           <button
             onClick={handleDelete}
             disabled={isDeleting}
-            className={`flex cursor-pointer items-center gap-1.5 rounded-full px-3 py-1.5 text-[0.8rem] font-medium transition-all disabled:opacity-60 ${
+            className={`flex cursor-pointer items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-all disabled:opacity-60 ${
               deleteConfirming
                 ? "bg-red-500 text-white hover:bg-red-600"
                 : "text-red-400 hover:bg-red-50 hover:text-red-500"
@@ -1033,30 +860,32 @@ function ReviewCard({ review, isAdmin, isOwner, onDelete, onEdit }) {
   );
 }
 
-// ─── External Review Card ─────────────────────────────────────────────────
+// ─── External Review Card ────────────────────────────────────────────────────
 
 function ExternalReviewCard({ review }) {
   return (
-    <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-px hover:shadow-md">
+    <div className="rounded-2xl border border-outline-variant/20 bg-white p-5 transition-all duration-200 hover:shadow-md">
       <div className="flex items-start gap-3">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-500">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-secondary-container/15 text-secondary">
           <GoogleMapsIcon size={20} />
         </div>
 
-        <div className="flex-1 min-w-0">
+        <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <StarRating rating={review.rating} size={14} />
-            <span className="text-[0.82rem] font-semibold text-gray-700">
+            <span className="text-sm font-semibold text-on-surface">
               {review.rating.toFixed(1)}
             </span>
-            <span className="flex items-center gap-1 rounded-full bg-blue-50 px-2 py-0.5 text-[0.7rem] font-medium text-blue-600">
+            <span className="flex items-center gap-1 rounded-full bg-secondary-container/15 px-2 py-0.5 text-xs font-medium text-secondary">
               Google Maps
             </span>
           </div>
 
-          <div className="mt-1 flex flex-wrap items-center gap-2 text-[0.75rem] text-gray-400">
-            <span className="font-medium text-gray-600">Avaliador Externo</span>
-            <span className="text-gray-300">•</span>
+          <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-outline">
+            <span className="font-medium text-on-surface-variant">
+              Avaliador Externo
+            </span>
+            <span className="text-outline-variant">·</span>
             <span>{formatDate(review.originalDate)}</span>
           </div>
         </div>
@@ -1064,7 +893,7 @@ function ExternalReviewCard({ review }) {
 
       {review.textSnippet && (
         <div className="mt-4 pl-[52px]">
-          <p className="text-[0.85rem] leading-relaxed text-gray-700">
+          <p className="text-sm italic leading-relaxed text-on-surface">
             {review.textSnippet}
           </p>
         </div>
@@ -1075,7 +904,7 @@ function ExternalReviewCard({ review }) {
           href={review.sourceUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1.5 text-[0.82rem] font-medium text-blue-500 hover:opacity-80"
+          className="inline-flex items-center gap-1.5 text-sm font-medium text-secondary hover:opacity-80"
         >
           Ler no Google Maps
           <svg
@@ -1098,22 +927,178 @@ function ExternalReviewCard({ review }) {
   );
 }
 
-// ─── Skeleton ─────────────────────────────────────────────────────────────────
+// ─── Sidebar Components ──────────────────────────────────────────────────────
 
-function PageSkeleton() {
+function InfoRapida({ stats, university }) {
+  const typeLabel = university.type === "PUBLIC" ? "Pública" : "Privada";
+
   return (
-    <div className="space-y-4">
-      <div className="skeleton h-64 rounded-2xl" />
-      <div className="skeleton h-40 rounded-2xl" />
-      <div className="skeleton h-14 rounded-2xl" />
-      {[1, 2, 3].map((i) => (
-        <div key={i} className="skeleton h-40 rounded-2xl" />
-      ))}
+    <div className="overflow-hidden rounded-2xl bg-primary text-white">
+      <div className="p-6">
+        <h3 className="mb-5 font-headline text-base font-bold">InfoRápida</h3>
+
+        {stats && stats.reviewCount > 0 ? (
+          <div className="space-y-5">
+            {/* Recommendation percentage */}
+            <div className="text-center">
+              <div className="font-headline text-4xl font-bold text-tertiary-fixed-dim">
+                {stats.recommendationPercentage}%
+              </div>
+              <p className="mt-1 text-xs uppercase tracking-widest text-white/60">
+                Recomendam
+              </p>
+            </div>
+
+            {/* Divider */}
+            <div className="h-px bg-white/10" />
+
+            {/* Metrics */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="flex items-center gap-2 text-sm text-white/70">
+                  <MessageSquare size={14} />
+                  Avaliações
+                </span>
+                <span className="font-semibold">{stats.reviewCount}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="flex items-center gap-2 text-sm text-white/70">
+                  <TrendingUp size={14} />
+                  Nota média
+                </span>
+                <span className="font-semibold">{stats.averageRating}/5</span>
+              </div>
+              {stats.averageDifficultyLevel && (
+                <div className="flex items-center justify-between">
+                  <span className="flex items-center gap-2 text-sm text-white/70">
+                    <SlidersHorizontal size={14} />
+                    Dificuldade
+                  </span>
+                  <span className="font-semibold">
+                    {stats.averageDifficultyLevel}/5
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+        ) : (
+          <p className="text-sm text-white/60">
+            Ainda sem avaliações disponíveis.
+          </p>
+        )}
+
+        {/* Divider */}
+        <div className="my-5 h-px bg-white/10" />
+
+        {/* University info */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-white/70">Tipo</span>
+            <span className="text-sm font-semibold">{typeLabel}</span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-white/70">Localização</span>
+            <span className="text-right text-sm font-semibold">
+              {university.location}
+            </span>
+          </div>
+          {university.website && (
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-white/70">Site</span>
+              <a
+                href={university.website}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1 text-sm font-semibold text-tertiary-fixed-dim hover:underline"
+              >
+                <Globe size={12} />
+                Visitar
+              </a>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
 
-// ─── Page ─────────────────────────────────────────────────────────────────────
+function SidebarCTA({ universityId, universityName }) {
+  return (
+    <div className="rounded-2xl border border-outline-variant/20 bg-white p-6">
+      <h3 className="font-headline text-base font-bold text-primary">
+        Já estudou na {universityName}?
+      </h3>
+      <p className="mt-2 text-sm text-on-surface-variant">
+        Compartilhe sua experiência e ajude outros estudantes a fazerem a melhor
+        escolha.
+      </p>
+      <Link
+        href={`/avaliar?universityId=${universityId}`}
+        className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-tertiary-fixed-dim px-4 py-3 text-sm font-bold text-primary transition-opacity hover:opacity-90"
+      >
+        <Pencil size={14} />
+        Escrever avaliação
+      </Link>
+    </div>
+  );
+}
+
+// ─── Skeleton ────────────────────────────────────────────────────────────────
+
+function PageSkeleton() {
+  return (
+    <div className="min-h-screen bg-surface">
+      {/* Hero skeleton */}
+      <div className="skeleton h-[400px] w-full" />
+
+      {/* Tabs skeleton */}
+      <div className="mx-auto max-w-7xl px-6 py-4">
+        <div className="skeleton h-10 w-96 rounded-lg" />
+      </div>
+
+      {/* Content skeleton */}
+      <div className="mx-auto max-w-7xl px-6 pb-12">
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
+          <div className="space-y-4 lg:col-span-8">
+            <div className="skeleton h-64 rounded-2xl" />
+            <div className="skeleton h-14 rounded-2xl" />
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="skeleton h-48 rounded-2xl" />
+            ))}
+          </div>
+          <div className="hidden space-y-4 lg:col-span-4 lg:block">
+            <div className="skeleton h-72 rounded-2xl" />
+            <div className="skeleton h-48 rounded-2xl" />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Loading Spinner ─────────────────────────────────────────────────────────
+
+function LoadingSpinner() {
+  return (
+    <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+      <circle
+        className="opacity-25"
+        cx="12"
+        cy="12"
+        r="10"
+        stroke="currentColor"
+        strokeWidth="4"
+      />
+      <path
+        className="opacity-75"
+        fill="currentColor"
+        d="M4 12a8 8 0 0 1 8-8v4a4 4 0 0 0-4 4H4z"
+      />
+    </svg>
+  );
+}
+
+// ─── Page ────────────────────────────────────────────────────────────────────
 
 const REVIEWS_PER_PAGE = 10;
 
@@ -1130,10 +1115,13 @@ export default function UniversityDetailPage() {
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [isLoadingMoreExternal, setIsLoadingMoreExternal] = useState(false);
   const [error, setError] = useState(null);
-  const [activeTab, setActiveTab] = useState("Avaliações ⭐");
+  const [activeTab, setActiveTab] = useState("Avaliações");
   const [activeFilter, setActiveFilter] = useState("Mais recentes");
   const [userRole, setUserRole] = useState(null);
   const [userId, setUserId] = useState(null);
+  const [following, setFollowing] = useState(false);
+  const [deleteConfirming, setDeleteConfirming] = useState(false);
+  const [isDeletingUni, setIsDeletingUni] = useState(false);
 
   useEffect(() => {
     async function fetchAll() {
@@ -1238,6 +1226,24 @@ export default function UniversityDetailPage() {
     }
   }
 
+  async function handleDeleteUniversity() {
+    if (!deleteConfirming) {
+      setDeleteConfirming(true);
+      return;
+    }
+    setIsDeletingUni(true);
+    try {
+      const response = await fetchWithAuth(`/api/v1/universities/${id}`, {
+        method: "DELETE",
+      });
+      if (!response.ok) throw new Error();
+      router.push("/universities");
+    } catch {
+      setIsDeletingUni(false);
+      setDeleteConfirming(false);
+    }
+  }
+
   const hasMoreReviews =
     reviewsPagination && reviewsPagination.page < reviewsPagination.totalPages;
 
@@ -1246,23 +1252,18 @@ export default function UniversityDetailPage() {
     externalReviewsPagination.page < externalReviewsPagination.totalPages;
 
   if (isLoading) {
-    return (
-      <main className="min-h-screen bg-gray-50">
-        <div className="mx-auto max-w-3xl px-4 py-6 sm:px-6">
-          <PageSkeleton />
-        </div>
-      </main>
-    );
+    return <PageSkeleton />;
   }
 
   if (error) {
     return (
       <main className="flex min-h-[60vh] items-center justify-center px-4">
         <div className="text-center">
-          <p className="text-sm text-gray-500">{error}</p>
+          <p className="font-headline text-lg font-bold text-primary">Oops!</p>
+          <p className="mt-2 text-sm text-on-surface-variant">{error}</p>
           <button
             onClick={() => router.push("/universities")}
-            className="brand-gradient mt-4 rounded-full px-5 py-2.5 text-sm font-medium text-white hover:opacity-90"
+            className="mt-6 rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-on-primary transition-opacity hover:opacity-90"
           >
             Voltar para universidades
           </button>
@@ -1271,219 +1272,475 @@ export default function UniversityDetailPage() {
     );
   }
 
+  const initials =
+    university.abbreviation || getUniversityInitials(university.name);
+  const typeLabel = university.type === "PUBLIC" ? "Pública" : "Privada";
+  const totalInternalReviews = reviewsPagination?.total || 0;
+  const totalExternalReviews = externalReviewsPagination?.total || 0;
+
   return (
-    <main className="min-h-screen bg-gray-50">
-      {/* ── Dark hero strip ── */}
-      <div
-        className="relative overflow-hidden pb-8 pt-6"
-        style={{ backgroundColor: "#0F2854" }}
-      >
-        {/* Dot grid overlay */}
-        <div className="dot-grid absolute inset-0 opacity-30" />
-
-        {/* Radial blue glow */}
-        <div
-          className="absolute left-1/2 top-0 h-[400px] w-[700px] -translate-x-1/2 rounded-full opacity-20 blur-3xl"
-          style={{
-            background: "radial-gradient(circle, #1c4d8d 0%, transparent 70%)",
-          }}
-        />
-
-        <div className="relative z-10 mx-auto max-w-3xl px-4 sm:px-6">
-          {/* Back + CTA */}
-          <div className="mb-5 flex items-center justify-between">
-            <Link
-              href="/universities"
-              className="inline-flex items-center gap-1.5 text-sm text-gray-400 transition-colors hover:text-blue-400"
-            >
-              <ArrowLeft size={14} />
-              Todas as universidades
-            </Link>
-            <Link
-              href={`/avaliar?universityId=${id}`}
-              className="brand-gradient flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90"
-            >
-              ⭐ Avaliar
-            </Link>
-          </div>
-
-          {/* University header card floats on dark bg */}
-          <UniversityHeader
-            university={university}
-            activeTab={activeTab}
-            onTabChange={setActiveTab}
-            isAdmin={isAdmin}
-            onDeleteUniversity={() => router.push("/universities")}
+    <main className="min-h-screen bg-surface">
+      {/* ── Hero Banner ── */}
+      <section className="relative h-[400px] overflow-hidden">
+        {/* Background image */}
+        <div className="absolute inset-0">
+          <ImageCarousel
+            images={university.images}
+            alt={university.name}
+            showArrows={university.images?.length > 1}
+            showDots={university.images?.length > 1}
+            fallback={
+              <div
+                className="h-full w-full"
+                style={{
+                  background:
+                    "linear-gradient(135deg, #001337 0%, #0f2854 100%)",
+                }}
+              />
+            }
           />
         </div>
 
-        {/* Bottom gradient fade into light content */}
-        <div className="absolute bottom-0 inset-x-0 h-16 bg-gradient-to-t from-gray-50 to-transparent" />
-      </div>
+        {/* Gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/20" />
 
-      {/* ── Main content ── */}
-      <div className="mx-auto max-w-3xl px-4 pb-10 pt-4 sm:px-6">
-        <div className="space-y-4">
-          {activeTab === "Avaliações ⭐" && (
-            <>
-              <RatingOverview
-                stats={university.stats}
-                externalStats={university.externalStats}
-              />
-              <FilterBar
-                activeFilter={activeFilter}
-                onFilterChange={setActiveFilter}
-              />
+        {/* Back arrow */}
+        <div className="absolute left-0 right-0 top-0 z-10 mx-auto max-w-7xl px-6 pt-20">
+          <Link
+            href="/universities"
+            className="inline-flex items-center gap-1.5 text-sm text-white/70 transition-colors hover:text-white"
+          >
+            <ArrowLeft size={16} />
+            Todas as universidades
+          </Link>
+        </div>
 
-              {sortedReviews.length === 0 ? (
-                <div className="rounded-2xl border border-gray-100 bg-white p-10 text-center shadow-sm">
-                  <p className="mb-2 text-2xl">🎓</p>
-                  <p className="text-sm font-medium text-gray-500">
-                    Nenhuma avaliação ainda.
-                  </p>
-                  <p className="mt-0.5 text-xs text-gray-400">
-                    Seja o primeiro a avaliar!
-                  </p>
+        {/* University info — bottom of hero */}
+        <div className="absolute bottom-0 left-0 right-0 z-10">
+          <div className="mx-auto max-w-7xl px-6 pb-8">
+            <div className="flex items-end justify-between gap-6">
+              {/* Left: Logo + Name + Location */}
+              <div className="flex items-end gap-4">
+                {/* Logo box */}
+                <div className="glass-effect flex h-20 w-20 shrink-0 items-center justify-center rounded-2xl bg-white/15 text-lg font-extrabold text-white shadow-lg ring-2 ring-white/20">
+                  {initials.slice(0, 3)}
                 </div>
-              ) : (
-                <>
-                  <div className="space-y-3">
-                    {sortedReviews.map((review) => (
-                      <ReviewCard
-                        key={review.id}
-                        review={review}
-                        isAdmin={isAdmin}
-                        isOwner={userId !== null && review.authorId === userId}
-                        onDelete={handleReviewDelete}
-                        onEdit={handleReviewEdit}
+                <div className="pb-1">
+                  <h1 className="font-headline text-3xl font-bold leading-tight text-white drop-shadow-lg md:text-4xl">
+                    {university.name}
+                  </h1>
+                  <div className="mt-2 flex flex-wrap items-center gap-3 text-sm text-white/70">
+                    <span className="flex items-center gap-1">
+                      <MapPin size={14} />
+                      {university.location}
+                    </span>
+                    <span className="text-white/30">·</span>
+                    <span className="font-medium text-tertiary-fixed-dim">
+                      {typeLabel}
+                    </span>
+                    {university.website && (
+                      <>
+                        <span className="text-white/30">·</span>
+                        <a
+                          href={university.website}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-1 text-white/70 transition-colors hover:text-white"
+                        >
+                          <Globe size={13} />
+                          Site oficial
+                        </a>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Right: Rating badge + Follow + Admin */}
+              <div className="hidden items-end gap-3 sm:flex">
+                {/* Rating badge */}
+                {university.stats?.averageRating && (
+                  <div className="glass-effect flex flex-col items-center rounded-2xl bg-tertiary-fixed-dim/90 px-5 py-3 text-primary shadow-lg">
+                    <span className="font-headline text-2xl font-bold">
+                      {university.stats.averageRating}
+                    </span>
+                    <div className="mt-0.5">
+                      <StarRating
+                        rating={university.stats.averageRating}
+                        size={12}
                       />
-                    ))}
-                  </div>
-
-                  {hasMoreReviews && (
-                    <button
-                      onClick={loadMoreReviews}
-                      disabled={isLoadingMore}
-                      className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-2xl border border-gray-100 bg-white py-3.5 text-sm font-medium text-gray-500 shadow-sm transition-colors hover:border-blue-200 hover:text-blue-700 disabled:opacity-60"
-                    >
-                      {isLoadingMore ? (
-                        <>
-                          <svg
-                            className="h-4 w-4 animate-spin"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                          >
-                            <circle
-                              className="opacity-25"
-                              cx="12"
-                              cy="12"
-                              r="10"
-                              stroke="currentColor"
-                              strokeWidth="4"
-                            />
-                            <path
-                              className="opacity-75"
-                              fill="currentColor"
-                              d="M4 12a8 8 0 0 1 8-8v4a4 4 0 0 0-4 4H4z"
-                            />
-                          </svg>
-                          Carregando...
-                        </>
-                      ) : (
-                        <>
-                          Carregar mais avaliações
-                          <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-400">
-                            {reviewsPagination.total - reviews.length} restantes
-                          </span>
-                        </>
-                      )}
-                    </button>
-                  )}
-
-                  {!hasMoreReviews && reviews.length > 0 && (
-                    <p className="py-2 text-center text-xs text-gray-300">
-                      Todas as {reviews.length} avaliações carregadas
-                    </p>
-                  )}
-                </>
-              )}
-
-              {/* External Reviews Section */}
-              {externalReviews.length > 0 && (
-                <>
-                  <div className="mt-6 flex items-center gap-3">
-                    <div className="h-px flex-1 bg-gray-200" />
-                    <div className="flex items-center gap-2 text-sm font-semibold text-gray-500">
-                      <GoogleMapsIcon size={16} />
-                      Avaliações do Google Maps
                     </div>
-                    <div className="h-px flex-1 bg-gray-200" />
                   </div>
+                )}
 
-                  <div className="space-y-3 mt-3">
-                    {externalReviews.map((review) => (
-                      <ExternalReviewCard key={review.id} review={review} />
-                    ))}
-                  </div>
+                {/* Follow button */}
+                <button
+                  onClick={() => setFollowing((prev) => !prev)}
+                  className={`flex cursor-pointer items-center gap-1.5 rounded-full px-5 py-2.5 text-sm font-medium transition-all ${
+                    following
+                      ? "border border-white/30 bg-white/10 text-white"
+                      : "bg-white text-primary hover:bg-white/90"
+                  }`}
+                >
+                  <Heart size={14} fill={following ? "currentColor" : "none"} />
+                  {following ? "Seguindo" : "Seguir"}
+                </button>
 
-                  {hasMoreExternalReviews && (
-                    <button
-                      onClick={loadMoreExternalReviews}
-                      disabled={isLoadingMoreExternal}
-                      className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-2xl border border-gray-100 bg-white py-3.5 text-sm font-medium text-gray-500 shadow-sm transition-colors hover:border-blue-200 hover:text-blue-600 disabled:opacity-60"
-                    >
-                      {isLoadingMoreExternal ? (
-                        <>
-                          <svg
-                            className="h-4 w-4 animate-spin"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                          >
-                            <circle
-                              className="opacity-25"
-                              cx="12"
-                              cy="12"
-                              r="10"
-                              stroke="currentColor"
-                              strokeWidth="4"
-                            />
-                            <path
-                              className="opacity-75"
-                              fill="currentColor"
-                              d="M4 12a8 8 0 0 1 8-8v4a4 4 0 0 0-4 4H4z"
-                            />
-                          </svg>
-                          Carregando...
-                        </>
-                      ) : (
-                        <>
-                          Carregar mais avaliações externas
-                          <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-400">
-                            {externalReviewsPagination.total -
-                              externalReviews.length}{" "}
-                            restantes
-                          </span>
-                        </>
-                      )}
-                    </button>
+                {/* Admin delete */}
+                {isAdmin && (
+                  <button
+                    onClick={handleDeleteUniversity}
+                    disabled={isDeletingUni}
+                    className={`flex cursor-pointer items-center gap-1.5 rounded-full px-3 py-2.5 text-sm font-medium transition-all disabled:opacity-60 ${
+                      deleteConfirming
+                        ? "bg-red-500 text-white hover:bg-red-600"
+                        : "border border-red-300/50 text-red-300 hover:bg-red-500/20"
+                    }`}
+                  >
+                    <Trash2 size={14} />
+                    {isDeletingUni
+                      ? "Removendo..."
+                      : deleteConfirming
+                        ? "Confirmar"
+                        : ""}
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Tabs Navigation ── */}
+      <nav className="border-b border-outline-variant/20 bg-white">
+        <div className="mx-auto max-w-7xl overflow-x-auto px-6">
+          <div className="flex min-w-max">
+            {TABS.map((tab) => {
+              const isActive = activeTab === tab;
+              const reviewCount =
+                tab === "Avaliações" && totalInternalReviews > 0
+                  ? totalInternalReviews
+                  : tab === "Avaliações Externas" && totalExternalReviews > 0
+                    ? totalExternalReviews
+                    : null;
+              return (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab)}
+                  className={`cursor-pointer whitespace-nowrap px-5 py-3.5 text-sm font-medium transition-colors ${
+                    isActive
+                      ? "border-b-2 border-primary font-bold text-primary"
+                      : "border-b-2 border-transparent text-on-surface-variant hover:text-on-surface"
+                  }`}
+                >
+                  {tab}
+                  {reviewCount !== null && (
+                    <span className="ml-1.5 text-xs text-outline">
+                      ({reviewCount})
+                    </span>
                   )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </nav>
 
-                  {!hasMoreExternalReviews && externalReviews.length > 0 && (
-                    <p className="py-2 text-center text-xs text-gray-300">
-                      Todas as {externalReviews.length} avaliações externas
-                      carregadas
-                    </p>
-                  )}
-                </>
-              )}
-            </>
-          )}
-
-          {activeTab !== "Avaliações ⭐" && (
-            <div className="rounded-2xl border border-gray-100 bg-white p-10 text-center text-sm text-gray-400 shadow-sm">
-              Em breve. 🚧
+      {/* ── Mobile actions (visible below tabs on small screens) ── */}
+      <div className="border-b border-outline-variant/20 bg-white px-6 py-3 sm:hidden">
+        <div className="flex items-center gap-3">
+          {university.stats?.averageRating && (
+            <div className="flex items-center gap-2 rounded-full bg-tertiary-fixed-dim/10 px-3 py-1.5">
+              <span className="font-headline text-sm font-bold text-primary">
+                {university.stats.averageRating}
+              </span>
+              <StarRating rating={university.stats.averageRating} size={12} />
             </div>
           )}
+          <button
+            onClick={() => setFollowing((prev) => !prev)}
+            className={`flex cursor-pointer items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium transition-all ${
+              following
+                ? "border border-secondary-container bg-secondary-container/10 text-secondary"
+                : "bg-primary text-on-primary"
+            }`}
+          >
+            <Heart size={14} fill={following ? "currentColor" : "none"} />
+            {following ? "Seguindo" : "Seguir"}
+          </button>
+          <div className="flex-1" />
+          <Link
+            href={`/avaliar?universityId=${id}`}
+            className="rounded-full bg-tertiary-fixed-dim px-4 py-2 text-sm font-bold text-primary transition-opacity hover:opacity-90"
+          >
+            Avaliar
+          </Link>
+        </div>
+      </div>
+
+      {/* ── Content Grid ── */}
+      <div className="mx-auto max-w-7xl px-6 pb-16 pt-8">
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
+          {/* Main column */}
+          <div className="lg:col-span-8">
+            {activeTab === "Avaliações" && (
+              <div className="space-y-4">
+                <RatingOverview
+                  stats={university.stats}
+                />
+                <FilterBar
+                  activeFilter={activeFilter}
+                  onFilterChange={setActiveFilter}
+                />
+
+                {sortedReviews.length === 0 ? (
+                  <div className="rounded-2xl border border-outline-variant/20 bg-white p-10 text-center">
+                    <p className="font-headline text-lg font-bold text-primary">
+                      Nenhuma avaliação ainda
+                    </p>
+                    <p className="mt-2 text-sm text-on-surface-variant">
+                      Seja o primeiro a avaliar!
+                    </p>
+                  </div>
+                ) : (
+                  <>
+                    <div className="space-y-3">
+                      {sortedReviews.map((review) => (
+                        <ReviewCard
+                          key={review.id}
+                          review={review}
+                          isAdmin={isAdmin}
+                          isOwner={
+                            userId !== null && review.authorId === userId
+                          }
+                          onDelete={handleReviewDelete}
+                          onEdit={handleReviewEdit}
+                        />
+                      ))}
+                    </div>
+
+                    {hasMoreReviews && (
+                      <button
+                        onClick={loadMoreReviews}
+                        disabled={isLoadingMore}
+                        className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-2xl border border-outline-variant/20 bg-white py-3.5 text-sm font-medium text-on-surface-variant transition-colors hover:border-secondary-container hover:text-secondary disabled:opacity-60"
+                      >
+                        {isLoadingMore ? (
+                          <>
+                            <LoadingSpinner />
+                            Carregando...
+                          </>
+                        ) : (
+                          <>
+                            Carregar mais avaliações
+                            <span className="rounded-full bg-surface-container px-2 py-0.5 text-xs text-outline">
+                              {reviewsPagination.total - reviews.length}{" "}
+                              restantes
+                            </span>
+                          </>
+                        )}
+                      </button>
+                    )}
+
+                    {!hasMoreReviews && reviews.length > 0 && (
+                      <p className="py-2 text-center text-xs text-outline">
+                        Todas as {reviews.length} avaliações carregadas
+                      </p>
+                    )}
+                  </>
+                )}
+
+              </div>
+            )}
+
+            {activeTab === "Avaliações Externas" && (
+              <div className="space-y-4">
+                {/* External reviews stats header */}
+                {university.externalStats && (
+                  <div className="overflow-hidden rounded-2xl border border-outline-variant/20 bg-white">
+                    <div className="p-6">
+                      <h2 className="mb-5 font-headline text-lg font-bold text-primary">
+                        Avaliações do Google Maps
+                      </h2>
+                      <div className="flex items-center gap-4">
+                        <GoogleMapsIcon size={24} />
+                        <div className="flex items-center gap-3">
+                          <span className="font-headline text-3xl font-bold text-primary">
+                            {university.externalStats.averageRating}
+                          </span>
+                          <div>
+                            <StarRating
+                              rating={university.externalStats.averageRating}
+                              size={16}
+                            />
+                            <p className="mt-0.5 text-xs text-outline">
+                              {university.externalStats.reviewCount}{" "}
+                              {university.externalStats.reviewCount === 1
+                                ? "avaliação"
+                                : "avaliações"}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2.5 border-t border-outline-variant/20 bg-surface-container-low px-6 py-3">
+                      <GoogleMapsIcon size={14} />
+                      <Link
+                        href="/sobre/avaliacoes-externas"
+                        className="text-xs text-secondary hover:underline"
+                      >
+                        Saiba mais sobre avaliações externas
+                      </Link>
+                    </div>
+                  </div>
+                )}
+
+                {externalReviews.length === 0 ? (
+                  <div className="rounded-2xl border border-outline-variant/20 bg-white p-10 text-center">
+                    <p className="font-headline text-lg font-bold text-primary">
+                      Nenhuma avaliação externa
+                    </p>
+                    <p className="mt-2 text-sm text-on-surface-variant">
+                      Ainda não há avaliações do Google Maps para esta
+                      universidade.
+                    </p>
+                  </div>
+                ) : (
+                  <>
+                    <div className="space-y-3">
+                      {externalReviews.map((review) => (
+                        <ExternalReviewCard key={review.id} review={review} />
+                      ))}
+                    </div>
+
+                    {hasMoreExternalReviews && (
+                      <button
+                        onClick={loadMoreExternalReviews}
+                        disabled={isLoadingMoreExternal}
+                        className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-2xl border border-outline-variant/20 bg-white py-3.5 text-sm font-medium text-on-surface-variant transition-colors hover:border-secondary-container hover:text-secondary disabled:opacity-60"
+                      >
+                        {isLoadingMoreExternal ? (
+                          <>
+                            <LoadingSpinner />
+                            Carregando...
+                          </>
+                        ) : (
+                          <>
+                            Carregar mais avaliações externas
+                            <span className="rounded-full bg-surface-container px-2 py-0.5 text-xs text-outline">
+                              {externalReviewsPagination.total -
+                                externalReviews.length}{" "}
+                              restantes
+                            </span>
+                          </>
+                        )}
+                      </button>
+                    )}
+
+                    {!hasMoreExternalReviews && externalReviews.length > 0 && (
+                      <p className="py-2 text-center text-xs text-outline">
+                        Todas as {externalReviews.length} avaliações externas
+                        carregadas
+                      </p>
+                    )}
+                  </>
+                )}
+              </div>
+            )}
+
+            {activeTab === "Visão Geral" && (
+              <div className="space-y-6">
+                <RatingOverview
+                  stats={university.stats}
+                />
+
+                {/* University details card */}
+                <div className="rounded-2xl border border-outline-variant/20 bg-white p-6">
+                  <h2 className="mb-4 font-headline text-lg font-bold text-primary">
+                    Sobre a instituição
+                  </h2>
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <div className="flex items-center gap-3 rounded-xl bg-surface-container-low p-4">
+                      <MapPin
+                        size={18}
+                        className="shrink-0 text-on-surface-variant"
+                      />
+                      <div>
+                        <p className="text-xs uppercase tracking-widest text-outline">
+                          Localização
+                        </p>
+                        <p className="text-sm font-semibold text-on-surface">
+                          {university.location}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3 rounded-xl bg-surface-container-low p-4">
+                      <Users
+                        size={18}
+                        className="shrink-0 text-on-surface-variant"
+                      />
+                      <div>
+                        <p className="text-xs uppercase tracking-widest text-outline">
+                          Tipo
+                        </p>
+                        <p className="text-sm font-semibold text-on-surface">
+                          {typeLabel}
+                        </p>
+                      </div>
+                    </div>
+                    {university.website && (
+                      <div className="flex items-center gap-3 rounded-xl bg-surface-container-low p-4 sm:col-span-2">
+                        <Globe
+                          size={18}
+                          className="shrink-0 text-on-surface-variant"
+                        />
+                        <div>
+                          <p className="text-xs uppercase tracking-widest text-outline">
+                            Website
+                          </p>
+                          <a
+                            href={university.website}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-sm font-semibold text-secondary hover:underline"
+                          >
+                            {university.website}
+                          </a>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeTab !== "Avaliações" &&
+              activeTab !== "Visão Geral" &&
+              activeTab !== "Avaliações Externas" && (
+              <div className="rounded-2xl border border-outline-variant/20 bg-white p-10 text-center">
+                <p className="font-headline text-lg font-bold text-primary">
+                  Em breve
+                </p>
+                <p className="mt-2 text-sm text-on-surface-variant">
+                  Estamos trabalhando nesta funcionalidade.
+                </p>
+              </div>
+            )}
+          </div>
+
+          {/* Sidebar */}
+          <aside className="lg:col-span-4">
+            <div className="sticky top-20 space-y-6">
+              <InfoRapida stats={university.stats} university={university} />
+              <SidebarCTA
+                universityId={id}
+                universityName={
+                  university.abbreviation ||
+                  university.name.split(" ").slice(0, 3).join(" ")
+                }
+              />
+            </div>
+          </aside>
         </div>
       </div>
     </main>

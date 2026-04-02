@@ -88,8 +88,17 @@ export default function Home() {
   const universitiesTopRef = useRef(null);
   const isFirstRender = useRef(true);
 
+  const [platformStats, setPlatformStats] = useState(null);
+
   const totalCount = pagination?.total ?? 0;
   const totalPages = pagination?.totalPages ?? 1;
+
+  useEffect(() => {
+    fetch("/api/v1/stats")
+      .then((response) => response.json())
+      .then((data) => setPlatformStats(data))
+      .catch(() => {});
+  }, []);
 
   const fetchUniversities = useCallback(async () => {
     setLoading(true);
@@ -196,7 +205,7 @@ export default function Home() {
             <div className="mt-12 flex gap-10">
               <div className="flex flex-col">
                 <span className="font-headline text-3xl font-bold text-white">
-                  +{totalCount || 500}
+                  +{platformStats?.universityCount ?? (totalCount || "...")}
                 </span>
                 <span className="text-xs font-bold uppercase tracking-widest text-white/60">
                   Universidades
@@ -204,15 +213,17 @@ export default function Home() {
               </div>
               <div className="flex flex-col">
                 <span className="font-headline text-3xl font-bold text-white">
-                  100%
+                  {platformStats?.averageRating ?? "..."}
                 </span>
                 <span className="text-xs font-bold uppercase tracking-widest text-white/60">
-                  Verificadas
+                  Nota Média
                 </span>
               </div>
               <div className="flex flex-col">
                 <span className="font-headline text-3xl font-bold text-white">
-                  45k+
+                  {platformStats
+                    ? `${platformStats.reviewCount}+`
+                    : "..."}
                 </span>
                 <span className="text-xs font-bold uppercase tracking-widest text-white/60">
                   Avaliações

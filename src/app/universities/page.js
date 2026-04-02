@@ -10,7 +10,6 @@ import {
   GraduationCap,
   TrendingUp,
   X,
-  Zap,
   Lightbulb,
   ChevronLeft,
   ChevronRight,
@@ -48,6 +47,7 @@ export default function UniversitiesPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [sortByRating, setSortByRating] = useState(false);
+  const [platformStats, setPlatformStats] = useState(null);
 
   // Pagination
   const ITEMS_PER_PAGE = 15;
@@ -68,6 +68,13 @@ export default function UniversitiesPage() {
   }, []);
 
   const isAdmin = userRole === "ADMIN";
+
+  useEffect(() => {
+    fetch("/api/v1/stats")
+      .then((response) => response.json())
+      .then((data) => setPlatformStats(data))
+      .catch(() => {});
+  }, []);
 
   function handleUniversityDelete(universityId) {
     setUniversities((prev) =>
@@ -162,13 +169,6 @@ export default function UniversitiesPage() {
     return pages;
   }, [totalPages, currentPage]);
 
-  const avgRating = useMemo(() => {
-    const ratedUniversities = universities.filter((u) => u.rating != null);
-    if (ratedUniversities.length === 0) return "—";
-    const sum = ratedUniversities.reduce((acc, u) => acc + u.rating, 0);
-    return (sum / ratedUniversities.length).toFixed(1);
-  }, [universities]);
-
   const activeFiltersCount =
     (activeState !== "Todos" ? 1 : 0) + (activeType !== null ? 1 : 0);
 
@@ -204,7 +204,7 @@ export default function UniversitiesPage() {
           <div className="stagger-1 mb-6 inline-flex items-center gap-2 rounded-full border border-sky-400/30 bg-sky-500/20 px-4 py-1.5 text-xs font-semibold text-white backdrop-blur-sm">
             <TrendingUp size={13} />
             <span>
-              +{pagination?.total || universities.length || "500"} universidades
+              +{platformStats?.universityCount ?? (pagination?.total || "...")} universidades
               avaliadas
             </span>
           </div>
@@ -256,24 +256,23 @@ export default function UniversitiesPage() {
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <div className="flex flex-col items-center rounded-2xl border border-white/10 bg-white/5 px-5 py-3 backdrop-blur-sm">
               <span className="text-xl font-bold text-white">
-                {loading ? "..." : (pagination?.total ?? universities.length)}
+                +{platformStats?.universityCount ?? "..."}
               </span>
               <span className="text-xs text-gray-400">universidades</span>
             </div>
             <div className="flex flex-col items-center rounded-2xl border border-white/10 bg-white/5 px-5 py-3 backdrop-blur-sm">
               <span className="text-xl font-bold text-white">
-                {loading ? "..." : avgRating}
+                {platformStats?.averageRating ?? "..."}
               </span>
               <span className="text-xs text-gray-400">nota média</span>
             </div>
             <div className="flex flex-col items-center rounded-2xl border border-white/10 bg-white/5 px-5 py-3 backdrop-blur-sm">
-              <span className="flex items-center gap-1 text-xl font-bold text-white">
-                <Zap size={16} className="text-sky-400" />
-                100%
+              <span className="text-xl font-bold text-white">
+                {platformStats
+                  ? `${platformStats.reviewCount}+`
+                  : "..."}
               </span>
-              <span className="text-xs text-gray-400">
-                avaliações verificadas
-              </span>
+              <span className="text-xs text-gray-400">avaliações</span>
             </div>
           </div>
 
