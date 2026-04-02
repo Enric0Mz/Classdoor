@@ -12,7 +12,7 @@ const NAV_LINKS = [
   { label: "Salários", href: "/em-breve" },
 ];
 
-const HIDDEN_ROUTES = ["/login", "/logout", "/register"];
+const HIDDEN_ROUTES = ["/login", "/logout", "/register", "/avaliar"];
 
 function getEmailFromToken(token) {
   try {
@@ -120,6 +120,12 @@ export default function Navbar() {
 
         {/* Right: Auth */}
         <div className="flex items-center gap-4">
+          <Link
+            href="/avaliar"
+            className="hidden rounded-lg bg-tertiary-fixed-dim px-5 py-2 text-sm font-bold text-primary transition-all duration-150 ease-in-out hover:brightness-110 active:scale-95 sm:block"
+          >
+            Avaliar
+          </Link>
           {userEmail ? (
             <div className="relative" ref={dropdownRef}>
               <button
@@ -166,10 +172,10 @@ export default function Navbar() {
                 Entrar
               </Link>
               <Link
-                href={userEmail ? "/avaliar" : "/register"}
+                href="/register"
                 className="hidden rounded-lg bg-primary px-5 py-2 text-sm font-semibold text-white transition-all duration-150 ease-in-out active:scale-95 sm:block"
               >
-                Avaliar
+                Cadastrar
               </Link>
             </>
           )}
