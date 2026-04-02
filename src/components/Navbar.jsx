@@ -88,14 +88,25 @@ export default function Navbar() {
           </Link>
 
           {/* Desktop search */}
-          <div className="hidden items-center rounded-lg border border-outline-variant/20 bg-slate-50 px-3 py-1.5 lg:flex">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              const query = e.target.elements.navSearch.value.trim();
+              if (query) {
+                router.push(`/universities?search=${encodeURIComponent(query)}`);
+                e.target.elements.navSearch.value = "";
+              }
+            }}
+            className="hidden items-center rounded-lg border border-outline-variant/20 bg-slate-50 px-3 py-1.5 lg:flex"
+          >
             <Search size={16} className="text-slate-400" />
             <input
+              name="navSearch"
               type="text"
               placeholder="Buscar universidades..."
               className="w-56 border-none bg-transparent text-sm text-on-surface outline-none placeholder:text-slate-400 focus:ring-0"
             />
-          </div>
+          </form>
         </div>
 
         {/* Center: Nav links */}

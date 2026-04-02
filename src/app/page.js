@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   Search,
@@ -80,6 +81,7 @@ function RecommendationCard({ university }) {
 }
 
 export default function Home() {
+  const router = useRouter();
   const [universities, setUniversities] = useState([]);
   const [pagination, setPagination] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -87,6 +89,7 @@ export default function Home() {
   const [currentPage, setCurrentPage] = useState(1);
   const universitiesTopRef = useRef(null);
   const isFirstRender = useRef(true);
+  const [heroSearch, setHeroSearch] = useState("");
 
   const [platformStats, setPlatformStats] = useState(null);
 
@@ -192,10 +195,24 @@ export default function Home() {
                 />
                 <input
                   type="text"
+                  value={heroSearch}
+                  onChange={(e) => setHeroSearch(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && heroSearch.trim()) {
+                      router.push(`/universities?search=${encodeURIComponent(heroSearch.trim())}`);
+                    }
+                  }}
                   placeholder="Qual curso ou instituição você procura?"
                   className="flex-grow border-none bg-transparent py-4 text-lg text-on-surface outline-none placeholder:text-on-surface-variant/60 focus:ring-0"
                 />
-                <button className="shrink-0 cursor-pointer rounded-lg bg-tertiary-fixed-dim px-8 py-4 font-bold text-primary transition-all hover:brightness-110">
+                <button
+                  onClick={() => {
+                    if (heroSearch.trim()) {
+                      router.push(`/universities?search=${encodeURIComponent(heroSearch.trim())}`);
+                    }
+                  }}
+                  className="shrink-0 cursor-pointer rounded-lg bg-tertiary-fixed-dim px-8 py-4 font-bold text-primary transition-all hover:brightness-110"
+                >
                   Pesquisar
                 </button>
               </div>

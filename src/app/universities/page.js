@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import UniversityCard from "@/components/UniversityCard";
 import Link from "next/link";
 import {
@@ -34,6 +35,17 @@ const TYPE_FILTERS = [
 ];
 
 export default function UniversitiesPage() {
+  return (
+    <Suspense>
+      <UniversitiesPageContent />
+    </Suspense>
+  );
+}
+
+function UniversitiesPageContent() {
+  const searchParams = useSearchParams();
+  const initialSearch = searchParams.get("search") || "";
+
   const [universities, setUniversities] = useState([]);
   const [pagination, setPagination] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -44,7 +56,7 @@ export default function UniversitiesPage() {
   // Filters
   const [activeState, setActiveState] = useState("Todos");
   const [activeType, setActiveType] = useState(null);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState(initialSearch);
   const [showFilters, setShowFilters] = useState(false);
   const [sortByRating, setSortByRating] = useState(false);
   const [platformStats, setPlatformStats] = useState(null);
@@ -82,7 +94,7 @@ export default function UniversitiesPage() {
     );
   }
 
-  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState(initialSearch);
   const debounceTimer = useRef(null);
 
   function handleSearchChange(value) {
