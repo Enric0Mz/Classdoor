@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { GraduationCap, ArrowLeft, Lightbulb } from "lucide-react";
+import { ArrowLeft, ShieldCheck } from "lucide-react";
 import { translateError } from "@/lib/errorMessages";
 import {
   fetchWithAuth,
@@ -64,7 +64,7 @@ export default function SugerirUniversidadePage() {
   }, [router]);
 
   function validate() {
-    if (!name.trim()) return "O nome da universidade e obrigatorio.";
+    if (!name.trim()) return "O nome da universidade é obrigatório.";
     if (!type) return "Selecione o tipo da universidade.";
     return null;
   }
@@ -118,36 +118,45 @@ export default function SugerirUniversidadePage() {
 
   if (success) {
     return (
-      <main
-        className="relative flex min-h-[calc(100vh-4rem)] items-center justify-center overflow-hidden px-4"
-        style={{ backgroundColor: "#0F2854" }}
-      >
-        <div className="dot-grid absolute inset-0 opacity-40" />
-        <div className="absolute left-1/2 top-1/2 h-[500px] w-[500px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-radial from-violet-900/30 to-transparent blur-3xl" />
+      <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-primary px-4">
+        {/* Abstract background */}
+        <div className="pointer-events-none absolute right-0 top-0 h-full w-1/3 opacity-10">
+          <svg
+            className="h-full w-full"
+            viewBox="0 0 400 400"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M45.7,-78.2C58.9,-71.1,69.1,-58.5,76.4,-44.7C83.7,-30.9,88.1,-15.5,86.8,-0.7C85.5,14,78.6,28.1,69.8,40.3C61,52.5,50.3,62.9,37.8,70.1C25.3,77.3,11,81.3,-3.8,87.9C-18.6,94.5,-33.9,103.7,-47.2,100.8C-60.5,97.9,-71.8,82.9,-80,67.6C-88.2,52.3,-93.3,36.7,-95.1,20.8C-96.9,4.9,-95.4,-11.3,-88.7,-25.2C-82,-39.1,-70.1,-50.7,-56.9,-57.8C-43.7,-64.9,-29.2,-67.5,-15.4,-72.1C-1.6,-76.7,12.5,-83.3,45.7,-78.2Z"
+              fill="#ffffff"
+              transform="translate(200 200)"
+            />
+          </svg>
+        </div>
 
-        <div className="relative z-10 flex w-full max-w-sm flex-col items-center gap-4 text-center">
-          <div className="flex h-16 w-16 items-center justify-center rounded-full border border-green-400/20 bg-green-500/10 backdrop-blur-sm text-green-400">
-            <GraduationCap size={28} />
+        <div className="relative z-10 flex w-full max-w-sm flex-col items-center gap-6 text-center">
+          <div className="flex h-16 w-16 items-center justify-center rounded-full border border-green-400/20 bg-green-500/10 text-green-400">
+            <ShieldCheck size={28} />
           </div>
           <div>
-            <h2 className="text-lg font-semibold text-white">
-              Sugestao enviada com sucesso!
+            <h2 className="font-headline text-2xl font-bold text-white">
+              Sugestão enviada com sucesso!
             </h2>
-            <p className="mt-1 text-sm text-gray-400">
-              Ela sera analisada pela nossa equipe. Voce pode acompanhar o
-              status na sua pagina de perfil.
+            <p className="mt-2 text-sm text-slate-300">
+              Ela será analisada pela nossa equipe. Você pode acompanhar o
+              status na sua página de perfil.
             </p>
           </div>
           <div className="flex gap-3">
             <Link
               href="/me"
-              className="brand-gradient rounded-xl px-6 py-2.5 text-sm font-semibold text-white hover:opacity-90"
+              className="rounded-xl bg-tertiary-fixed-dim px-6 py-3 text-sm font-bold text-primary transition-all hover:brightness-110"
             >
               Ver meu perfil
             </Link>
             <Link
               href="/universities"
-              className="rounded-xl border border-white/10 bg-white/5 px-6 py-2.5 text-sm font-semibold text-gray-300 hover:bg-white/10"
+              className="rounded-xl border border-white/20 bg-white/10 px-6 py-3 text-sm font-bold text-white backdrop-blur transition-all hover:bg-white/20"
             >
               Ver universidades
             </Link>
@@ -158,111 +167,92 @@ export default function SugerirUniversidadePage() {
   }
 
   return (
-    <main
-      className="relative min-h-[calc(100vh-4rem)] overflow-hidden px-4 py-12"
-      style={{ backgroundColor: "#0F2854" }}
-    >
-      <div className="dot-grid absolute inset-0 opacity-40" />
-      <div className="absolute left-1/2 top-0 h-[600px] w-[800px] -translate-x-1/2 rounded-full bg-gradient-radial from-violet-900/30 to-transparent blur-3xl" />
+    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-primary px-4 pb-20 pt-24">
+      {/* Abstract background */}
+      <div className="pointer-events-none absolute right-0 top-0 h-full w-1/3 opacity-10">
+        <svg
+          className="h-full w-full"
+          viewBox="0 0 400 400"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M45.7,-78.2C58.9,-71.1,69.1,-58.5,76.4,-44.7C83.7,-30.9,88.1,-15.5,86.8,-0.7C85.5,14,78.6,28.1,69.8,40.3C61,52.5,50.3,62.9,37.8,70.1C25.3,77.3,11,81.3,-3.8,87.9C-18.6,94.5,-33.9,103.7,-47.2,100.8C-60.5,97.9,-71.8,82.9,-80,67.6C-88.2,52.3,-93.3,36.7,-95.1,20.8C-96.9,4.9,-95.4,-11.3,-88.7,-25.2C-82,-39.1,-70.1,-50.7,-56.9,-57.8C-43.7,-64.9,-29.2,-67.5,-15.4,-72.1C-1.6,-76.7,12.5,-83.3,45.7,-78.2Z"
+            fill="#ffffff"
+            transform="translate(200 200)"
+          />
+        </svg>
+      </div>
 
-      <div className="relative z-10 mx-auto w-full max-w-lg">
+      <div className="relative z-10 w-full max-w-2xl">
         {/* Header */}
-        <div className="mb-8 flex flex-col items-center gap-4 text-center">
-          <Link href="/" className="inline-flex items-center gap-2.5">
-            <div className="brand-gradient flex h-10 w-10 items-center justify-center rounded-xl text-white shadow-lg shadow-indigo-500/30">
-              <GraduationCap size={22} />
-            </div>
-            <span className="brand-gradient-text text-[1.4rem] font-extrabold tracking-tight">
-              InfoCampus
-            </span>
-          </Link>
-
-          <div className="stagger-1 inline-flex items-center gap-2 rounded-full border border-indigo-400/30 bg-indigo-500/20 px-4 py-1.5 text-xs font-semibold text-white backdrop-blur-sm">
-            <Lightbulb size={13} />
-            <span>Ajude a comunidade a crescer</span>
-          </div>
-
-          <div>
-            <h1 className="stagger-2 text-2xl font-semibold tracking-tight text-white">
-              Sugerir universidade
-            </h1>
-            <p className="stagger-3 mt-1.5 text-sm text-gray-400">
-              Nao encontrou sua universidade? Sugira para que ela seja
-              adicionada
-            </p>
-          </div>
+        <div className="mb-10 text-center">
+          <h1 className="font-headline mb-4 text-4xl font-bold tracking-tight text-white md:text-5xl">
+            Sugerir Universidade
+          </h1>
+          <p className="mx-auto max-w-md text-lg text-slate-300">
+            Não encontrou sua universidade? Sugira para que ela seja adicionada.
+          </p>
         </div>
 
-        {/* Card wrapper */}
-        <div className="relative">
-          <div
-            className="absolute inset-0 -z-10"
-            style={{
-              background:
-                "radial-gradient(ellipse at 50% 50%, rgba(139,92,246,0.45) 0%, rgba(99,102,241,0.2) 40%, transparent 70%)",
-              transform: "scale(1.6)",
-              filter: "blur(24px)",
-            }}
-          />
-
-          {/* Form card */}
-          <div className="rounded-2xl border border-white/10 bg-white p-8 shadow-xl shadow-black/30">
-            {error && (
-              <div className="mb-6 flex items-start gap-2.5 rounded-xl border border-red-100 bg-red-50 p-3.5">
-                <svg
-                  className="mt-0.5 h-4 w-4 shrink-0 text-red-500"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm-1-5a1 1 0 1 0 2 0V9a1 1 0 1 0-2 0v4zm1-7.5a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-                <p className="text-sm text-red-600">{error}</p>
-              </div>
-            )}
-
-            <form onSubmit={handleSubmit} className="flex flex-col gap-7">
-              {/* Nome */}
-              <div className="flex flex-col gap-2">
-                <label className="text-sm font-semibold text-gray-700">
-                  Nome da universidade <span className="text-red-400">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Ex: Universidade Federal de Minas Gerais"
-                  className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-800 outline-none transition-colors placeholder:text-gray-400 focus:border-indigo-300 focus:bg-white focus:ring-2 focus:ring-indigo-100"
+        {/* Form Card */}
+        <div className="rounded-xl bg-surface-container-lowest p-8 shadow-[0px_24px_48px_-12px_rgba(0,19,55,0.08)] md:p-12">
+          {error && (
+            <div className="mb-6 flex items-start gap-2.5 rounded-xl border border-red-100 bg-red-50 p-3.5">
+              <svg
+                className="mt-0.5 h-4 w-4 shrink-0 text-red-500"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm-1-5a1 1 0 1 0 2 0V9a1 1 0 1 0-2 0v4zm1-7.5a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5z"
+                  clipRule="evenodd"
                 />
-              </div>
+              </svg>
+              <p className="text-sm text-red-600">{error}</p>
+            </div>
+          )}
 
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Nome */}
+            <div className="space-y-2">
+              <label className="block text-sm font-semibold text-on-surface-variant">
+                Nome da universidade <span className="text-error">*</span>
+              </label>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Ex: Universidade de São Paulo"
+                className="w-full rounded-xl border border-outline-variant/20 bg-surface-container px-4 py-3 text-on-surface outline-none transition-all placeholder:text-on-surface-variant/50 focus:border-secondary focus:ring-2 focus:ring-secondary/20"
+              />
+            </div>
+
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               {/* Tipo */}
-              <div className="flex flex-col gap-2">
-                <label className="text-sm font-semibold text-gray-700">
-                  Tipo <span className="text-red-400">*</span>
+              <div className="space-y-2">
+                <label className="block text-sm font-semibold text-on-surface-variant">
+                  Tipo
                 </label>
-                <div className="flex gap-3">
+                <div className="flex gap-2">
                   <button
                     type="button"
                     onClick={() => setType("PUBLIC")}
-                    className={`flex-1 cursor-pointer rounded-xl py-3 text-sm font-medium transition-all ${
+                    className={`flex-1 cursor-pointer rounded-xl border py-3 text-center text-sm font-bold transition-all ${
                       type === "PUBLIC"
-                        ? "brand-gradient text-white shadow-sm"
-                        : "border border-gray-200 bg-gray-50 text-gray-500 hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-600"
+                        ? "border-secondary bg-secondary-container text-on-secondary-container"
+                        : "border-outline-variant/20 bg-surface-container text-on-surface-variant hover:bg-surface"
                     }`}
                   >
-                    Publica
+                    Pública
                   </button>
                   <button
                     type="button"
                     onClick={() => setType("PRIVATE")}
-                    className={`flex-1 cursor-pointer rounded-xl py-3 text-sm font-medium transition-all ${
+                    className={`flex-1 cursor-pointer rounded-xl border py-3 text-center text-sm font-bold transition-all ${
                       type === "PRIVATE"
-                        ? "brand-gradient text-white shadow-sm"
-                        : "border border-gray-200 bg-gray-50 text-gray-500 hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-600"
+                        ? "border-secondary bg-secondary-container text-on-secondary-container"
+                        : "border-outline-variant/20 bg-surface-container text-on-surface-variant hover:bg-surface"
                     }`}
                   >
                     Privada
@@ -270,18 +260,17 @@ export default function SugerirUniversidadePage() {
                 </div>
               </div>
 
-              {/* Localidade */}
-              <div className="flex flex-col gap-2">
-                <label className="text-sm font-semibold text-gray-700">
-                  Estado{" "}
-                  <span className="font-normal text-gray-400">(opcional)</span>
+              {/* Estado */}
+              <div className="space-y-2">
+                <label className="block text-sm font-semibold text-on-surface-variant">
+                  Estado
                 </label>
                 <select
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
-                  className="w-full cursor-pointer rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-800 outline-none transition-colors focus:border-indigo-300 focus:bg-white focus:ring-2 focus:ring-indigo-100"
+                  className="w-full cursor-pointer appearance-none rounded-xl border border-outline-variant/20 bg-surface-container px-4 py-3 text-on-surface outline-none transition-all focus:border-secondary focus:ring-2 focus:ring-secondary/20"
                 >
-                  <option value="">Selecione um estado...</option>
+                  <option value="">Selecione o estado</option>
                   {BRAZILIAN_STATES.map((state) => (
                     <option key={state} value={state}>
                       {state}
@@ -289,47 +278,55 @@ export default function SugerirUniversidadePage() {
                   ))}
                 </select>
               </div>
+            </div>
 
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               {/* Website */}
-              <div className="flex flex-col gap-2">
-                <label className="text-sm font-semibold text-gray-700">
+              <div className="space-y-2">
+                <label className="block text-sm font-semibold text-on-surface-variant">
                   Website{" "}
-                  <span className="font-normal text-gray-400">(opcional)</span>
+                  <span className="text-xs font-normal text-outline">
+                    (Opcional)
+                  </span>
                 </label>
                 <input
-                  type="text"
+                  type="url"
                   value={website}
                   onChange={(e) => setWebsite(e.target.value)}
-                  placeholder="https://www.universidade.edu.br"
-                  className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-800 outline-none transition-colors placeholder:text-gray-400 focus:border-indigo-300 focus:bg-white focus:ring-2 focus:ring-indigo-100"
+                  placeholder="https://www.exemplo.edu.br"
+                  className="w-full rounded-xl border border-outline-variant/20 bg-surface-container px-4 py-3 text-on-surface outline-none transition-all placeholder:text-on-surface-variant/50 focus:border-secondary focus:ring-2 focus:ring-secondary/20"
                 />
               </div>
 
-              {/* Dominio de email */}
-              <div className="flex flex-col gap-2">
-                <label className="text-sm font-semibold text-gray-700">
-                  Dominio de email{" "}
-                  <span className="font-normal text-gray-400">(opcional)</span>
+              {/* Domínio de email */}
+              <div className="space-y-2">
+                <label className="block text-sm font-semibold text-on-surface-variant">
+                  Domínio de email{" "}
+                  <span className="text-xs font-normal text-outline">
+                    (Opcional)
+                  </span>
                 </label>
                 <input
                   type="text"
                   value={emailDomain}
                   onChange={(e) => setEmailDomain(e.target.value)}
-                  placeholder="ex: usp.br"
-                  className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-800 outline-none transition-colors placeholder:text-gray-400 focus:border-indigo-300 focus:bg-white focus:ring-2 focus:ring-indigo-100"
+                  placeholder="@usp.br"
+                  className="w-full rounded-xl border border-outline-variant/20 bg-surface-container px-4 py-3 text-on-surface outline-none transition-all placeholder:text-on-surface-variant/50 focus:border-secondary focus:ring-2 focus:ring-secondary/20"
                 />
               </div>
+            </div>
 
-              {/* Submit */}
+            {/* Actions */}
+            <div className="flex flex-col items-center gap-6 pt-6">
               <button
                 type="submit"
                 disabled={isLoading}
-                className="brand-gradient flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-60"
+                className="w-full cursor-pointer rounded-xl bg-tertiary-fixed-dim py-4 text-lg font-bold text-primary shadow-[0px_24px_48px_-12px_rgba(0,19,55,0.08)] transition-all hover:brightness-105 active:scale-95 disabled:opacity-60"
               >
                 {isLoading ? (
-                  <>
+                  <span className="flex items-center justify-center gap-2">
                     <svg
-                      className="h-4 w-4 animate-spin"
+                      className="h-5 w-5 animate-spin"
                       viewBox="0 0 24 24"
                       fill="none"
                     >
@@ -348,24 +345,29 @@ export default function SugerirUniversidadePage() {
                       />
                     </svg>
                     Enviando...
-                  </>
+                  </span>
                 ) : (
-                  "Enviar sugestao"
+                  "Enviar sugestão"
                 )}
               </button>
-            </form>
-          </div>
+
+              <Link
+                href="/universities"
+                className="group flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-secondary transition-colors hover:text-primary"
+              >
+                <ArrowLeft size={16} />
+                Voltar para universidades
+              </Link>
+            </div>
+          </form>
         </div>
 
-        {/* Back link */}
-        <div className="mt-5 text-center">
-          <Link
-            href="/universities"
-            className="inline-flex items-center gap-1.5 text-sm text-gray-500 transition-colors hover:text-gray-300"
-          >
-            <ArrowLeft size={14} />
-            Voltar para universidades
-          </Link>
+        {/* Trust badge */}
+        <div className="mt-8 flex items-center justify-center gap-3 opacity-60">
+          <ShieldCheck size={18} className="text-slate-400" />
+          <span className="text-xs text-slate-400">
+            Nossa equipe revisará os dados em até 48 horas úteis.
+          </span>
         </div>
       </div>
     </main>
