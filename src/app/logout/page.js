@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import Link from "next/link";
-import { GraduationCap, LogOut, Zap } from "lucide-react";
+import { GraduationCap, ArrowRight } from "lucide-react";
 
 export default function LogoutPage() {
   useEffect(() => {
@@ -26,74 +26,71 @@ export default function LogoutPage() {
   }, []);
 
   return (
-    <main
-      className="relative flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center overflow-hidden"
-      style={{ backgroundColor: "#0F2854" }}
-    >
-      {/* Dot grid overlay */}
-      <div className="dot-grid absolute inset-0 opacity-40" />
+    <main className="relative flex min-h-screen flex-grow items-center justify-center overflow-hidden bg-gradient-to-br from-primary to-primary-container pt-16">
+      {/* Background decoration */}
+      <div className="pointer-events-none absolute inset-0 opacity-10">
+        <div className="absolute -right-[5%] -top-[10%] h-96 w-96 rounded-full bg-secondary-container blur-3xl" />
+        <div className="absolute -bottom-[10%] -left-[5%] h-96 w-96 rounded-full bg-primary-container blur-3xl" />
+      </div>
 
-      {/* Radial purple glow */}
-      <div className="absolute left-1/2 top-1/2 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-radial from-sky-700/30 to-transparent blur-3xl" />
-
-      <div className="relative z-10 flex flex-col items-center px-4 text-center">
-        {/* Logo */}
-        <Link href="/" className="mb-12 inline-flex items-center gap-2.5">
-          <div className="blue-gradient flex h-10 w-10 items-center justify-center rounded-xl text-white">
-            <GraduationCap size={22} />
+      <div className="container relative z-10 mx-auto grid grid-cols-12 items-center gap-8 px-6">
+        {/* Left content */}
+        <div className="col-span-12 flex flex-col items-center text-center lg:col-span-7 lg:items-start lg:text-left">
+          {/* Icon */}
+          <div className="mb-8 rounded-full border border-white/10 bg-white/5 p-4 backdrop-blur-md">
+            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-tertiary-fixed-dim shadow-lg">
+              <GraduationCap size={36} className="text-primary" />
+            </div>
           </div>
-          <span className="blue-gradient-text text-[1.4rem] font-extrabold tracking-tight">
-            InfoCampus
-          </span>
-        </Link>
 
-        {/* Icon */}
-        <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-full border border-white/10 bg-white/5 backdrop-blur-sm">
-          <LogOut size={32} className="text-gray-400" />
+          <h1 className="font-headline mb-6 text-5xl font-bold leading-tight tracking-tight text-white md:text-7xl">
+            Até logo!
+          </h1>
+
+          <p className="mb-12 max-w-xl text-lg leading-relaxed text-blue-100/80 md:text-xl">
+            Você saiu da sua conta com sucesso. Esperamos te ver em breve para
+            continuar sua jornada de excelência acadêmica.
+          </p>
+
+          <div className="flex w-full max-w-md flex-col gap-4 sm:flex-row lg:max-w-none">
+            <Link
+              href="/login"
+              className="flex items-center justify-center gap-2 rounded-xl bg-tertiary-fixed-dim px-10 py-4 text-lg font-bold text-primary shadow-[0px_24px_48px_-12px_rgba(255,186,32,0.3)] transition-transform hover:scale-[1.02] active:scale-95"
+            >
+              Entrar novamente
+              <ArrowRight size={20} />
+            </Link>
+            <Link
+              href="/"
+              className="rounded-xl border border-white/20 bg-white/10 px-10 py-4 text-center text-lg font-semibold text-white backdrop-blur-sm transition-all hover:bg-white/20"
+            >
+              Explorar sem conta
+            </Link>
+          </div>
         </div>
 
-        {/* Badge */}
-        <div className="stagger-1 mb-5 inline-flex items-center gap-2 rounded-full border border-sky-400/30 bg-sky-500/20 px-4 py-1.5 text-xs font-semibold text-white backdrop-blur-sm">
-          <Zap size={13} />
-          <span>Sessão encerrada com segurança</span>
-        </div>
-
-        {/* Message */}
-        <h1 className="stagger-2 text-4xl font-extrabold tracking-tight text-white">
-          Até logo!
-        </h1>
-        <p className="stagger-3 mt-3 max-w-xs text-base text-gray-400">
-          Você saiu da sua conta com sucesso. Esperamos te ver em breve.
-        </p>
-
-        {/* Actions */}
-        <div className="mt-8 flex w-full max-w-xs flex-col gap-3">
-          <Link
-            href="/login"
-            className="blue-gradient flex items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
-          >
-            Entrar novamente
-          </Link>
-          <Link
-            href="/universities"
-            className="flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 py-2.5 text-sm font-medium text-gray-300 backdrop-blur-sm transition-colors hover:border-sky-400/30 hover:bg-sky-500/10 hover:text-white"
-          >
-            Explorar sem conta
-          </Link>
-        </div>
-
-        {/* Quick chips */}
-        <div className="mt-10 flex flex-wrap justify-center gap-2">
-          {["Explorar universidades", "Ver rankings", "Encontrar cursos"].map(
-            (chip) => (
-              <span
-                key={chip}
-                className="rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-xs text-gray-400 backdrop-blur-sm"
-              >
-                {chip}
-              </span>
-            ),
-          )}
+        {/* Right decorative image */}
+        <div className="relative col-span-5 hidden justify-end lg:flex">
+          <div className="relative aspect-[4/5] w-full max-w-md">
+            <div className="absolute inset-0 -rotate-6 scale-95 rounded-3xl border border-white/10 bg-white/5" />
+            <div className="absolute inset-0 rotate-3 scale-100 overflow-hidden rounded-3xl border border-white/20 bg-white/10 shadow-2xl">
+              <img
+                src="/logout-card.jpg"
+                alt="Universidade"
+                className="h-full w-full object-cover opacity-60 grayscale mix-blend-overlay"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-primary via-transparent to-transparent" />
+              <div className="absolute bottom-8 left-8 right-8">
+                <div className="mb-2 text-xs font-bold uppercase tracking-[0.2em] text-tertiary-fixed-dim">
+                  Academic Journal 2024
+                </div>
+                <div className="font-headline text-2xl italic leading-snug text-white">
+                  &ldquo;Conhecimento é a única riqueza que cresce quando
+                  compartilhada.&rdquo;
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </main>

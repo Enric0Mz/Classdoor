@@ -12,7 +12,7 @@ const NAV_LINKS = [
   { label: "Salários", href: "/em-breve" },
 ];
 
-const HIDDEN_ROUTES = ["/login", "/logout", "/register", "/avaliar"];
+const HIDDEN_ROUTES = ["/login", "/register", "/avaliar"];
 
 function getEmailFromToken(token) {
   try {
