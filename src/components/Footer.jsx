@@ -93,10 +93,7 @@ export default function Footer() {
           <p className="mb-2 text-xs text-slate-400">
             Assine para receber novos rankings.
           </p>
-          <form
-            onSubmit={(event) => event.preventDefault()}
-            className="flex"
-          >
+          <form onSubmit={(event) => event.preventDefault()} className="flex">
             <input
               type="email"
               placeholder="E-MAIL"

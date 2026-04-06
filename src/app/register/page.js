@@ -95,7 +95,9 @@ export default function RegisterPage() {
       {/* ── Left branding panel ── */}
       <section
         className="relative hidden w-full flex-col justify-between overflow-hidden p-8 text-white md:flex md:w-[45%] md:p-16 lg:w-[40%]"
-        style={{ background: "linear-gradient(135deg, #001337 0%, #0f2854 100%)" }}
+        style={{
+          background: "linear-gradient(135deg, #001337 0%, #0f2854 100%)",
+        }}
       >
         {/* Background texture */}
         <div className="pointer-events-none absolute inset-0 opacity-10">
@@ -325,9 +327,7 @@ export default function RegisterPage() {
             {/* Password mismatch */}
             {passwordConfirmation.length > 0 &&
               password !== passwordConfirmation && (
-                <p className="text-xs text-red-500">
-                  As senhas não coincidem.
-                </p>
+                <p className="text-xs text-red-500">As senhas não coincidem.</p>
               )}
 
             {/* Terms */}

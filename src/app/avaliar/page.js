@@ -4,13 +4,7 @@ import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { translateError } from "@/lib/errorMessages";
-import {
-  Search,
-  ChevronDown,
-  ShieldCheck,
-  ShieldX,
-  X,
-} from "lucide-react";
+import { Search, ChevronDown, ShieldCheck, ShieldX, X } from "lucide-react";
 import {
   fetchWithAuth,
   AuthExpiredError,
@@ -391,11 +385,7 @@ function AvaliarContent() {
               Processo de Avaliação
             </span>
             <Link
-              href={
-                universityId
-                  ? `/universities/${universityId}`
-                  : "/"
-              }
+              href={universityId ? `/universities/${universityId}` : "/"}
               className="group rounded-lg p-2 transition-colors hover:bg-surface-container"
             >
               <X size={20} className="text-on-surface-variant" />
@@ -571,8 +561,8 @@ function AvaliarContent() {
                   htmlFor="terms"
                   className="text-sm leading-relaxed text-on-surface-variant"
                 >
-                  Confirmo que esta avaliação é baseada na minha experiência real
-                  como estudante e estou de acordo com os{" "}
+                  Confirmo que esta avaliação é baseada na minha experiência
+                  real como estudante e estou de acordo com os{" "}
                   <Link
                     href="/em-breve"
                     className="font-semibold text-secondary underline decoration-secondary/30"

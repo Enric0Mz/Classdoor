@@ -25,7 +25,10 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="pt-BR" className={`${plusJakartaSans.variable} ${notoSerif.variable}`}>
+    <html
+      lang="pt-BR"
+      className={`${plusJakartaSans.variable} ${notoSerif.variable}`}
+    >
       <body
         className={`${plusJakartaSans.className} flex min-h-screen flex-col`}
       >

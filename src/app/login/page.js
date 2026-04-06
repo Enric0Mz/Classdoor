@@ -81,7 +81,12 @@ function LoginPageContent() {
   return (
     <main className="flex min-h-screen flex-col md:flex-row">
       {/* ── Left branding panel (desktop only) ── */}
-      <div className="relative hidden overflow-hidden md:flex md:w-[45%] md:items-center md:justify-center md:p-16 lg:w-[40%] lg:p-24" style={{ background: "linear-gradient(135deg, #001337 0%, #0f2854 100%)" }}>
+      <div
+        className="relative hidden overflow-hidden md:flex md:w-[45%] md:items-center md:justify-center md:p-16 lg:w-[40%] lg:p-24"
+        style={{
+          background: "linear-gradient(135deg, #001337 0%, #0f2854 100%)",
+        }}
+      >
         {/* Background image overlay */}
         <div className="absolute inset-0 opacity-20 mix-blend-overlay">
           <img

@@ -93,7 +93,13 @@ function parseComment(raw) {
   return { structured: false, text: unescaped };
 }
 
-const TABS = ["Visão Geral", "Avaliações", "Avaliações Externas", "Cursos", "Salários"];
+const TABS = [
+  "Visão Geral",
+  "Avaliações",
+  "Avaliações Externas",
+  "Cursos",
+  "Salários",
+];
 const FILTERS = ["Mais recentes", "Nota alta", "Nota baixa"];
 const DEFAULT_FILTER = "Mais recentes";
 
@@ -254,7 +260,6 @@ function RatingOverview({ stats }) {
             </span>
           </div>
         )}
-
       </div>
 
       {/* Trust banner */}
@@ -1485,9 +1490,7 @@ export default function UniversityDetailPage() {
           <div className="lg:col-span-8">
             {activeTab === "Avaliações" && (
               <div className="space-y-4">
-                <RatingOverview
-                  stats={university.stats}
-                />
+                <RatingOverview stats={university.stats} />
                 <FilterBar
                   activeFilter={activeFilter}
                   onFilterChange={setActiveFilter}
@@ -1549,7 +1552,6 @@ export default function UniversityDetailPage() {
                     )}
                   </>
                 )}
-
               </div>
             )}
 
@@ -1650,9 +1652,7 @@ export default function UniversityDetailPage() {
 
             {activeTab === "Visão Geral" && (
               <div className="space-y-6">
-                <RatingOverview
-                  stats={university.stats}
-                />
+                <RatingOverview stats={university.stats} />
 
                 {/* University details card */}
                 <div className="rounded-2xl border border-outline-variant/20 bg-white p-6">
@@ -1717,15 +1717,15 @@ export default function UniversityDetailPage() {
             {activeTab !== "Avaliações" &&
               activeTab !== "Visão Geral" &&
               activeTab !== "Avaliações Externas" && (
-              <div className="rounded-2xl border border-outline-variant/20 bg-white p-10 text-center">
-                <p className="font-headline text-lg font-bold text-primary">
-                  Em breve
-                </p>
-                <p className="mt-2 text-sm text-on-surface-variant">
-                  Estamos trabalhando nesta funcionalidade.
-                </p>
-              </div>
-            )}
+                <div className="rounded-2xl border border-outline-variant/20 bg-white p-10 text-center">
+                  <p className="font-headline text-lg font-bold text-primary">
+                    Em breve
+                  </p>
+                  <p className="mt-2 text-sm text-on-surface-variant">
+                    Estamos trabalhando nesta funcionalidade.
+                  </p>
+                </div>
+              )}
           </div>
 
           {/* Sidebar */}
