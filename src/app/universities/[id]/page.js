@@ -1237,7 +1237,7 @@ export default function UniversityDetailPage() {
         method: "DELETE",
       });
       if (!response.ok) throw new Error();
-      router.push("/universities");
+      router.push("/");
     } catch {
       setIsDeletingUni(false);
       setDeleteConfirming(false);
@@ -1262,7 +1262,7 @@ export default function UniversityDetailPage() {
           <p className="font-headline text-lg font-bold text-primary">Oops!</p>
           <p className="mt-2 text-sm text-on-surface-variant">{error}</p>
           <button
-            onClick={() => router.push("/universities")}
+            onClick={() => router.push("/")}
             className="mt-6 rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-on-primary transition-opacity hover:opacity-90"
           >
             Voltar para universidades
@@ -1307,7 +1307,7 @@ export default function UniversityDetailPage() {
         {/* Back arrow */}
         <div className="absolute left-0 right-0 top-0 z-10 mx-auto max-w-7xl px-6 pt-20">
           <Link
-            href="/universities"
+            href="/"
             className="inline-flex items-center gap-1.5 text-sm text-white/70 transition-colors hover:text-white"
           >
             <ArrowLeft size={16} />

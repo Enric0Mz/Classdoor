@@ -70,7 +70,7 @@ function LoginPageContent() {
       localStorage.setItem("token", data.token);
       localStorage.setItem("refreshToken", data.refreshToken);
       window.dispatchEvent(new Event("auth-change"));
-      router.push("/universities");
+      router.push("/");
     } catch (err) {
       setError(err.message);
     } finally {
@@ -79,9 +79,9 @@ function LoginPageContent() {
   }
 
   return (
-    <main className="flex min-h-screen">
+    <main className="flex min-h-screen flex-col md:flex-row">
       {/* ── Left branding panel (desktop only) ── */}
-      <div className="relative hidden overflow-hidden lg:flex lg:w-1/2 lg:items-center lg:justify-center lg:p-24" style={{ background: "linear-gradient(135deg, #001337 0%, #0f2854 100%)" }}>
+      <div className="relative hidden overflow-hidden md:flex md:w-[45%] md:items-center md:justify-center md:p-16 lg:w-[40%] lg:p-24" style={{ background: "linear-gradient(135deg, #001337 0%, #0f2854 100%)" }}>
         {/* Background image overlay */}
         <div className="absolute inset-0 opacity-20 mix-blend-overlay">
           <img
@@ -146,10 +146,10 @@ function LoginPageContent() {
       </div>
 
       {/* ── Right form panel ── */}
-      <div className="flex w-full flex-col items-center justify-center overflow-y-auto bg-white p-8 md:p-16 lg:w-1/2 lg:p-24">
+      <div className="flex w-full flex-col items-center justify-center overflow-y-auto bg-white p-8 md:w-[55%] md:p-16 lg:w-[60%] lg:p-24">
         <div className="w-full max-w-md">
           {/* Mobile logo — hidden on large screens */}
-          <div className="mb-12 flex justify-center lg:hidden">
+          <div className="mb-12 flex justify-center md:hidden">
             <Link
               href="/"
               className="font-headline text-3xl font-bold tracking-tight text-primary"

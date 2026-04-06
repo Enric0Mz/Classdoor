@@ -2,15 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
-import {
-  Search,
-  BookOpen,
-  X,
-  Clock,
-  Award,
-  Users,
-
-} from "lucide-react";
+import { Search, BookOpen, X, Clock, Award, Users } from "lucide-react";
 
 const CATEGORY_FILTERS = [
   "Tudo",
@@ -231,14 +223,21 @@ export default function CoursesPage() {
             </div>
 
             {/* Right decorative image */}
-            <div className="hidden lg:col-span-5 lg:flex lg:justify-end">
-              <div className="relative rotate-3 overflow-hidden rounded-2xl border-4 border-white/10 shadow-2xl">
+            <div className="hidden items-center justify-center lg:col-span-5 lg:flex">
+              <div className="relative aspect-[4/5] w-full rotate-3 overflow-hidden rounded-xl shadow-2xl">
                 <img
                   src="/courses-hero.jpg"
                   alt="Estudantes"
-                  className="h-80 w-72 object-cover"
+                  className="h-full w-full object-cover"
                 />
                 <div className="absolute inset-0 bg-primary/20" />
+                <div className="glass-effect absolute bottom-0 left-0 right-0 border-t border-white/10 bg-white/10 p-8 text-white">
+                  <p className="font-headline text-sm italic">
+                    &ldquo;O homem não é nada além daquilo que a educação faz
+                    dele.&rdquo;
+                  </p>
+                  <p className="mt-2 text-xs opacity-70">— Immanuel Kant</p>
+                </div>
               </div>
             </div>
           </div>
@@ -407,6 +406,13 @@ export default function CoursesPage() {
                 className="h-full w-full object-cover"
               />
               <div className="absolute inset-0 bg-primary/20" />
+              <div className="glass-effect absolute bottom-0 left-0 right-0 border-t border-white/10 bg-white/10 p-8 text-white">
+                <p className="font-headline text-sm italic">
+                  &ldquo;A educação é aquilo que sobrevive depois que tudo o que
+                  aprendemos foi esquecido.&rdquo;
+                </p>
+                <p className="mt-2 text-xs opacity-70">— Albert Einstein</p>
+              </div>
             </div>
           </div>
         </div>

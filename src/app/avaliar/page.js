@@ -394,7 +394,7 @@ function AvaliarContent() {
               href={
                 universityId
                   ? `/universities/${universityId}`
-                  : "/universities"
+                  : "/"
               }
               className="group rounded-lg p-2 transition-colors hover:bg-surface-container"
             >

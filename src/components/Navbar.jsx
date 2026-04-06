@@ -93,7 +93,7 @@ export default function Navbar() {
               e.preventDefault();
               const query = e.target.elements.navSearch.value.trim();
               if (query) {
-                router.push(`/universities?search=${encodeURIComponent(query)}`);
+                router.push(`/?search=${encodeURIComponent(query)}`);
                 e.target.elements.navSearch.value = "";
               }
             }}
@@ -205,14 +205,26 @@ export default function Navbar() {
       {isMobileMenuOpen && (
         <div className="border-t border-gray-100 bg-white px-6 py-3 md:hidden">
           {/* Mobile search */}
-          <div className="mb-3 flex items-center rounded-lg border border-outline-variant/20 bg-slate-50 px-3 py-2.5 sm:hidden">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              const query = e.target.elements.mobileSearch.value.trim();
+              if (query) {
+                router.push(`/?search=${encodeURIComponent(query)}`);
+                e.target.elements.mobileSearch.value = "";
+                setIsMobileMenuOpen(false);
+              }
+            }}
+            className="mb-3 flex items-center rounded-lg border border-outline-variant/20 bg-slate-50 px-3 py-2.5 sm:hidden"
+          >
             <Search size={16} className="text-slate-400" />
             <input
+              name="mobileSearch"
               type="text"
               placeholder="Buscar universidades..."
               className="w-full border-none bg-transparent text-sm text-on-surface outline-none placeholder:text-slate-400 focus:ring-0"
             />
-          </div>
+          </form>
 
           {/* Mobile nav links */}
           {NAV_LINKS.map((link) => (

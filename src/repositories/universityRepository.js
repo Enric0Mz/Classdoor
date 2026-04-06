@@ -194,12 +194,6 @@ export async function create({ images, ...data }) {
   });
 }
 
-/**
- * Finds a university by matching an email domain via the UniversityDomain table.
- *
- * @param {string} domain - e.g. "usp.br"
- * @returns {object|null} The University record or null if not found
- */
 export async function updateRating(universityId) {
   const [reviewStats, externalStats] = await Promise.all([
     prisma.review.aggregate({

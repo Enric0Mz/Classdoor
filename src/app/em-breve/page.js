@@ -57,7 +57,7 @@ export default function EmBrevePage() {
 
             <div className="flex flex-col gap-6 pt-4 sm:flex-row">
               <Link
-                href="/universities"
+                href="/"
                 className="flex items-center justify-center gap-3 rounded-lg bg-tertiary-fixed-dim px-8 py-4 text-base font-bold text-primary shadow-2xl transition-all hover:brightness-110"
               >
                 <span>Explorar Universidades</span>

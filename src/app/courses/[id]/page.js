@@ -3,13 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import {
-  ArrowLeft,
-  BookOpen,
-  ExternalLink,
-  Tag,
-  DollarSign,
-} from "lucide-react";
+import { ArrowLeft, BookOpen, ExternalLink, Tag } from "lucide-react";
 
 export default function CourseDetailPage() {
   const { id } = useParams();
@@ -35,15 +29,14 @@ export default function CourseDetailPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-gray-50 py-10">
-        <div className="mx-auto max-w-3xl px-4">
+      <main className="flex min-h-screen flex-col bg-background pt-16">
+        <div className="mx-auto w-full max-w-3xl px-4 py-10">
           <div className="skeleton mb-4 h-6 w-32 rounded" />
           <div className="skeleton mb-6 h-64 w-full rounded-2xl" />
           <div className="skeleton mb-4 h-8 w-3/4 rounded" />
           <div className="skeleton mb-2 h-4 w-full rounded" />
           <div className="skeleton mb-2 h-4 w-5/6 rounded" />
-          <div className="skeleton mb-2 h-4 w-4/6 rounded" />
-          <div className="mt-6 skeleton h-12 w-48 rounded-xl" />
+          <div className="skeleton mt-6 h-12 w-48 rounded-xl" />
         </div>
       </main>
     );
@@ -51,12 +44,12 @@ export default function CourseDetailPage() {
 
   if (error) {
     return (
-      <main className="min-h-screen bg-gray-50 py-10">
+      <main className="flex min-h-screen flex-col bg-background pt-16">
         <div className="mx-auto max-w-lg rounded-2xl border border-red-100 bg-red-50 p-8 text-center">
           <p className="mb-4 text-red-600">{error}</p>
           <Link
             href="/courses"
-            className="rounded-xl bg-white px-6 py-2 text-sm font-bold text-red-600 shadow-sm"
+            className="rounded-xl bg-surface-container-lowest px-6 py-2 text-sm font-bold text-red-600 shadow-sm"
           >
             Voltar ao catálogo
           </Link>
@@ -66,21 +59,21 @@ export default function CourseDetailPage() {
   }
 
   const gradients = [
-    "from-indigo-500 to-purple-600",
-    "from-blue-500 to-cyan-600",
-    "from-violet-500 to-pink-600",
-    "from-emerald-500 to-teal-600",
-    "from-orange-500 to-red-600",
+    "from-primary to-primary-container",
+    "from-primary-container to-primary",
+    "from-secondary-container to-primary",
+    "from-primary to-secondary-container",
+    "from-primary-container to-secondary-container",
   ];
   const gradientIndex = course.id.charCodeAt(0) % gradients.length;
 
   return (
-    <main className="min-h-screen bg-gray-50 py-10">
-      <div className="mx-auto max-w-3xl px-4 sm:px-6">
+    <main className="flex min-h-screen flex-col bg-background pt-16">
+      <div className="mx-auto w-full max-w-3xl px-4 py-10 sm:px-6">
         {/* Back button */}
         <Link
           href="/courses"
-          className="mb-6 inline-flex items-center gap-2 text-sm font-medium text-gray-500 transition-colors hover:text-indigo-600"
+          className="mb-6 inline-flex items-center gap-2 text-sm font-semibold text-on-surface-variant transition-colors hover:text-secondary"
         >
           <ArrowLeft size={16} />
           Voltar ao catálogo
@@ -97,41 +90,40 @@ export default function CourseDetailPage() {
           <div
             className={`mb-6 flex h-64 w-full items-center justify-center rounded-2xl bg-gradient-to-br ${gradients[gradientIndex]} shadow-md`}
           >
-            <BookOpen size={64} className="text-white/80" />
+            <BookOpen size={64} className="text-white/60" />
           </div>
         )}
 
-        <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
+        <div className="rounded-2xl border border-outline-variant/20 bg-surface-container-lowest p-6 shadow-sm">
           {/* Category badge */}
           {course.category && (
             <div className="mb-3 flex items-center gap-2">
-              <Tag size={14} className="text-indigo-500" />
-              <span className="rounded-full bg-indigo-50 px-3 py-0.5 text-sm font-medium text-indigo-700">
+              <Tag size={14} className="text-secondary" />
+              <span className="rounded-full bg-secondary-fixed px-3 py-0.5 text-sm font-medium text-on-secondary-container">
                 {course.category}
               </span>
             </div>
           )}
 
           {/* Title */}
-          <h1 className="mb-4 text-3xl font-extrabold tracking-tight text-gray-900">
+          <h1 className="font-headline mb-4 text-3xl font-bold tracking-tight text-primary">
             {course.title}
           </h1>
 
           {/* Description */}
-          <p className="mb-6 leading-relaxed text-gray-600">
+          <p className="mb-6 leading-relaxed text-on-surface-variant">
             {course.description}
           </p>
 
           {/* Price & CTA */}
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-t border-gray-100 pt-6">
-            <div className="flex items-center gap-2">
-              <DollarSign size={18} className="text-gray-400" />
+          <div className="flex flex-col gap-4 border-t border-outline-variant/20 pt-6 sm:flex-row sm:items-center sm:justify-between">
+            <div>
               {course.price != null ? (
-                <span className="text-2xl font-bold text-gray-900">
+                <span className="font-headline text-2xl font-bold text-primary">
                   R$ {course.price.toFixed(2)}
                 </span>
               ) : (
-                <span className="text-2xl font-bold text-emerald-600">
+                <span className="font-headline text-2xl font-bold text-tertiary-fixed-dim">
                   Gratuito
                 </span>
               )}
@@ -141,7 +133,7 @@ export default function CourseDetailPage() {
               href={course.link}
               target="_blank"
               rel="noopener noreferrer"
-              className="brand-gradient inline-flex items-center justify-center gap-2 rounded-xl px-8 py-3 text-base font-semibold text-white transition-opacity hover:opacity-90"
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-tertiary-fixed-dim px-8 py-3 text-base font-bold text-primary transition-all hover:brightness-110"
             >
               <ExternalLink size={18} />
               Acessar Curso

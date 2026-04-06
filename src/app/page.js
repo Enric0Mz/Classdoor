@@ -1,7 +1,14 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo, useRef } from "react";
-import { useRouter } from "next/navigation";
+import {
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+  useRef,
+  Suspense,
+} from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
   Search,
@@ -39,7 +46,6 @@ function RecommendationCard({ university }) {
             <div className="h-full w-full bg-gradient-to-br from-slate-800 via-indigo-900 to-violet-900" />
           }
         />
-
       </div>
 
       {/* Content */}
@@ -81,15 +87,38 @@ function RecommendationCard({ university }) {
 }
 
 export default function Home() {
+  return (
+    <Suspense fallback={null}>
+      <HomeContent />
+    </Suspense>
+  );
+}
+
+function HomeContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const initialSearch = searchParams.get("search") || "";
+
   const [universities, setUniversities] = useState([]);
   const [pagination, setPagination] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(false);
   const [activeChip, setActiveChip] = useState("Em alta");
   const [currentPage, setCurrentPage] = useState(1);
   const universitiesTopRef = useRef(null);
   const isFirstRender = useRef(true);
-  const [heroSearch, setHeroSearch] = useState("");
+  const [heroSearch, setHeroSearch] = useState(initialSearch);
+  const [searchQuery, setSearchQuery] = useState(initialSearch);
+
+  // Sync when URL search param changes (e.g. from Navbar search)
+  useEffect(() => {
+    const urlSearch = searchParams.get("search") || "";
+    setHeroSearch(urlSearch);
+    setSearchQuery(urlSearch);
+    if (urlSearch) {
+      setCurrentPage(1);
+    }
+  }, [searchParams]);
 
   const [platformStats, setPlatformStats] = useState(null);
 
@@ -105,35 +134,42 @@ export default function Home() {
 
   const fetchUniversities = useCallback(async () => {
     setLoading(true);
+    setFetchError(false);
     try {
       const params = new URLSearchParams({
         limit: String(ITEMS_PER_PAGE),
         page: String(currentPage),
       });
+      if (searchQuery.trim()) {
+        params.set("search", searchQuery.trim());
+      }
       const response = await fetch(`/api/v1/universities?${params}`);
       if (!response.ok) throw new Error();
       const data = await response.json();
       setUniversities(data.data ?? []);
       setPagination(data.pagination ?? null);
     } catch {
-      // silent fail — page still renders
+      setFetchError(true);
     } finally {
       setLoading(false);
     }
-  }, [currentPage]);
+  }, [currentPage, searchQuery]);
 
   useEffect(() => {
     fetchUniversities();
   }, [fetchUniversities]);
 
-  // Scroll to top of university list when page changes (skip first render)
+  // Scroll to results when page or search changes (skip first render without search)
   useEffect(() => {
     if (isFirstRender.current) {
       isFirstRender.current = false;
+      if (searchQuery) {
+        universitiesTopRef.current?.scrollIntoView({ behavior: "smooth" });
+      }
       return;
     }
     universitiesTopRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [currentPage]);
+  }, [currentPage, searchQuery]);
 
   const visiblePageNumbers = useMemo(() => {
     if (totalPages <= 4) {
@@ -189,17 +225,15 @@ export default function Home() {
             {/* Search Bar */}
             <div className="relative max-w-2xl">
               <div className="glass-effect flex items-center rounded-xl border border-white/20 bg-surface-container-lowest p-2 shadow-2xl transition-all focus-within:ring-4 focus-within:ring-secondary/20">
-                <Search
-                  size={24}
-                  className="mx-4 shrink-0 text-secondary"
-                />
+                <Search size={24} className="mx-4 shrink-0 text-secondary" />
                 <input
                   type="text"
                   value={heroSearch}
                   onChange={(e) => setHeroSearch(e.target.value)}
                   onKeyDown={(e) => {
-                    if (e.key === "Enter" && heroSearch.trim()) {
-                      router.push(`/universities?search=${encodeURIComponent(heroSearch.trim())}`);
+                    if (e.key === "Enter") {
+                      setSearchQuery(heroSearch.trim());
+                      setCurrentPage(1);
                     }
                   }}
                   placeholder="Qual curso ou instituição você procura?"
@@ -207,9 +241,8 @@ export default function Home() {
                 />
                 <button
                   onClick={() => {
-                    if (heroSearch.trim()) {
-                      router.push(`/universities?search=${encodeURIComponent(heroSearch.trim())}`);
-                    }
+                    setSearchQuery(heroSearch.trim());
+                    setCurrentPage(1);
                   }}
                   className="shrink-0 cursor-pointer rounded-lg bg-tertiary-fixed-dim px-8 py-4 font-bold text-primary transition-all hover:brightness-110"
                 >
@@ -238,9 +271,7 @@ export default function Home() {
               </div>
               <div className="flex flex-col">
                 <span className="font-headline text-3xl font-bold text-white">
-                  {platformStats
-                    ? `${platformStats.reviewCount}+`
-                    : "..."}
+                  {platformStats ? `${platformStats.reviewCount}+` : "..."}
                 </span>
                 <span className="text-xs font-bold uppercase tracking-widest text-white/60">
                   Avaliações
@@ -292,7 +323,25 @@ export default function Home() {
           </div>
         </div>
 
-        {loading ? (
+        {fetchError ? (
+          <div className="flex flex-col items-center justify-center py-24 text-center">
+            <div className="mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-red-50 text-red-500">
+              <Search size={32} />
+            </div>
+            <h3 className="text-lg font-semibold text-on-surface">
+              Erro ao carregar universidades
+            </h3>
+            <p className="mb-4 max-w-xs text-on-surface-variant">
+              Não foi possível buscar os dados. Tente novamente.
+            </p>
+            <button
+              onClick={fetchUniversities}
+              className="rounded-xl bg-primary px-6 py-2.5 text-sm font-bold text-white transition-all hover:bg-primary-container"
+            >
+              Tentar novamente
+            </button>
+          </div>
+        ) : loading ? (
           <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
             {Array.from({ length: 6 }).map((_, index) => (
               <div

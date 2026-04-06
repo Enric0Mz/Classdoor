@@ -33,6 +33,45 @@ const swaggerSpec = {
         },
       },
     },
+    "/api/v1/stats": {
+      get: {
+        tags: ["Stats"],
+        summary: "Get platform statistics",
+        description:
+          "Returns aggregated platform statistics including university count, review count, and average rating.",
+        responses: {
+          200: {
+            description: "Platform statistics",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    universityCount: {
+                      type: "integer",
+                      description: "Total number of universities",
+                      example: 161,
+                    },
+                    reviewCount: {
+                      type: "integer",
+                      description:
+                        "Total number of reviews (internal + external)",
+                      example: 1822,
+                    },
+                    averageRating: {
+                      type: "number",
+                      description:
+                        "Average rating across all universities with ratings",
+                      example: 4.2,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
     "/api/v1/universities": {
       get: {
         tags: ["Universities"],

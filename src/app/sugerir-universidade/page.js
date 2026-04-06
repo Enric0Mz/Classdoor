@@ -155,7 +155,7 @@ export default function SugerirUniversidadePage() {
               Ver meu perfil
             </Link>
             <Link
-              href="/universities"
+              href="/"
               className="rounded-xl border border-white/20 bg-white/10 px-6 py-3 text-sm font-bold text-white backdrop-blur transition-all hover:bg-white/20"
             >
               Ver universidades
@@ -352,7 +352,7 @@ export default function SugerirUniversidadePage() {
               </button>
 
               <Link
-                href="/universities"
+                href="/"
                 className="group flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-secondary transition-colors hover:text-primary"
               >
                 <ArrowLeft size={16} />
