@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
+import { Loader2 } from "lucide-react";
 
 function GoogleSuccessContent() {
   const searchParams = useSearchParams();
@@ -17,7 +18,7 @@ function GoogleSuccessContent() {
     const refreshToken = searchParams.get("refreshToken");
 
     if (!token || !refreshToken) {
-      setError("Tokens de autenticacao nao encontrados.");
+      setError("Tokens de autenticação não encontrados.");
       return;
     }
 
@@ -30,16 +31,12 @@ function GoogleSuccessContent() {
 
   if (error) {
     return (
-      <main
-        className="relative flex min-h-[calc(100vh-4rem)] items-center justify-center overflow-hidden px-4"
-        style={{ backgroundColor: "#0F2854" }}
-      >
-        <div className="dot-grid absolute inset-0 opacity-40" />
+      <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-gradient-to-br from-primary to-primary-container px-4 pt-16">
         <div className="relative z-10 flex flex-col items-center gap-4 text-center">
           <p className="text-sm text-red-400">{error}</p>
           <a
             href="/login"
-            className="brand-gradient rounded-xl px-5 py-2.5 text-sm font-medium text-white hover:opacity-90"
+            className="rounded-xl bg-tertiary-fixed-dim px-5 py-2.5 text-sm font-bold text-primary transition-all hover:brightness-110"
           >
             Voltar ao login
           </a>
@@ -49,32 +46,10 @@ function GoogleSuccessContent() {
   }
 
   return (
-    <main
-      className="relative flex min-h-[calc(100vh-4rem)] items-center justify-center overflow-hidden px-4"
-      style={{ backgroundColor: "#0F2854" }}
-    >
-      <div className="dot-grid absolute inset-0 opacity-40" />
+    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-gradient-to-br from-primary to-primary-container px-4 pt-16">
       <div className="relative z-10 flex flex-col items-center gap-4 text-center">
-        <svg
-          className="h-8 w-8 animate-spin text-indigo-400"
-          viewBox="0 0 24 24"
-          fill="none"
-        >
-          <circle
-            className="opacity-25"
-            cx="12"
-            cy="12"
-            r="10"
-            stroke="currentColor"
-            strokeWidth="4"
-          />
-          <path
-            className="opacity-75"
-            fill="currentColor"
-            d="M4 12a8 8 0 0 1 8-8v4a4 4 0 0 0-4 4H4z"
-          />
-        </svg>
-        <p className="text-sm text-gray-400">Autenticando com Google...</p>
+        <Loader2 size={32} className="animate-spin text-tertiary-fixed-dim" />
+        <p className="text-sm text-slate-300">Autenticando com Google...</p>
       </div>
     </main>
   );
@@ -84,32 +59,13 @@ export default function GoogleSuccessPage() {
   return (
     <Suspense
       fallback={
-        <main
-          className="relative flex min-h-[calc(100vh-4rem)] items-center justify-center overflow-hidden px-4"
-          style={{ backgroundColor: "#0F2854" }}
-        >
-          <div className="dot-grid absolute inset-0 opacity-40" />
+        <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-gradient-to-br from-primary to-primary-container px-4 pt-16">
           <div className="relative z-10 flex flex-col items-center gap-4 text-center">
-            <svg
-              className="h-8 w-8 animate-spin text-indigo-400"
-              viewBox="0 0 24 24"
-              fill="none"
-            >
-              <circle
-                className="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                strokeWidth="4"
-              />
-              <path
-                className="opacity-75"
-                fill="currentColor"
-                d="M4 12a8 8 0 0 1 8-8v4a4 4 0 0 0-4 4H4z"
-              />
-            </svg>
-            <p className="text-sm text-gray-400">Carregando...</p>
+            <Loader2
+              size={32}
+              className="animate-spin text-tertiary-fixed-dim"
+            />
+            <p className="text-sm text-slate-300">Carregando...</p>
           </div>
         </main>
       }

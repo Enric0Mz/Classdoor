@@ -6,6 +6,10 @@ jest.mock("@/repositories/reviewRepository", () => ({
   update: jest.fn(),
 }));
 
+jest.mock("@/repositories/universityRepository", () => ({
+  updateRating: jest.fn(),
+}));
+
 const mockModerateComment = jest.fn();
 
 jest.mock("@/domain/moderationService", () => ({

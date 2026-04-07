@@ -9,6 +9,10 @@ jest.mock("@/repositories/reviewRepository", () => ({
   update: jest.fn(),
 }));
 
+jest.mock("@/repositories/universityRepository", () => ({
+  updateRating: jest.fn(),
+}));
+
 jest.mock("@/lib/auth", () => ({
   requireVerifiedUser: jest.fn(),
 }));
