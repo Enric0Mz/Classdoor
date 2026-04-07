@@ -32,7 +32,10 @@ function StarRating({ rating }) {
       ))}
       {hasHalfStar && (
         <div className="relative">
-          <Star size={13} className="fill-surface-container text-surface-container" />
+          <Star
+            size={13}
+            className="fill-surface-container text-surface-container"
+          />
           <div className="absolute inset-0 w-1/2 overflow-hidden">
             <Star size={13} className="fill-yellow-400 text-yellow-400" />
           </div>
