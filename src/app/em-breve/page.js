@@ -59,7 +59,7 @@ export default function EmBrevePage() {
         {/* Notify CTA */}
         <div className="stagger-3 mt-10 flex flex-col items-center gap-3 sm:flex-row">
           <Link
-            href="/universities"
+            href="/"
             className="blue-gradient flex items-center justify-center gap-2 rounded-xl px-6 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
           >
             <ArrowLeft size={16} />

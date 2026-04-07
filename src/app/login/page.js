@@ -61,7 +61,7 @@ function LoginPageContent() {
       localStorage.setItem("token", data.token);
       localStorage.setItem("refreshToken", data.refreshToken);
       window.dispatchEvent(new Event("auth-change"));
-      router.push("/universities");
+      router.push("/");
     } catch (err) {
       setError(err.message);
     } finally {

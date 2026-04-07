@@ -75,7 +75,7 @@ export default function LogoutPage() {
             Entrar novamente
           </Link>
           <Link
-            href="/universities"
+            href="/"
             className="flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 py-2.5 text-sm font-medium text-gray-300 backdrop-blur-sm transition-colors hover:border-sky-400/30 hover:bg-sky-500/10 hover:text-white"
           >
             Explorar sem conta

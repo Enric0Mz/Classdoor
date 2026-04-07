@@ -552,7 +552,7 @@ function AvaliarContent() {
           {/* Back link */}
           <div className="mt-5 text-center">
             <Link
-              href="/universities"
+              href="/"
               className="inline-flex items-center gap-1.5 text-sm text-gray-500 transition-colors hover:text-gray-300"
             >
               <ArrowLeft size={14} />

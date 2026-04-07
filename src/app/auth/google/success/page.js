@@ -25,7 +25,7 @@ function GoogleSuccessContent() {
     localStorage.setItem("refreshToken", refreshToken);
     window.dispatchEvent(new Event("auth-change"));
 
-    window.location.href = "/universities";
+    window.location.href = "/";
   }, [searchParams]);
 
   if (error) {

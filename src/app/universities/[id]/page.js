@@ -1261,7 +1261,7 @@ export default function UniversityDetailPage() {
         <div className="text-center">
           <p className="text-sm text-gray-500">{error}</p>
           <button
-            onClick={() => router.push("/universities")}
+            onClick={() => router.push("/")}
             className="brand-gradient mt-4 rounded-full px-5 py-2.5 text-sm font-medium text-white hover:opacity-90"
           >
             Voltar para universidades
@@ -1293,7 +1293,7 @@ export default function UniversityDetailPage() {
           {/* Back + CTA */}
           <div className="mb-5 flex items-center justify-between">
             <Link
-              href="/universities"
+              href="/"
               className="inline-flex items-center gap-1.5 text-sm text-gray-400 transition-colors hover:text-blue-400"
             >
               <ArrowLeft size={14} />
@@ -1313,7 +1313,7 @@ export default function UniversityDetailPage() {
             activeTab={activeTab}
             onTabChange={setActiveTab}
             isAdmin={isAdmin}
-            onDeleteUniversity={() => router.push("/universities")}
+            onDeleteUniversity={() => router.push("/")}
           />
         </div>
 

@@ -8,7 +8,7 @@ export default function ExternalReviewsInfoPage() {
     <main className="min-h-screen bg-gray-50">
       <div className="mx-auto max-w-2xl px-4 py-10 sm:px-6">
         <Link
-          href="/universities"
+          href="/"
           className="mb-6 inline-flex items-center gap-1.5 text-sm text-gray-400 transition-colors hover:text-indigo-500"
         >
           <ArrowLeft size={14} />

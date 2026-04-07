@@ -149,7 +149,7 @@ function VerifyUniversityEmailContent() {
               Ver meu perfil
             </Link>
             <Link
-              href="/universities"
+              href="/"
               className="flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 py-2.5 text-sm font-medium text-gray-300 backdrop-blur-sm transition-colors hover:border-indigo-400/30 hover:bg-indigo-500/10 hover:text-white"
             >
               Explorar universidades
