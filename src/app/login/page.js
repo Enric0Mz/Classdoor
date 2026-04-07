@@ -3,7 +3,7 @@
 import { Suspense, useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { GraduationCap, AtSign, Lock, Eye, EyeOff, Zap } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 import GoogleAuthButton from "@/components/GoogleAuthButton";
 import { translateError } from "@/lib/errorMessages";
 
@@ -30,6 +30,7 @@ function LoginPageContent() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [platformStats, setPlatformStats] = useState(null);
 
   useEffect(() => {
     const googleError = searchParams.get("error");
@@ -37,6 +38,13 @@ function LoginPageContent() {
       setError(GOOGLE_AUTH_ERRORS[googleError]);
     }
   }, [searchParams]);
+
+  useEffect(() => {
+    fetch("/api/v1/stats")
+      .then((response) => response.json())
+      .then((data) => setPlatformStats(data))
+      .catch(() => {});
+  }, []);
 
   async function handleSubmit(event) {
     event.preventDefault();
@@ -61,7 +69,7 @@ function LoginPageContent() {
       localStorage.setItem("token", data.token);
       localStorage.setItem("refreshToken", data.refreshToken);
       window.dispatchEvent(new Event("auth-change"));
-      router.push("/universities");
+      router.push("/");
     } catch (err) {
       setError(err.message);
     } finally {
@@ -70,225 +78,236 @@ function LoginPageContent() {
   }
 
   return (
-    <main className="flex min-h-[calc(100vh-4rem)]">
+    <main className="flex min-h-screen flex-col md:flex-row">
       {/* ── Left branding panel (desktop only) ── */}
       <div
-        className="relative hidden overflow-hidden lg:flex lg:w-1/2 flex-col justify-between"
-        style={{ backgroundColor: "#0F2854" }}
+        className="relative hidden overflow-hidden md:flex md:w-[45%] md:items-center md:justify-center md:p-16 lg:w-[40%] lg:p-24"
+        style={{
+          background: "linear-gradient(135deg, #001337 0%, #0f2854 100%)",
+        }}
       >
-        {/* Dot grid overlay */}
-        <div className="dot-grid absolute inset-0 opacity-40" />
-
-        {/* Radial purple glow */}
-        <div className="absolute left-1/2 top-1/2 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-radial from-sky-700/30 to-transparent blur-3xl" />
-
-        {/* Logo at top */}
-        <div className="relative z-10 p-12">
-          <Link href="/" className="inline-flex items-center gap-2.5">
-            <div className="blue-gradient flex h-10 w-10 items-center justify-center rounded-xl text-white">
-              <GraduationCap size={22} />
-            </div>
-            <span className="blue-gradient-text text-[1.4rem] font-extrabold tracking-tight">
-              InfoCampus
-            </span>
-          </Link>
+        {/* Background image overlay */}
+        <div className="absolute inset-0 opacity-20 mix-blend-overlay">
+          <img
+            src="/hero-banner.jpg"
+            alt=""
+            className="h-full w-full object-cover"
+          />
         </div>
 
-        {/* Bottom content */}
-        <div className="relative z-10 px-12 pb-16">
-          <div className="stagger-1 mb-5 inline-flex items-center gap-2 rounded-full border border-sky-400/30 bg-sky-500/20 px-4 py-1.5 text-xs font-semibold text-white backdrop-blur-sm">
-            <Zap size={13} />
-            <span>Avaliações verificadas por estudantes</span>
+        {/* Geometric decorations */}
+        <div className="pointer-events-none absolute inset-0 overflow-hidden">
+          <div className="absolute -top-24 -left-24 h-96 w-96 rounded-full border border-white/10" />
+          <div className="absolute top-1/2 -right-48 h-[600px] w-[600px] rounded-full border border-white/5" />
+        </div>
+
+        {/* Content */}
+        <div className="relative z-10 max-w-xl text-white">
+          <div className="mb-12">
+            <Link
+              href="/"
+              className="font-headline text-2xl font-bold tracking-tight text-tertiary-fixed-dim"
+            >
+              InfoCampus
+            </Link>
           </div>
 
-          <h2 className="stagger-2 text-4xl font-extrabold tracking-tight text-white">
-            A voz dos estudantes{" "}
-            <span className="blue-gradient-text">importa aqui.</span>
-          </h2>
+          <h1 className="font-headline mb-8 text-5xl font-bold leading-tight tracking-tight md:text-6xl">
+            A voz dos estudantes importa aqui.
+          </h1>
 
-          <p className="stagger-3 mt-4 text-base text-gray-400">
-            Avaliações reais, transparentes e diretas de alunos e ex-alunos.
-            Descubra o que te espera antes da matrícula.
+          <p className="mb-12 max-w-md text-lg leading-relaxed text-on-primary-container">
+            Descubra avaliações autênticas, explore bolsas de estudo e
+            conecte-se com a realidade da vida acadêmica.
           </p>
 
-          {/* Stats row */}
-          <div className="mt-8 flex flex-wrap gap-3">
-            <div className="flex flex-col items-center rounded-2xl border border-white/10 bg-white/5 px-5 py-3 backdrop-blur-sm">
-              <span className="text-xl font-bold text-white">500+</span>
-              <span className="text-xs text-gray-400">universidades</span>
+          {/* Stats */}
+          <div className="mt-16 grid grid-cols-2 gap-4">
+            <div className="glass-effect rounded-xl border border-white/10 bg-white/[0.03] p-6">
+              <div className="mb-1 font-headline text-3xl font-bold text-tertiary-fixed-dim">
+                +{platformStats?.universityCount ?? "..."}
+              </div>
+              <div className="text-sm uppercase tracking-widest text-on-primary-container">
+                Universidades
+              </div>
             </div>
-            <div className="flex flex-col items-center rounded-2xl border border-white/10 bg-white/5 px-5 py-3 backdrop-blur-sm">
-              <span className="text-xl font-bold text-white">4.2</span>
-              <span className="text-xs text-gray-400">nota média</span>
+            <div className="glass-effect rounded-xl border border-white/10 bg-white/[0.03] p-6">
+              <div className="mb-1 font-headline text-3xl font-bold text-tertiary-fixed-dim">
+                {platformStats?.averageRating ?? "..."}
+              </div>
+              <div className="text-sm uppercase tracking-widest text-on-primary-container">
+                Nota Média
+              </div>
             </div>
-            <div className="flex flex-col items-center rounded-2xl border border-white/10 bg-white/5 px-5 py-3 backdrop-blur-sm">
-              <span className="flex items-center gap-1 text-xl font-bold text-white">
-                <Zap size={16} className="text-sky-400" />
-                100%
-              </span>
-              <span className="text-xs text-gray-400">verificadas</span>
-            </div>
+          </div>
+
+          {/* Tagline */}
+          <div className="mt-16 flex items-center gap-4 text-sm italic text-slate-400">
+            <div className="h-px w-12 bg-white/20" />
+            <span>Curadoria acadêmica digital de excelência.</span>
           </div>
         </div>
       </div>
 
       {/* ── Right form panel ── */}
-      <div className="flex flex-1 flex-col items-center justify-center bg-gray-50 px-6 py-12">
-        {/* Mobile logo — hidden on large screens */}
-        <div className="mb-8 text-center lg:hidden">
-          <Link href="/" className="inline-flex items-center gap-2.5">
-            <div className="blue-gradient flex h-10 w-10 items-center justify-center rounded-xl text-white">
-              <GraduationCap size={22} />
-            </div>
-            <span className="blue-gradient-text text-[1.4rem] font-extrabold tracking-tight">
+      <div className="flex w-full flex-col items-center justify-center overflow-y-auto bg-white p-8 md:w-[55%] md:p-16 lg:w-[60%] lg:p-24">
+        <div className="w-full max-w-md">
+          {/* Mobile logo — hidden on large screens */}
+          <div className="mb-12 flex justify-center md:hidden">
+            <Link
+              href="/"
+              className="font-headline text-3xl font-bold tracking-tight text-primary"
+            >
               InfoCampus
-            </span>
-          </Link>
-        </div>
+            </Link>
+          </div>
 
-        <div className="w-full max-w-sm">
-          <div className="mb-8">
-            <h1 className="text-2xl font-semibold tracking-tight text-gray-900">
+          {/* Header */}
+          <div className="mb-10 text-center lg:text-left">
+            <h2 className="font-headline mb-3 text-3xl font-bold text-primary">
               Bem-vindo de volta
-            </h1>
-            <p className="mt-1.5 text-sm text-gray-500">
-              Entre para ver as avaliações e deixar a sua
+            </h2>
+            <p className="text-on-surface-variant">
+              Acesse sua conta para continuar sua jornada acadêmica.
             </p>
           </div>
 
-          {/* Form card */}
-          <div className="rounded-2xl border border-gray-100 bg-white p-8 shadow-sm">
-            {error && (
-              <div className="mb-5 flex items-start gap-2.5 rounded-xl border border-red-100 bg-red-50 p-3.5">
-                <svg
-                  className="mt-0.5 h-4 w-4 shrink-0 text-red-500"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm-1-5a1 1 0 1 0 2 0V9a1 1 0 1 0-2 0v4zm1-7.5a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-                <p className="text-sm text-red-600">{error}</p>
-              </div>
-            )}
+          {/* Error message */}
+          {error && (
+            <div className="mb-5 flex items-start gap-2.5 rounded-xl border border-red-100 bg-red-50 p-3.5">
+              <svg
+                className="mt-0.5 h-4 w-4 shrink-0 text-red-500"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm-1-5a1 1 0 1 0 2 0V9a1 1 0 1 0-2 0v4zm1-7.5a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              <p className="text-sm text-red-600">{error}</p>
+            </div>
+          )}
 
+          {/* Google auth */}
+          <div className="mb-8">
             <GoogleAuthButton label="Entrar com Google" intent="login" />
+          </div>
 
-            <div className="relative my-1">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-200" />
-              </div>
-              <div className="relative flex justify-center text-xs">
-                <span className="bg-white px-3 text-gray-400">ou</span>
-              </div>
+          {/* Divider */}
+          <div className="mb-8 flex items-center">
+            <div className="flex-grow border-t border-outline-variant/30" />
+            <span className="mx-4 shrink-0 text-xs font-bold uppercase tracking-widest text-on-surface-variant">
+              ou use seu e-mail
+            </span>
+            <div className="flex-grow border-t border-outline-variant/30" />
+          </div>
+
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Identifier */}
+            <div>
+              <label
+                htmlFor="identifier"
+                className="mb-2 block text-sm font-semibold text-primary"
+              >
+                E-mail ou nome de usuário
+              </label>
+              <input
+                id="identifier"
+                type="text"
+                required
+                value={identifier}
+                onChange={(e) => setIdentifier(e.target.value)}
+                placeholder="seu@email.com"
+                className="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-on-surface outline-none transition-all duration-200 placeholder:text-outline/50 focus:border-secondary focus:ring-4 focus:ring-secondary/5"
+              />
             </div>
 
-            <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-              {/* Identifier */}
-              <div className="flex flex-col gap-1.5">
-                <label
-                  htmlFor="identifier"
-                  className="text-sm font-medium text-gray-700"
-                >
-                  Email ou nome de usuário
-                </label>
-                <div className="relative">
-                  <AtSign
-                    size={15}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-                  />
-                  <input
-                    id="identifier"
-                    type="text"
-                    required
-                    value={identifier}
-                    onChange={(e) => setIdentifier(e.target.value)}
-                    placeholder="seu@email.com ou AgilOnca472"
-                    className="w-full rounded-xl border border-gray-200 bg-gray-50 py-2.5 pl-9 pr-3 text-sm text-gray-800 outline-none transition-colors placeholder:text-gray-400 focus:border-sky-300 focus:bg-white focus:ring-2 focus:ring-sky-100"
-                  />
-                </div>
-              </div>
-
-              {/* Password */}
-              <div className="flex flex-col gap-1.5">
+            {/* Password */}
+            <div>
+              <div className="mb-2 flex items-center justify-between">
                 <label
                   htmlFor="password"
-                  className="text-sm font-medium text-gray-700"
+                  className="block text-sm font-semibold text-primary"
                 >
                   Senha
                 </label>
-                <div className="relative">
-                  <Lock
-                    size={15}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-                  />
-                  <input
-                    id="password"
-                    type={showPassword ? "text" : "password"}
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Sua senha"
-                    className="w-full rounded-xl border border-gray-200 bg-gray-50 py-2.5 pl-9 pr-10 text-sm text-gray-800 outline-none transition-colors placeholder:text-gray-400 focus:border-sky-300 focus:bg-white focus:ring-2 focus:ring-sky-100"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword((prev) => !prev)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer text-gray-400 hover:text-gray-600"
-                  >
-                    {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
-                  </button>
-                </div>
+                <Link
+                  href="/em-breve"
+                  className="text-xs font-bold text-secondary hover:underline"
+                >
+                  Esqueceu a senha?
+                </Link>
               </div>
+              <div className="relative">
+                <input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 pr-10 text-on-surface outline-none transition-all duration-200 placeholder:text-outline/50 focus:border-secondary focus:ring-4 focus:ring-secondary/5"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer text-outline hover:text-primary"
+                >
+                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
+              </div>
+            </div>
 
-              {/* Submit */}
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="blue-gradient mt-1 flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-60"
-              >
-                {isLoading ? (
-                  <>
-                    <svg
-                      className="h-4 w-4 animate-spin"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                    >
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                      />
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 0 1 8-8v4a4 4 0 0 0-4 4H4z"
-                      />
-                    </svg>
-                    Entrando...
-                  </>
-                ) : (
-                  "Entrar"
-                )}
-              </button>
-            </form>
-          </div>
-
-          <p className="mt-6 text-center text-sm text-gray-500">
-            Não tem conta?{" "}
-            <Link
-              href="/register"
-              className="font-semibold text-sky-600 hover:underline"
+            {/* Submit */}
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full cursor-pointer rounded-xl bg-primary py-4 font-bold text-white shadow-[0px_24px_48px_-12px_rgba(0,19,55,0.12)] transition-all duration-300 hover:bg-primary-container active:scale-95 disabled:opacity-60"
             >
-              Cadastrar
-            </Link>
-          </p>
+              {isLoading ? (
+                <span className="flex items-center justify-center gap-2">
+                  <svg
+                    className="h-4 w-4 animate-spin"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    />
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 0 1 8-8v4a4 4 0 0 0-4 4H4z"
+                    />
+                  </svg>
+                  Entrando...
+                </span>
+              ) : (
+                "Entrar na Plataforma"
+              )}
+            </button>
+          </form>
+
+          {/* Register link */}
+          <div className="mt-12 text-center">
+            <p className="text-sm text-on-surface-variant">
+              Não tem uma conta?{" "}
+              <Link
+                href="/register"
+                className="font-bold text-primary underline decoration-tertiary-fixed-dim decoration-2 underline-offset-4 transition-colors hover:text-secondary"
+              >
+                Cadastrar agora
+              </Link>
+            </p>
+          </div>
         </div>
       </div>
     </main>

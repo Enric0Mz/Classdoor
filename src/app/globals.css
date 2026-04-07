@@ -4,15 +4,31 @@
 
 :root {
   --font-size: 16px;
-  --background: #f9f9fb;
-  --foreground: oklch(0.145 0 0);
+  --background: #f8f9fa;
+  --foreground: #191c1d;
+
+  /* Editorial palette */
+  --primary: #001337;
+  --primary-container: #0f2854;
+  --on-primary: #ffffff;
+  --secondary: #325e9f;
+  --secondary-container: #8eb7fe;
+  --on-secondary-container: #124786;
+  --tertiary-fixed-dim: #ffba20;
+  --on-surface: #191c1d;
+  --on-surface-variant: #44474f;
+  --outline-variant: #c5c6d0;
+  --on-primary-container: #7b90c2;
+  --surface: #f8f9fa;
+  --surface-container-lowest: #ffffff;
+  --surface-container-low: #f3f4f5;
+  --surface-container: #edeeef;
+
   --card: #ffffff;
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: #1c4d8d;
+  --card-foreground: #191c1d;
+  --popover: #ffffff;
+  --popover-foreground: #191c1d;
   --primary-foreground: #ffffff;
-  --secondary: oklch(0.95 0.0058 264.53);
   --secondary-foreground: #030213;
   --muted: #ececf0;
   --muted-foreground: #717182;
@@ -119,44 +135,25 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+
+  /* Editorial design tokens */
+  --color-primary-container: var(--primary-container);
+  --color-on-primary-container: var(--on-primary-container);
+  --color-secondary-container: var(--secondary-container);
+  --color-on-secondary-container: var(--on-secondary-container);
+  --color-tertiary-fixed-dim: var(--tertiary-fixed-dim);
+  --color-on-surface: var(--on-surface);
+  --color-on-surface-variant: var(--on-surface-variant);
+  --color-outline-variant: var(--outline-variant);
+  --color-surface: var(--surface);
+  --color-surface-container-lowest: var(--surface-container-lowest);
+  --color-surface-container-low: var(--surface-container-low);
+  --color-surface-container: var(--surface-container);
+  --color-surface-container-high: #e7e8e9;
+  --color-outline: #757780;
 }
 
 @layer components {
-  /* Dot grid overlay for tech sections */
-  .dot-grid {
-    background-image: radial-gradient(circle, #c7d2fe 1px, transparent 1px);
-    background-size: 28px 28px;
-  }
-
-  /* Card hover glow for indigo */
-  .card-glow:hover {
-    box-shadow:
-      0 0 0 1px #1c4d8d20,
-      0 8px 32px -8px #1c4d8d30;
-  }
-
-  /* Stagger entrance animations */
-  .stagger-1 {
-    animation: fadeUp 0.4s ease both 0.05s;
-  }
-  .stagger-2 {
-    animation: fadeUp 0.4s ease both 0.1s;
-  }
-  .stagger-3 {
-    animation: fadeUp 0.4s ease both 0.15s;
-  }
-
-  @keyframes fadeUp {
-    from {
-      opacity: 0;
-      transform: translateY(14px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
   /* Skeleton shimmer */
   .skeleton {
     background: linear-gradient(90deg, #f0f0f2 25%, #e8e8ec 50%, #f0f0f2 75%);
@@ -173,37 +170,19 @@
     }
   }
 
-  .hero-gradient {
-    background: linear-gradient(
-      160deg,
-      #eef0ff 0%,
-      #e5e1ff 25%,
-      #ede9ff 55%,
-      #f3f1ff 75%,
-      #f9f9fb 100%
-    );
+  /* Glass blur effect */
+  .glass-effect {
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
   }
 
-  .brand-gradient {
-    background: linear-gradient(135deg, #1c4d8d, #4988c4);
+  /* Font family helpers */
+  .font-headline {
+    font-family: var(--font-serif), "Noto Serif", Georgia, serif;
   }
 
-  .brand-gradient-text {
-    background: linear-gradient(135deg, #1c4d8d, #4988c4);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-
-  .blue-gradient {
-    background: linear-gradient(135deg, #1c4d8d, #4988c4);
-  }
-
-  .blue-gradient-text {
-    background: linear-gradient(135deg, #4988c4, #bde8f5);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+  .font-body {
+    font-family: var(--font-sans), "Plus Jakarta Sans", system-ui, sans-serif;
   }
 
   .animate-fade-in-down {

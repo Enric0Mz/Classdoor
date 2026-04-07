@@ -3,7 +3,7 @@
 import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { GraduationCap, User, RefreshCw } from "lucide-react";
+import { User, RefreshCw, Loader2 } from "lucide-react";
 import { generateUsername } from "@/lib/generateUsername";
 import { translateError } from "@/lib/errorMessages";
 
@@ -49,7 +49,7 @@ function ChooseUsernameContent() {
       localStorage.setItem("token", data.token);
       localStorage.setItem("refreshToken", data.refreshToken);
       window.dispatchEvent(new Event("auth-change"));
-      router.push("/universities");
+      router.push("/");
     } catch (err) {
       setError(err.message);
     } finally {
@@ -59,18 +59,14 @@ function ChooseUsernameContent() {
 
   if (!pendingToken) {
     return (
-      <main
-        className="relative flex min-h-[calc(100vh-4rem)] items-center justify-center overflow-hidden px-4"
-        style={{ backgroundColor: "#0F2854" }}
-      >
-        <div className="dot-grid absolute inset-0 opacity-40" />
+      <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-gradient-to-br from-primary to-primary-container px-4 pt-16">
         <div className="relative z-10 flex flex-col items-center gap-4 text-center">
           <p className="text-sm text-red-400">
-            Sessao de registro expirada. Tente novamente.
+            Sessão de registro expirada. Tente novamente.
           </p>
           <a
             href="/register"
-            className="brand-gradient rounded-xl px-5 py-2.5 text-sm font-medium text-white hover:opacity-90"
+            className="rounded-xl bg-tertiary-fixed-dim px-5 py-2.5 text-sm font-bold text-primary transition-all hover:brightness-110"
           >
             Voltar ao cadastro
           </a>
@@ -80,62 +76,57 @@ function ChooseUsernameContent() {
   }
 
   return (
-    <main className="flex min-h-[calc(100vh-4rem)]">
+    <main className="flex min-h-screen pt-16">
       {/* Left branding panel (desktop only) */}
-      <div
-        className="relative hidden overflow-hidden lg:flex lg:w-1/2 flex-col justify-between"
-        style={{ backgroundColor: "#0F2854" }}
-      >
-        <div className="dot-grid absolute inset-0 opacity-40" />
-        <div className="absolute left-1/2 top-1/2 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-radial from-violet-900/30 to-transparent blur-3xl" />
+      <div className="relative hidden overflow-hidden bg-gradient-to-br from-primary to-primary-container lg:flex lg:w-1/2 lg:flex-col lg:justify-between">
+        <div className="pointer-events-none absolute inset-0 opacity-10">
+          <div className="absolute -right-[5%] -top-[10%] h-96 w-96 rounded-full bg-secondary-container blur-3xl" />
+          <div className="absolute -bottom-[10%] -left-[5%] h-96 w-96 rounded-full bg-primary-container blur-3xl" />
+        </div>
 
         <div className="relative z-10 p-12">
-          <Link href="/" className="inline-flex items-center gap-2.5">
-            <div className="brand-gradient flex h-10 w-10 items-center justify-center rounded-xl text-white">
-              <GraduationCap size={22} />
-            </div>
-            <span className="brand-gradient-text text-[1.4rem] font-extrabold tracking-tight">
-              InfoCampus
-            </span>
+          <Link
+            href="/"
+            className="font-headline text-xl font-bold text-tertiary-fixed-dim"
+          >
+            InfoCampus
           </Link>
         </div>
 
         <div className="relative z-10 px-12 pb-16">
-          <h2 className="text-4xl font-extrabold tracking-tight text-white">
-            Quase la!{" "}
-            <span className="brand-gradient-text">Escolha seu nome.</span>
+          <h2 className="font-headline text-4xl font-bold tracking-tight text-white">
+            Quase lá!{" "}
+            <span className="text-tertiary-fixed-dim">Escolha seu nome.</span>
           </h2>
-          <p className="mt-4 text-base text-gray-400">
-            Seu nome de usuario e como outros estudantes vao te identificar na
+          <p className="mt-4 text-base text-slate-300">
+            Seu nome de usuário é como outros estudantes vão te identificar na
             plataforma.
           </p>
         </div>
       </div>
 
       {/* Right form panel */}
-      <div className="flex flex-1 flex-col items-center justify-start overflow-y-auto bg-gray-50 px-6 py-12">
+      <div className="flex flex-1 flex-col items-center justify-start overflow-y-auto bg-background px-6 py-12">
         <div className="mb-8 text-center lg:hidden">
-          <Link href="/" className="inline-flex items-center gap-2.5">
-            <div className="brand-gradient flex h-10 w-10 items-center justify-center rounded-xl text-white">
-              <GraduationCap size={22} />
-            </div>
-            <span className="brand-gradient-text text-[1.4rem] font-extrabold tracking-tight">
-              InfoCampus
-            </span>
+          <Link
+            href="/"
+            className="font-headline text-xl font-bold text-primary"
+          >
+            InfoCampus
           </Link>
         </div>
 
         <div className="w-full max-w-sm">
           <div className="mb-8">
-            <h1 className="text-2xl font-semibold tracking-tight text-gray-900">
-              Escolha seu nome de usuario
+            <h1 className="font-headline text-2xl font-bold tracking-tight text-primary">
+              Escolha seu nome de usuário
             </h1>
-            <p className="mt-1.5 text-sm text-gray-500">
-              Voce pode editar ou gerar um novo nome aleatorio
+            <p className="mt-1.5 text-sm text-on-surface-variant">
+              Você pode editar ou gerar um novo nome aleatório
             </p>
           </div>
 
-          <div className="rounded-2xl border border-gray-100 bg-white p-8 shadow-sm">
+          <div className="rounded-2xl border border-outline-variant/20 bg-surface-container-lowest p-8 shadow-sm">
             {error && (
               <div className="mb-5 flex items-start gap-2.5 rounded-xl border border-red-100 bg-red-50 p-3.5">
                 <svg
@@ -158,11 +149,11 @@ function ChooseUsernameContent() {
                 <div className="flex items-center justify-between">
                   <label
                     htmlFor="username"
-                    className="text-sm font-medium text-gray-700"
+                    className="text-sm font-semibold text-on-surface-variant"
                   >
-                    Nome de usuario
+                    Nome de usuário
                   </label>
-                  <span className="text-xs text-gray-400">
+                  <span className="text-xs text-outline">
                     gerado automaticamente
                   </span>
                 </div>
@@ -170,7 +161,7 @@ function ChooseUsernameContent() {
                   <div className="relative flex-1">
                     <User
                       size={15}
-                      className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                      className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant"
                     />
                     <input
                       id="username"
@@ -179,20 +170,20 @@ function ChooseUsernameContent() {
                       value={username}
                       onChange={(e) => setUsername(e.target.value)}
                       maxLength={20}
-                      className="w-full rounded-xl border border-gray-200 bg-gray-50 py-2.5 pl-9 pr-3 text-sm text-gray-800 outline-none transition-colors focus:border-indigo-300 focus:bg-white focus:ring-2 focus:ring-indigo-100"
+                      className="w-full rounded-xl border border-outline-variant/20 bg-surface-container py-2.5 pl-9 pr-3 text-sm text-on-surface outline-none transition-all focus:border-secondary focus:bg-surface-container-lowest focus:ring-2 focus:ring-secondary/20"
                     />
                   </div>
                   <button
                     type="button"
                     onClick={refreshUsername}
                     title="Gerar outro nome"
-                    className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-xl border border-gray-200 bg-gray-50 text-gray-400 transition-colors hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-600"
+                    className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-xl border border-outline-variant/20 bg-surface-container text-on-surface-variant transition-colors hover:border-secondary hover:bg-secondary-fixed hover:text-on-secondary-container"
                   >
                     <RefreshCw size={15} />
                   </button>
                 </div>
-                <p className="text-xs text-gray-400">
-                  Voce pode editar ou clicar em{" "}
+                <p className="text-xs text-outline">
+                  Você pode editar ou clicar em{" "}
                   <RefreshCw size={11} className="inline" /> para gerar outro.
                 </p>
               </div>
@@ -200,29 +191,11 @@ function ChooseUsernameContent() {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="brand-gradient mt-1 flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-60"
+                className="mt-1 flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-tertiary-fixed-dim py-2.5 text-sm font-bold text-primary transition-all hover:brightness-110 disabled:opacity-60"
               >
                 {isLoading ? (
                   <>
-                    <svg
-                      className="h-4 w-4 animate-spin"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                    >
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                      />
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 0 1 8-8v4a4 4 0 0 0-4 4H4z"
-                      />
-                    </svg>
+                    <Loader2 size={16} className="animate-spin" />
                     Criando conta...
                   </>
                 ) : (
@@ -241,31 +214,12 @@ export default function ChooseUsernamePage() {
   return (
     <Suspense
       fallback={
-        <main
-          className="relative flex min-h-[calc(100vh-4rem)] items-center justify-center overflow-hidden px-4"
-          style={{ backgroundColor: "#0F2854" }}
-        >
-          <div className="dot-grid absolute inset-0 opacity-40" />
+        <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-gradient-to-br from-primary to-primary-container px-4 pt-16">
           <div className="relative z-10">
-            <svg
-              className="h-8 w-8 animate-spin text-indigo-400"
-              viewBox="0 0 24 24"
-              fill="none"
-            >
-              <circle
-                className="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                strokeWidth="4"
-              />
-              <path
-                className="opacity-75"
-                fill="currentColor"
-                d="M4 12a8 8 0 0 1 8-8v4a4 4 0 0 0-4 4H4z"
-              />
-            </svg>
+            <Loader2
+              size={32}
+              className="animate-spin text-tertiary-fixed-dim"
+            />
           </div>
         </main>
       }

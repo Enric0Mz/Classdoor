@@ -1,4 +1,5 @@
 import * as reviewRepository from "@/repositories/reviewRepository";
+import * as universityRepository from "@/repositories/universityRepository";
 import { moderateComment } from "@/domain/moderationService";
 
 /**
@@ -30,6 +31,11 @@ export async function processPendingReviews(batchSize = 50) {
         moderationStatus,
         moderationReason,
       });
+
+      if (moderationStatus === "APPROVED") {
+        await universityRepository.updateRating(review.universityId);
+      }
+
       succeeded++;
     } catch (error) {
       console.error(`Failed to process review ${review.id}:`, error.message);

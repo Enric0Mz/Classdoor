@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { GraduationCap, ArrowLeft, Building2 } from "lucide-react";
+import { ArrowLeft, Building2, Loader2 } from "lucide-react";
 import { translateError } from "@/lib/errorMessages";
 import {
   fetchWithAuth,
@@ -20,7 +20,7 @@ function decodeJwtPayload(token) {
 }
 
 const UNIVERSITY_TYPES = [
-  { label: "Publica", value: "PUBLIC" },
+  { label: "Pública", value: "PUBLIC" },
   { label: "Privada", value: "PRIVATE" },
 ];
 
@@ -56,9 +56,9 @@ export default function CreateUniversityPage() {
   }, [router]);
 
   function validate() {
-    if (!name.trim()) return "Nome da universidade e obrigatorio.";
-    if (!location.trim()) return "Localizacao e obrigatoria.";
-    if (!type) return "Selecione o tipo de instituicao.";
+    if (!name.trim()) return "Nome da universidade é obrigatório.";
+    if (!location.trim()) return "Localização é obrigatória.";
+    if (!type) return "Selecione o tipo de instituição.";
     return null;
   }
 
@@ -119,237 +119,199 @@ export default function CreateUniversityPage() {
   if (!authorized) return null;
 
   return (
-    <main
-      className="relative min-h-[calc(100vh-4rem)] overflow-hidden px-4 py-12"
-      style={{ backgroundColor: "#0F2854" }}
-    >
-      {/* Dot grid overlay */}
-      <div className="dot-grid absolute inset-0 opacity-40" />
+    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-primary px-4 pb-20 pt-24">
+      {/* Abstract background */}
+      <div className="pointer-events-none absolute inset-0 opacity-10">
+        <div className="absolute -right-[5%] -top-[10%] h-96 w-96 rounded-full bg-secondary-container blur-3xl" />
+        <div className="absolute -bottom-[10%] -left-[5%] h-96 w-96 rounded-full bg-primary-container blur-3xl" />
+      </div>
 
-      {/* Radial purple glow */}
-      <div className="absolute left-1/2 top-0 h-[600px] w-[800px] -translate-x-1/2 rounded-full bg-gradient-radial from-violet-900/30 to-transparent blur-3xl" />
-
-      <div className="relative z-10 mx-auto w-full max-w-lg">
+      <div className="relative z-10 w-full max-w-lg">
         {/* Header */}
-        <div className="mb-8 flex flex-col items-center gap-4 text-center">
-          <Link href="/" className="inline-flex items-center gap-2.5">
-            <div className="brand-gradient flex h-10 w-10 items-center justify-center rounded-xl text-white shadow-lg shadow-indigo-500/30">
-              <GraduationCap size={22} />
-            </div>
-            <span className="brand-gradient-text text-[1.4rem] font-extrabold tracking-tight">
-              InfoCampus
-            </span>
-          </Link>
-
-          <div className="stagger-1 inline-flex items-center gap-2 rounded-full border border-indigo-400/30 bg-indigo-500/20 px-4 py-1.5 text-xs font-semibold text-white backdrop-blur-sm">
+        <div className="mb-10 text-center">
+          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-tertiary-fixed-dim/30 bg-tertiary-fixed-dim/10 px-4 py-1.5 text-xs font-bold text-tertiary-fixed-dim">
             <Building2 size={13} />
             <span>Painel Admin</span>
           </div>
-
-          <div>
-            <h1 className="stagger-2 text-2xl font-semibold tracking-tight text-white">
-              Criar universidade
-            </h1>
-            <p className="stagger-3 mt-1.5 text-sm text-gray-400">
-              Adicione uma nova universidade ao catalogo
-            </p>
-          </div>
+          <h1 className="font-headline text-3xl font-bold tracking-tight text-white">
+            Criar universidade
+          </h1>
+          <p className="mt-2 text-sm text-slate-300">
+            Adicione uma nova universidade ao catálogo
+          </p>
         </div>
 
-        {/* Card wrapper with glow */}
-        <div className="relative">
-          <div
-            className="absolute inset-0 -z-10"
-            style={{
-              background:
-                "radial-gradient(ellipse at 50% 50%, rgba(139,92,246,0.45) 0%, rgba(99,102,241,0.2) 40%, transparent 70%)",
-              transform: "scale(1.6)",
-              filter: "blur(24px)",
-            }}
-          />
-
-          {/* Form card */}
-          <div className="rounded-2xl border border-white/10 bg-white p-8 shadow-xl shadow-black/30">
-            {error && (
-              <div className="mb-6 flex items-start gap-2.5 rounded-xl border border-red-100 bg-red-50 p-3.5">
-                <svg
-                  className="mt-0.5 h-4 w-4 shrink-0 text-red-500"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm-1-5a1 1 0 1 0 2 0V9a1 1 0 1 0-2 0v4zm1-7.5a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-                <p className="text-sm text-red-600">{error}</p>
-              </div>
-            )}
-
-            <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-              {/* Name */}
-              <div className="flex flex-col gap-2">
-                <label className="text-sm font-semibold text-gray-700">
-                  Nome da universidade
-                </label>
-                <input
-                  type="text"
-                  value={name}
-                  onChange={(event) => setName(event.target.value)}
-                  placeholder="Ex: Universidade de Sao Paulo"
-                  className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-800 outline-none transition-colors placeholder:text-gray-400 focus:border-indigo-300 focus:bg-white focus:ring-2 focus:ring-indigo-100"
-                />
-              </div>
-
-              {/* Location */}
-              <div className="flex flex-col gap-2">
-                <label className="text-sm font-semibold text-gray-700">
-                  Localizacao
-                </label>
-                <input
-                  type="text"
-                  value={location}
-                  onChange={(event) => setLocation(event.target.value)}
-                  placeholder="Ex: Sao Paulo, SP"
-                  className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-800 outline-none transition-colors placeholder:text-gray-400 focus:border-indigo-300 focus:bg-white focus:ring-2 focus:ring-indigo-100"
-                />
-              </div>
-
-              {/* Type */}
-              <div className="flex flex-col gap-2">
-                <label className="text-sm font-semibold text-gray-700">
-                  Tipo de instituicao
-                </label>
-                <div className="flex gap-3">
-                  {UNIVERSITY_TYPES.map((universityType) => (
-                    <button
-                      key={universityType.value}
-                      type="button"
-                      onClick={() => setType(universityType.value)}
-                      className={`flex-1 cursor-pointer rounded-xl py-3 text-sm font-medium transition-all ${
-                        type === universityType.value
-                          ? "brand-gradient text-white shadow-sm"
-                          : "border border-gray-200 bg-gray-50 text-gray-500 hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-600"
-                      }`}
-                    >
-                      {universityType.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Website */}
-              <div className="flex flex-col gap-2">
-                <label className="text-sm font-semibold text-gray-700">
-                  Website{" "}
-                  <span className="font-normal text-gray-400">(opcional)</span>
-                </label>
-                <input
-                  type="url"
-                  value={website}
-                  onChange={(event) => setWebsite(event.target.value)}
-                  placeholder="https://www.universidade.edu.br"
-                  className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-800 outline-none transition-colors placeholder:text-gray-400 focus:border-indigo-300 focus:bg-white focus:ring-2 focus:ring-indigo-100"
-                />
-              </div>
-
-              {/* Domain */}
-              <div className="flex flex-col gap-2">
-                <label className="text-sm font-semibold text-gray-700">
-                  Dominio de e-mail{" "}
-                  <span className="font-normal text-gray-400">(opcional)</span>
-                </label>
-                <input
-                  type="text"
-                  value={domain}
-                  onChange={(event) => setDomain(event.target.value)}
-                  placeholder="Ex: usp.br"
-                  className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-800 outline-none transition-colors placeholder:text-gray-400 focus:border-indigo-300 focus:bg-white focus:ring-2 focus:ring-indigo-100"
-                />
-                <span className="text-xs text-gray-400">
-                  Dominio usado para verificar alunos (ex: usp.br, unicamp.br)
-                </span>
-              </div>
-
-              {/* Image URL */}
-              <div className="flex flex-col gap-2">
-                <label className="text-sm font-semibold text-gray-700">
-                  URL da imagem{" "}
-                  <span className="font-normal text-gray-400">(opcional)</span>
-                </label>
-                <input
-                  type="url"
-                  value={image}
-                  onChange={(event) => setImage(event.target.value)}
-                  placeholder="https://exemplo.com/imagem.jpg"
-                  className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-800 outline-none transition-colors placeholder:text-gray-400 focus:border-indigo-300 focus:bg-white focus:ring-2 focus:ring-indigo-100"
-                />
-              </div>
-
-              {/* Courses */}
-              <div className="flex flex-col gap-2">
-                <label className="text-sm font-semibold text-gray-700">
-                  Cursos{" "}
-                  <span className="font-normal text-gray-400">(opcional)</span>
-                </label>
-                <input
-                  type="text"
-                  value={coursesInput}
-                  onChange={(event) => setCoursesInput(event.target.value)}
-                  placeholder="Engenharia, Medicina, Direito"
-                  className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-800 outline-none transition-colors placeholder:text-gray-400 focus:border-indigo-300 focus:bg-white focus:ring-2 focus:ring-indigo-100"
-                />
-                <span className="text-xs text-gray-400">
-                  Separe os cursos por virgula
-                </span>
-              </div>
-
-              {/* Submit */}
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="brand-gradient flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-60"
+        {/* Form Card */}
+        <div className="rounded-xl bg-surface-container-lowest p-8 shadow-[0px_24px_48px_-12px_rgba(0,19,55,0.08)]">
+          {error && (
+            <div className="mb-6 flex items-start gap-2.5 rounded-xl border border-red-100 bg-red-50 p-3.5">
+              <svg
+                className="mt-0.5 h-4 w-4 shrink-0 text-red-500"
+                viewBox="0 0 20 20"
+                fill="currentColor"
               >
-                {isLoading ? (
-                  <>
-                    <svg
-                      className="h-4 w-4 animate-spin"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                    >
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                      />
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 0 1 8-8v4a4 4 0 0 0-4 4H4z"
-                      />
-                    </svg>
-                    Criando...
-                  </>
-                ) : (
-                  <>
-                    <Building2 size={16} />
-                    Criar universidade
-                  </>
-                )}
-              </button>
-            </form>
-          </div>
+                <path
+                  fillRule="evenodd"
+                  d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm-1-5a1 1 0 1 0 2 0V9a1 1 0 1 0-2 0v4zm1-7.5a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              <p className="text-sm text-red-600">{error}</p>
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Name */}
+            <div className="space-y-2">
+              <label className="block text-sm font-semibold text-on-surface-variant">
+                Nome da universidade
+              </label>
+              <input
+                type="text"
+                value={name}
+                onChange={(event) => setName(event.target.value)}
+                placeholder="Ex: Universidade de São Paulo"
+                className="w-full rounded-xl border border-outline-variant/20 bg-surface-container px-4 py-3 text-on-surface outline-none transition-all placeholder:text-on-surface-variant/50 focus:border-secondary focus:ring-2 focus:ring-secondary/20"
+              />
+            </div>
+
+            {/* Location */}
+            <div className="space-y-2">
+              <label className="block text-sm font-semibold text-on-surface-variant">
+                Localização
+              </label>
+              <input
+                type="text"
+                value={location}
+                onChange={(event) => setLocation(event.target.value)}
+                placeholder="Ex: São Paulo, SP"
+                className="w-full rounded-xl border border-outline-variant/20 bg-surface-container px-4 py-3 text-on-surface outline-none transition-all placeholder:text-on-surface-variant/50 focus:border-secondary focus:ring-2 focus:ring-secondary/20"
+              />
+            </div>
+
+            {/* Type */}
+            <div className="space-y-2">
+              <label className="block text-sm font-semibold text-on-surface-variant">
+                Tipo de instituição
+              </label>
+              <div className="flex gap-3">
+                {UNIVERSITY_TYPES.map((universityType) => (
+                  <button
+                    key={universityType.value}
+                    type="button"
+                    onClick={() => setType(universityType.value)}
+                    className={`flex-1 cursor-pointer rounded-xl border py-3 text-sm font-bold transition-all ${
+                      type === universityType.value
+                        ? "border-secondary bg-secondary-container text-on-secondary-container"
+                        : "border-outline-variant/20 bg-surface-container text-on-surface-variant hover:bg-surface"
+                    }`}
+                  >
+                    {universityType.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Website */}
+            <div className="space-y-2">
+              <label className="block text-sm font-semibold text-on-surface-variant">
+                Website{" "}
+                <span className="text-xs font-normal text-outline">
+                  (Opcional)
+                </span>
+              </label>
+              <input
+                type="url"
+                value={website}
+                onChange={(event) => setWebsite(event.target.value)}
+                placeholder="https://www.universidade.edu.br"
+                className="w-full rounded-xl border border-outline-variant/20 bg-surface-container px-4 py-3 text-on-surface outline-none transition-all placeholder:text-on-surface-variant/50 focus:border-secondary focus:ring-2 focus:ring-secondary/20"
+              />
+            </div>
+
+            {/* Domain */}
+            <div className="space-y-2">
+              <label className="block text-sm font-semibold text-on-surface-variant">
+                Domínio de e-mail{" "}
+                <span className="text-xs font-normal text-outline">
+                  (Opcional)
+                </span>
+              </label>
+              <input
+                type="text"
+                value={domain}
+                onChange={(event) => setDomain(event.target.value)}
+                placeholder="Ex: usp.br"
+                className="w-full rounded-xl border border-outline-variant/20 bg-surface-container px-4 py-3 text-on-surface outline-none transition-all placeholder:text-on-surface-variant/50 focus:border-secondary focus:ring-2 focus:ring-secondary/20"
+              />
+              <span className="text-xs text-outline">
+                Domínio usado para verificar alunos (ex: usp.br, unicamp.br)
+              </span>
+            </div>
+
+            {/* Image URL */}
+            <div className="space-y-2">
+              <label className="block text-sm font-semibold text-on-surface-variant">
+                URL da imagem{" "}
+                <span className="text-xs font-normal text-outline">
+                  (Opcional)
+                </span>
+              </label>
+              <input
+                type="url"
+                value={image}
+                onChange={(event) => setImage(event.target.value)}
+                placeholder="https://exemplo.com/imagem.jpg"
+                className="w-full rounded-xl border border-outline-variant/20 bg-surface-container px-4 py-3 text-on-surface outline-none transition-all placeholder:text-on-surface-variant/50 focus:border-secondary focus:ring-2 focus:ring-secondary/20"
+              />
+            </div>
+
+            {/* Courses */}
+            <div className="space-y-2">
+              <label className="block text-sm font-semibold text-on-surface-variant">
+                Cursos{" "}
+                <span className="text-xs font-normal text-outline">
+                  (Opcional)
+                </span>
+              </label>
+              <input
+                type="text"
+                value={coursesInput}
+                onChange={(event) => setCoursesInput(event.target.value)}
+                placeholder="Engenharia, Medicina, Direito"
+                className="w-full rounded-xl border border-outline-variant/20 bg-surface-container px-4 py-3 text-on-surface outline-none transition-all placeholder:text-on-surface-variant/50 focus:border-secondary focus:ring-2 focus:ring-secondary/20"
+              />
+              <span className="text-xs text-outline">
+                Separe os cursos por vírgula
+              </span>
+            </div>
+
+            {/* Submit */}
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-tertiary-fixed-dim py-3 text-sm font-bold text-primary transition-all hover:brightness-110 disabled:opacity-60"
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 size={16} className="animate-spin" />
+                  Criando...
+                </>
+              ) : (
+                <>
+                  <Building2 size={16} />
+                  Criar universidade
+                </>
+              )}
+            </button>
+          </form>
         </div>
 
         {/* Back link */}
-        <div className="mt-5 text-center">
+        <div className="mt-6 text-center">
           <Link
             href="/me"
-            className="inline-flex items-center gap-1.5 text-sm text-gray-500 transition-colors hover:text-gray-300"
+            className="inline-flex items-center gap-1.5 text-sm font-bold text-white/70 transition-colors hover:text-white"
           >
             <ArrowLeft size={14} />
             Voltar para meu perfil

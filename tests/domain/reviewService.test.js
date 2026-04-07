@@ -15,6 +15,10 @@ jest.mock("@/repositories/reviewRepository", () => ({
   remove: jest.fn(),
 }));
 
+jest.mock("@/repositories/universityRepository", () => ({
+  updateRating: jest.fn(),
+}));
+
 jest.mock("@/lib/sanitize", () => ({
   sanitizeString: jest.fn((value) => value),
 }));

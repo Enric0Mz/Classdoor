@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, BookOpen } from "lucide-react";
+import { ArrowLeft, BookOpen, Loader2 } from "lucide-react";
 import { translateError } from "@/lib/errorMessages";
 import {
   fetchWithAuth,
@@ -113,24 +113,26 @@ export default function NewCoursePage() {
   }
 
   return (
-    <main className="min-h-screen bg-gray-50 py-10">
-      <div className="mx-auto max-w-2xl px-4 sm:px-6">
+    <div className="flex min-h-screen flex-col bg-background pt-16">
+      <div className="mx-auto w-full max-w-2xl px-4 py-10 sm:px-6">
         <Link
           href="/courses"
-          className="mb-6 inline-flex items-center gap-2 text-sm font-medium text-gray-500 transition-colors hover:text-indigo-600"
+          className="mb-6 inline-flex items-center gap-2 text-sm font-semibold text-on-surface-variant transition-colors hover:text-secondary"
         >
           <ArrowLeft size={16} />
           Voltar ao catálogo
         </Link>
 
-        <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
+        <div className="rounded-2xl border border-outline-variant/20 bg-surface-container-lowest p-6 shadow-sm">
           <div className="mb-6 flex items-center gap-3">
-            <div className="brand-gradient flex h-10 w-10 items-center justify-center rounded-xl text-white">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-on-primary">
               <BookOpen size={20} />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-gray-900">Novo Curso</h1>
-              <p className="text-sm text-gray-500">
+              <h1 className="font-headline text-xl font-bold text-primary">
+                Novo Curso
+              </h1>
+              <p className="text-sm text-on-surface-variant">
                 Adicione um curso ao catálogo
               </p>
             </div>
@@ -138,7 +140,7 @@ export default function NewCoursePage() {
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-gray-700">
+              <label className="mb-1.5 block text-sm font-semibold text-on-surface-variant">
                 Título <span className="text-red-500">*</span>
               </label>
               <input
@@ -147,12 +149,12 @@ export default function NewCoursePage() {
                 value={formData.title}
                 onChange={handleChange}
                 placeholder="Ex: JavaScript do Zero ao Avançado"
-                className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-800 outline-none transition-all focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+                className="w-full rounded-xl border border-outline-variant/20 bg-surface-container px-4 py-2.5 text-sm text-on-surface outline-none transition-all placeholder:text-on-surface-variant/50 focus:border-secondary focus:ring-2 focus:ring-secondary/20"
               />
             </div>
 
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-gray-700">
+              <label className="mb-1.5 block text-sm font-semibold text-on-surface-variant">
                 Descrição <span className="text-red-500">*</span>
               </label>
               <textarea
@@ -161,12 +163,12 @@ export default function NewCoursePage() {
                 onChange={handleChange}
                 rows={4}
                 placeholder="Descreva o conteúdo e benefícios do curso..."
-                className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-800 outline-none transition-all focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 resize-none"
+                className="w-full resize-none rounded-xl border border-outline-variant/20 bg-surface-container px-4 py-2.5 text-sm text-on-surface outline-none transition-all placeholder:text-on-surface-variant/50 focus:border-secondary focus:ring-2 focus:ring-secondary/20"
               />
             </div>
 
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-gray-700">
+              <label className="mb-1.5 block text-sm font-semibold text-on-surface-variant">
                 Link do curso <span className="text-red-500">*</span>
               </label>
               <input
@@ -175,12 +177,12 @@ export default function NewCoursePage() {
                 value={formData.link}
                 onChange={handleChange}
                 placeholder="https://udemy.com/course/..."
-                className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-800 outline-none transition-all focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+                className="w-full rounded-xl border border-outline-variant/20 bg-surface-container px-4 py-2.5 text-sm text-on-surface outline-none transition-all placeholder:text-on-surface-variant/50 focus:border-secondary focus:ring-2 focus:ring-secondary/20"
               />
             </div>
 
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-gray-700">
+              <label className="mb-1.5 block text-sm font-semibold text-on-surface-variant">
                 URL da imagem (opcional)
               </label>
               <input
@@ -189,13 +191,13 @@ export default function NewCoursePage() {
                 value={formData.image}
                 onChange={handleChange}
                 placeholder="https://example.com/thumbnail.jpg"
-                className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-800 outline-none transition-all focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+                className="w-full rounded-xl border border-outline-variant/20 bg-surface-container px-4 py-2.5 text-sm text-on-surface outline-none transition-all placeholder:text-on-surface-variant/50 focus:border-secondary focus:ring-2 focus:ring-secondary/20"
               />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-gray-700">
+                <label className="mb-1.5 block text-sm font-semibold text-on-surface-variant">
                   Preço (opcional)
                 </label>
                 <input
@@ -206,11 +208,11 @@ export default function NewCoursePage() {
                   min="0"
                   step="0.01"
                   placeholder="0.00"
-                  className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-800 outline-none transition-all focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+                  className="w-full rounded-xl border border-outline-variant/20 bg-surface-container px-4 py-2.5 text-sm text-on-surface outline-none transition-all placeholder:text-on-surface-variant/50 focus:border-secondary focus:ring-2 focus:ring-secondary/20"
                 />
               </div>
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-gray-700">
+                <label className="mb-1.5 block text-sm font-semibold text-on-surface-variant">
                   Categoria (opcional)
                 </label>
                 <input
@@ -219,7 +221,7 @@ export default function NewCoursePage() {
                   value={formData.category}
                   onChange={handleChange}
                   placeholder="Ex: Programação"
-                  className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-800 outline-none transition-all focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+                  className="w-full rounded-xl border border-outline-variant/20 bg-surface-container px-4 py-2.5 text-sm text-on-surface outline-none transition-all placeholder:text-on-surface-variant/50 focus:border-secondary focus:ring-2 focus:ring-secondary/20"
                 />
               </div>
             </div>
@@ -233,13 +235,20 @@ export default function NewCoursePage() {
             <button
               type="submit"
               disabled={loading}
-              className="brand-gradient mt-2 rounded-xl py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-60"
+              className="mt-2 flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-tertiary-fixed-dim py-3 text-sm font-bold text-primary transition-all hover:brightness-110 disabled:opacity-60"
             >
-              {loading ? "Criando..." : "Criar Curso"}
+              {loading ? (
+                <>
+                  <Loader2 size={16} className="animate-spin" />
+                  Criando...
+                </>
+              ) : (
+                "Criar Curso"
+              )}
             </button>
           </form>
         </div>
       </div>
-    </main>
+    </div>
   );
 }
