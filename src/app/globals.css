@@ -154,41 +154,6 @@
 }
 
 @layer components {
-  /* Dot grid overlay for tech sections */
-  .dot-grid {
-    background-image: radial-gradient(circle, #c7d2fe 1px, transparent 1px);
-    background-size: 28px 28px;
-  }
-
-  /* Card hover glow for indigo */
-  .card-glow:hover {
-    box-shadow:
-      0 0 0 1px #1c4d8d20,
-      0 8px 32px -8px #1c4d8d30;
-  }
-
-  /* Stagger entrance animations */
-  .stagger-1 {
-    animation: fadeUp 0.4s ease both 0.05s;
-  }
-  .stagger-2 {
-    animation: fadeUp 0.4s ease both 0.1s;
-  }
-  .stagger-3 {
-    animation: fadeUp 0.4s ease both 0.15s;
-  }
-
-  @keyframes fadeUp {
-    from {
-      opacity: 0;
-      transform: translateY(14px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
   /* Skeleton shimmer */
   .skeleton {
     background: linear-gradient(90deg, #f0f0f2 25%, #e8e8ec 50%, #f0f0f2 75%);
@@ -203,39 +168,6 @@
     to {
       background-position: -200% 0;
     }
-  }
-
-  .hero-gradient {
-    background: linear-gradient(
-      160deg,
-      #eef0ff 0%,
-      #e5e1ff 25%,
-      #ede9ff 55%,
-      #f3f1ff 75%,
-      #f9f9fb 100%
-    );
-  }
-
-  .brand-gradient {
-    background: linear-gradient(135deg, #1c4d8d, #4988c4);
-  }
-
-  .brand-gradient-text {
-    background: linear-gradient(135deg, #1c4d8d, #4988c4);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-
-  .blue-gradient {
-    background: linear-gradient(135deg, #1c4d8d, #4988c4);
-  }
-
-  .blue-gradient-text {
-    background: linear-gradient(135deg, #4988c4, #bde8f5);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
   }
 
   /* Glass blur effect */
