@@ -28,7 +28,6 @@ function LoginPageContent() {
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [platformStats, setPlatformStats] = useState(null);
@@ -262,23 +261,6 @@ function LoginPageContent() {
               </div>
             </div>
 
-            {/* Remember me */}
-            <div className="flex items-center gap-2">
-              <input
-                id="remember"
-                type="checkbox"
-                checked={rememberMe}
-                onChange={(e) => setRememberMe(e.target.checked)}
-                className="h-4 w-4 rounded border-outline-variant text-primary focus:ring-primary"
-              />
-              <label
-                htmlFor="remember"
-                className="text-sm text-on-surface-variant"
-              >
-                Lembrar de mim
-              </label>
-            </div>
-
             {/* Submit */}
             <button
               type="submit"
@@ -324,28 +306,6 @@ function LoginPageContent() {
               >
                 Cadastrar agora
               </Link>
-            </p>
-          </div>
-
-          {/* Legal footer */}
-          <div className="mt-24 border-t border-surface-container-high pt-8 text-center">
-            <p className="text-[10px] uppercase leading-relaxed tracking-widest text-outline">
-              Ao entrar, você concorda com nossos
-              <br />
-              <Link
-                href="/em-breve"
-                className="transition-colors hover:text-primary"
-              >
-                Termos de Uso
-              </Link>{" "}
-              e{" "}
-              <Link
-                href="/em-breve"
-                className="transition-colors hover:text-primary"
-              >
-                Política de Privacidade
-              </Link>
-              .
             </p>
           </div>
         </div>

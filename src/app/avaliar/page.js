@@ -263,7 +263,6 @@ function AvaliarContent() {
   const [rejectionReason, setRejectionReason] = useState(null);
   const [showPendingModeration, setShowPendingModeration] = useState(false);
   const [showApproval, setShowApproval] = useState(false);
-  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [isAuthed, setIsAuthed] = useState(false);
 
   useEffect(() => {
@@ -289,8 +288,6 @@ function AvaliarContent() {
     if (!universityId) return "Selecione uma universidade.";
     if (!rating) return "Escolha uma nota de 1 a 5.";
     if (!difficultyLevel) return "Escolha o nível de dificuldade.";
-    if (!acceptedTerms)
-      return "Você precisa aceitar os Termos de Uso para publicar.";
     return null;
   }
 
@@ -547,32 +544,6 @@ function AvaliarContent() {
 
             {/* Section 4: Submit */}
             <section className="pt-8">
-              <div className="mb-8 flex items-start gap-3">
-                <div className="relative flex h-5 items-center">
-                  <input
-                    id="terms"
-                    type="checkbox"
-                    checked={acceptedTerms}
-                    onChange={(e) => setAcceptedTerms(e.target.checked)}
-                    className="h-5 w-5 cursor-pointer rounded-lg border-outline-variant text-primary focus:ring-secondary"
-                  />
-                </div>
-                <label
-                  htmlFor="terms"
-                  className="text-sm leading-relaxed text-on-surface-variant"
-                >
-                  Confirmo que esta avaliação é baseada na minha experiência
-                  real como estudante e estou de acordo com os{" "}
-                  <Link
-                    href="/em-breve"
-                    className="font-semibold text-secondary underline decoration-secondary/30"
-                  >
-                    Termos de Uso
-                  </Link>{" "}
-                  do InfoCampus.
-                </label>
-              </div>
-
               <div className="flex flex-col items-center gap-4 md:flex-row">
                 <button
                   type="submit"

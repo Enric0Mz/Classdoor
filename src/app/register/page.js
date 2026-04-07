@@ -14,7 +14,6 @@ export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [passwordConfirmation, setPasswordConfirmation] = useState("");
-  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [platformStats, setPlatformStats] = useState(null);
@@ -42,9 +41,6 @@ export default function RegisterPage() {
     }
     if (password !== passwordConfirmation) {
       return "As senhas não coincidem.";
-    }
-    if (!acceptedTerms) {
-      return "Você precisa aceitar os Termos de Uso e a Política de Privacidade.";
     }
     return null;
   }
@@ -329,37 +325,6 @@ export default function RegisterPage() {
               password !== passwordConfirmation && (
                 <p className="text-xs text-red-500">As senhas não coincidem.</p>
               )}
-
-            {/* Terms */}
-            <div className="flex items-center gap-3 py-2">
-              <input
-                id="terms"
-                type="checkbox"
-                checked={acceptedTerms}
-                onChange={(e) => setAcceptedTerms(e.target.checked)}
-                className="rounded border-outline-variant text-primary focus:ring-primary-container"
-              />
-              <label
-                htmlFor="terms"
-                className="text-xs leading-tight text-on-surface-variant"
-              >
-                Eu aceito os{" "}
-                <Link
-                  href="/em-breve"
-                  className="font-medium text-secondary hover:underline"
-                >
-                  Termos de Uso
-                </Link>{" "}
-                e a{" "}
-                <Link
-                  href="/em-breve"
-                  className="font-medium text-secondary hover:underline"
-                >
-                  Política de Privacidade
-                </Link>
-                .
-              </label>
-            </div>
 
             {/* Submit */}
             <button
