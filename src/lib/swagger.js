@@ -1369,6 +1369,120 @@ const swaggerSpec = {
         },
       },
     },
+    "/api/v1/users/forgot-password": {
+      post: {
+        tags: ["Sessions"],
+        summary: "Request a password reset email",
+        description:
+          "Sends a password reset link to the provided email if an account exists. Always returns 200 for security (does not reveal whether the email is registered).",
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                required: ["email"],
+                properties: {
+                  email: {
+                    type: "string",
+                    format: "email",
+                    description:
+                      "The email address associated with the account.",
+                    example: "user@example.com",
+                  },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: "Request processed (always returns 200)",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    message: {
+                      type: "string",
+                      example:
+                        "If an account with this email exists, a password reset link has been sent",
+                    },
+                  },
+                },
+              },
+            },
+          },
+          400: {
+            description: "Invalid email format",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
+        },
+      },
+    },
+    "/api/v1/users/reset-password": {
+      put: {
+        tags: ["Sessions"],
+        summary: "Reset password with token",
+        description:
+          "Resets the user's password using a valid reset token. The token is sent via email through the forgot-password endpoint. Invalidates all existing refresh tokens on success.",
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                required: ["token", "newPassword"],
+                properties: {
+                  token: {
+                    type: "string",
+                    description:
+                      "The password reset token from the email link.",
+                  },
+                  newPassword: {
+                    type: "string",
+                    description:
+                      "The new password (8-40 chars, must include uppercase, lowercase, number, and symbol).",
+                    example: "NewPass1!",
+                  },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: "Password reset successfully",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    message: {
+                      type: "string",
+                      example: "Password reset successfully",
+                    },
+                  },
+                },
+              },
+            },
+          },
+          400: {
+            description:
+              "Invalid/expired token, already used token, or password validation failure",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
+        },
+      },
+    },
     "/api/v1/users/me": {
       get: {
         tags: ["Users"],
