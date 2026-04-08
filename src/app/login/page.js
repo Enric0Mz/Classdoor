@@ -235,7 +235,7 @@ function LoginPageContent() {
                   Senha
                 </label>
                 <Link
-                  href="/em-breve"
+                  href="/forgot-password"
                   className="text-xs font-bold text-secondary hover:underline"
                 >
                   Esqueceu a senha?

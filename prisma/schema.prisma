@@ -43,6 +43,12 @@ enum EmailVerificationStatus {
   REVOKED
 }
 
+enum PasswordResetTokenStatus {
+  PENDING
+  USED
+  REVOKED
+}
+
 enum ExternalReviewSource {
   GOOGLE_MAPS
 }
@@ -143,6 +149,7 @@ model User {
   courses                      Course[]
   emailVerificationTokens      EmailVerificationToken[]
   refreshTokens                RefreshToken[]
+  passwordResetTokens          PasswordResetToken[]
   universitySubmissions        UniversitySubmission[]
 }
 
@@ -169,6 +176,19 @@ model RefreshToken {
   createdAt DateTime @default(now())
 
   @@index([userId, createdAt])
+}
+
+model PasswordResetToken {
+  id        String                   @id @default(uuid())
+  userId    String
+  user      User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  email     String
+  token     String                   @unique
+  status    PasswordResetTokenStatus @default(PENDING)
+  expiresAt DateTime
+  createdAt DateTime                 @default(now())
+
+  @@index([userId, status])
 }
 
 model UniversitySubmission {

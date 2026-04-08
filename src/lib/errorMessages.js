@@ -40,6 +40,14 @@ const ERROR_TRANSLATIONS = {
   "Password must contain at least one symbol":
     "A senha deve conter pelo menos um símbolo.",
 
+  // Password reset
+  "Invalid or expired reset token":
+    "Token de redefinição inválido ou expirado.",
+  "This reset link has already been used":
+    "Este link de redefinição já foi utilizado.",
+  "Token is required": "Token é obrigatório.",
+  "New password is required": "A nova senha é obrigatória.",
+
   // Email verification
   "Email already verified": "Email já verificado.",
   "Verification token not found": "Token de verificação não encontrado.",
