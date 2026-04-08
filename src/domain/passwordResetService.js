@@ -17,7 +17,7 @@ export async function requestPasswordReset(email) {
 
   const user = await userRepository.findByEmail(email);
 
-  if (!user || !user.password) {
+  if (!user || user.authProvider == "google") {
     return {
       message:
         "If an account with this email exists, a password reset link has been sent",
