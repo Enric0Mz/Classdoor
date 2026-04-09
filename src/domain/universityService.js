@@ -7,6 +7,20 @@ import * as externalReviewService from "@/domain/externalReviewService";
 
 const VALID_TYPES = ["PUBLIC", "PRIVATE"];
 
+async function generateUniqueSlug(name) {
+  const baseSlug = slugify(name);
+  const existing = await universityRepository.findBySlug(baseSlug);
+  if (!existing) return baseSlug;
+
+  let suffix = 2;
+  while (true) {
+    const candidate = `${baseSlug}-${suffix}`;
+    const taken = await universityRepository.findBySlug(candidate);
+    if (!taken) return candidate;
+    suffix++;
+  }
+}
+
 export async function createUniversity({
   name,
   abbreviation,
@@ -54,7 +68,7 @@ export async function createUniversity({
     }
   }
 
-  const generatedSlug = slugify(sanitizedName);
+  const generatedSlug = await generateUniqueSlug(sanitizedName);
 
   const university = await universityRepository.create({
     name: sanitizedName,
