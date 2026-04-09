@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback, useMemo } from "react";
+import Image from "next/image";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 export default function ImageCarousel({
@@ -52,10 +53,12 @@ export default function ImageCarousel({
 
   if (validImages.length === 1) {
     return (
-      <img
+      <Image
         src={validImages[0].url}
         alt={alt}
-        className={`h-full w-full object-cover ${className}`}
+        fill
+        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+        className={`object-cover ${className}`}
         onError={() => handleImageError(validImages[0].url)}
       />
     );
@@ -63,10 +66,12 @@ export default function ImageCarousel({
 
   return (
     <div className="relative h-full w-full">
-      <img
+      <Image
         src={validImages[currentIndex].url}
         alt={`${alt} - ${currentIndex + 1}`}
-        className={`h-full w-full object-cover ${className}`}
+        fill
+        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+        className={`object-cover ${className}`}
         onError={() => handleImageError(validImages[currentIndex].url)}
       />
 

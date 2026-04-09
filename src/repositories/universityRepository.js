@@ -123,6 +123,20 @@ export async function findAllOrderedByReviewCount({
     return map;
   }, {});
 
+  // Fetch slugs via Prisma (safe even before migration runs — returns null)
+  let slugByUniversityId = {};
+  try {
+    const records = await prisma.university.findMany({
+      where: { id: { in: universityIds } },
+      select: { id: true, slug: true },
+    });
+    slugByUniversityId = Object.fromEntries(
+      records.map((record) => [record.id, record.slug]),
+    );
+  } catch {
+    // slug column may not exist yet before migration
+  }
+
   const enrichedData = data.map((row) => {
     const totalReviewCount = Number(row.totalReviewCount);
     const internalReviewCount = Number(row.internalReviewCount);
@@ -141,6 +155,7 @@ export async function findAllOrderedByReviewCount({
     return {
       id: row.id,
       name: row.name,
+      slug: slugByUniversityId[row.id] || null,
       abbreviation: row.abbreviation,
       location: row.location,
       website: row.website,
@@ -159,6 +174,23 @@ export async function findAllOrderedByReviewCount({
 export async function findById(id) {
   return prisma.university.findUnique({
     where: { id },
+    include: {
+      images: true,
+      reviews: {
+        where: {
+          moderationStatus: "APPROVED",
+          NOT: { childReviews: { some: { moderationStatus: "APPROVED" } } },
+        },
+        include: { author: { select: REVIEW_AUTHOR_SELECT } },
+        orderBy: { createdAt: "desc" },
+      },
+    },
+  });
+}
+
+export async function findBySlug(slug) {
+  return prisma.university.findUnique({
+    where: { slug },
     include: {
       images: true,
       reviews: {

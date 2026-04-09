@@ -1,10 +1,25 @@
 import { AppError } from "@/errors/AppError";
 import { sanitizeString } from "@/lib/sanitize";
+import { slugify } from "@/lib/slugify";
 import * as universityRepository from "@/repositories/universityRepository";
 import * as universityDomainRepository from "@/repositories/universityDomainRepository";
 import * as externalReviewService from "@/domain/externalReviewService";
 
 const VALID_TYPES = ["PUBLIC", "PRIVATE"];
+
+async function generateUniqueSlug(name) {
+  const baseSlug = slugify(name);
+  const existing = await universityRepository.findBySlug(baseSlug);
+  if (!existing) return baseSlug;
+
+  let suffix = 2;
+  while (true) {
+    const candidate = `${baseSlug}-${suffix}`;
+    const taken = await universityRepository.findBySlug(candidate);
+    if (!taken) return candidate;
+    suffix++;
+  }
+}
 
 export async function createUniversity({
   name,
@@ -53,8 +68,11 @@ export async function createUniversity({
     }
   }
 
+  const generatedSlug = await generateUniqueSlug(sanitizedName);
+
   const university = await universityRepository.create({
     name: sanitizedName,
+    slug: generatedSlug,
     abbreviation,
     location: sanitizedLocation,
     website: sanitizedWebsite,
@@ -245,12 +263,26 @@ export async function getUniversityById(id) {
     throw new AppError("University not found", 404);
   }
 
+  return enrichUniversityWithStats(university);
+}
+
+export async function getUniversityBySlug(slug) {
+  const university = await universityRepository.findBySlug(slug);
+
+  if (!university) {
+    throw new AppError("University not found", 404);
+  }
+
+  return enrichUniversityWithStats(university);
+}
+
+async function enrichUniversityWithStats(university) {
   const { reviews, ...universityData } = university;
   const internalStats = computeStats(reviews);
 
   let externalStats = null;
   try {
-    externalStats = await externalReviewService.getStats(id);
+    externalStats = await externalReviewService.getStats(university.id);
   } catch (error) {
     console.warn("Failed to fetch external review stats:", error.message);
   }
