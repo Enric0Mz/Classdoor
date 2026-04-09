@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo, useRef } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { translateError } from "@/lib/errorMessages";
 import {
@@ -1114,7 +1114,7 @@ export default function UniversityDetailClient({
   initialExternalReviews = [],
   initialExternalReviewsPagination = null,
 }) {
-  const { id } = useParams();
+  const universityId = initialUniversity.id;
   const router = useRouter();
   const [university, setUniversity] = useState(initialUniversity);
   const [reviews, setReviews] = useState(initialReviews);
@@ -1166,7 +1166,7 @@ export default function UniversityDetailClient({
     setIsLoadingMore(true);
     try {
       const response = await fetch(
-        `/api/v1/reviews?universityId=${id}&limit=${REVIEWS_PER_PAGE}&page=${nextPage}`,
+        `/api/v1/reviews?universityId=${universityId}&limit=${REVIEWS_PER_PAGE}&page=${nextPage}`,
       );
       const data = await response.json();
       setReviews((prev) => [...prev, ...(data.data ?? [])]);
@@ -1191,7 +1191,7 @@ export default function UniversityDetailClient({
     setIsLoadingMoreExternal(true);
     try {
       const response = await fetch(
-        `/api/v1/external-reviews?universityId=${id}&limit=${REVIEWS_PER_PAGE}&page=${nextPage}`,
+        `/api/v1/external-reviews?universityId=${universityId}&limit=${REVIEWS_PER_PAGE}&page=${nextPage}`,
       );
       const data = await response.json();
       setExternalReviews((prev) => [...prev, ...(data.data ?? [])]);
@@ -1208,7 +1208,7 @@ export default function UniversityDetailClient({
     }
     setIsDeletingUni(true);
     try {
-      const response = await fetchWithAuth(`/api/v1/universities/${id}`, {
+      const response = await fetchWithAuth(`/api/v1/universities/${universityId}`, {
         method: "DELETE",
       });
       if (!response.ok) throw new Error();
@@ -1445,7 +1445,7 @@ export default function UniversityDetailClient({
           </button>
           <div className="flex-1" />
           <Link
-            href={`/avaliar?universityId=${id}`}
+            href={`/avaliar?universityId=${universityId}`}
             className="rounded-full bg-tertiary-fixed-dim px-4 py-2 text-sm font-bold text-primary transition-opacity hover:opacity-90"
           >
             Avaliar
@@ -1703,7 +1703,7 @@ export default function UniversityDetailClient({
             <div className="sticky top-20 space-y-6">
               <InfoRapida stats={university.stats} university={university} />
               <SidebarCTA
-                universityId={id}
+                universityId={universityId}
                 universityName={
                   university.abbreviation ||
                   university.name.split(" ").slice(0, 3).join(" ")
