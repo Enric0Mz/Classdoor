@@ -46,6 +46,5 @@ BEGIN
   END LOOP;
 END $$;
 
--- Make slug required and unique
-ALTER TABLE "University" ALTER COLUMN "slug" SET NOT NULL;
+-- Create unique index (slug remains nullable so bulk creation paths still work)
 CREATE UNIQUE INDEX "University_slug_key" ON "University"("slug");
