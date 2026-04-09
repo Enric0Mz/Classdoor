@@ -4,10 +4,7 @@ import * as reviewService from "@/domain/reviewService";
 import * as externalReviewService from "@/domain/externalReviewService";
 import { paginatedResponse } from "@/lib/pagination";
 import JsonLd from "@/components/JsonLd";
-import {
-  buildUniversitySchema,
-  buildBreadcrumbSchema,
-} from "@/lib/jsonLd";
+import { buildUniversitySchema, buildBreadcrumbSchema } from "@/lib/jsonLd";
 import UniversityDetailClient from "./UniversityDetailClient";
 
 const REVIEWS_PER_PAGE = 10;
@@ -34,10 +31,12 @@ export async function generateMetadata({ params }) {
 
     return {
       title: `${university.name} — Avaliações e Nota`,
-      description: `Veja avaliações reais de alunos da ${university.name}. ${ratingText} ${reviewText} ${university.location}.`.trim(),
+      description:
+        `Veja avaliações reais de alunos da ${university.name}. ${ratingText} ${reviewText} ${university.location}.`.trim(),
       openGraph: {
         title: `${university.name} — Avaliações | InfoCampus`,
-        description: `${ratingText} ${reviewText} Compare com outras universidades no InfoCampus.`.trim(),
+        description:
+          `${ratingText} ${reviewText} Compare com outras universidades no InfoCampus.`.trim(),
         images: university.images?.[0]?.url
           ? [{ url: university.images[0].url }]
           : [],

@@ -14,23 +14,21 @@ export default async function OpenGraphImage({ params }) {
     university = await universityService.getUniversityBySlug(slug);
   } catch {
     return new ImageResponse(
-      (
-        <div
-          style={{
-            width: "100%",
-            height: "100%",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            background: "#1a1a2e",
-            color: "#ffffff",
-            fontSize: "32px",
-            fontFamily: "sans-serif",
-          }}
-        >
-          Universidade não encontrada
-        </div>
-      ),
+      <div
+        style={{
+          width: "100%",
+          height: "100%",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          background: "#1a1a2e",
+          color: "#ffffff",
+          fontSize: "32px",
+          fontFamily: "sans-serif",
+        }}
+      >
+        Universidade não encontrada
+      </div>,
       { ...size },
     );
   }
@@ -40,128 +38,127 @@ export default async function OpenGraphImage({ params }) {
   const typeLabel = university.type === "PUBLIC" ? "Pública" : "Privada";
 
   return new ImageResponse(
-    (
+    <div
+      style={{
+        width: "100%",
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "space-between",
+        background:
+          "linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)",
+        fontFamily: "sans-serif",
+        padding: "60px",
+      }}
+    >
+      {/* Top: Brand */}
       <div
         style={{
-          width: "100%",
-          height: "100%",
           display: "flex",
-          flexDirection: "column",
-          justifyContent: "space-between",
-          background: "linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)",
-          fontFamily: "sans-serif",
-          padding: "60px",
+          alignItems: "center",
+          gap: "12px",
         }}
       >
-        {/* Top: Brand */}
         <div
           style={{
+            width: "40px",
+            height: "40px",
+            borderRadius: "10px",
+            background: "linear-gradient(135deg, #c9b458, #e8d48b)",
             display: "flex",
             alignItems: "center",
-            gap: "12px",
+            justifyContent: "center",
+            fontSize: "18px",
+            fontWeight: "bold",
+            color: "#1a1a2e",
           }}
         >
-          <div
-            style={{
-              width: "40px",
-              height: "40px",
-              borderRadius: "10px",
-              background: "linear-gradient(135deg, #c9b458, #e8d48b)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: "18px",
-              fontWeight: "bold",
-              color: "#1a1a2e",
-            }}
-          >
-            IC
-          </div>
+          IC
+        </div>
+        <span
+          style={{
+            fontSize: "24px",
+            fontWeight: "bold",
+            color: "rgba(255, 255, 255, 0.8)",
+          }}
+        >
+          InfoCampus
+        </span>
+      </div>
+
+      {/* Center: University info */}
+      <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+        <h1
+          style={{
+            fontSize: "56px",
+            fontWeight: "bold",
+            color: "#ffffff",
+            lineHeight: "1.1",
+            margin: 0,
+          }}
+        >
+          {university.name}
+        </h1>
+
+        <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
           <span
             style={{
-              fontSize: "24px",
-              fontWeight: "bold",
-              color: "rgba(255, 255, 255, 0.8)",
+              fontSize: "20px",
+              color: "rgba(255, 255, 255, 0.7)",
             }}
           >
-            InfoCampus
+            {university.location}
+          </span>
+          <span
+            style={{
+              fontSize: "16px",
+              color: "#c9b458",
+              background: "rgba(201, 180, 88, 0.15)",
+              padding: "4px 12px",
+              borderRadius: "20px",
+              fontWeight: "600",
+            }}
+          >
+            {typeLabel}
           </span>
         </div>
+      </div>
 
-        {/* Center: University info */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-          <h1
-            style={{
-              fontSize: "56px",
-              fontWeight: "bold",
-              color: "#ffffff",
-              lineHeight: "1.1",
-              margin: 0,
-            }}
-          >
-            {university.name}
-          </h1>
-
-          <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+      {/* Bottom: Stats */}
+      <div style={{ display: "flex", alignItems: "center", gap: "40px" }}>
+        {rating != null && (
+          <div style={{ display: "flex", alignItems: "baseline", gap: "8px" }}>
             <span
               style={{
-                fontSize: "20px",
-                color: "rgba(255, 255, 255, 0.7)",
+                fontSize: "48px",
+                fontWeight: "bold",
+                color: "#c9b458",
               }}
             >
-              {university.location}
+              {rating.toFixed(1)}
             </span>
             <span
               style={{
-                fontSize: "16px",
-                color: "#c9b458",
-                background: "rgba(201, 180, 88, 0.15)",
-                padding: "4px 12px",
-                borderRadius: "20px",
-                fontWeight: "600",
+                fontSize: "20px",
+                color: "rgba(255, 255, 255, 0.5)",
               }}
             >
-              {typeLabel}
+              / 5.0
             </span>
           </div>
-        </div>
-
-        {/* Bottom: Stats */}
-        <div style={{ display: "flex", alignItems: "center", gap: "40px" }}>
-          {rating != null && (
-            <div style={{ display: "flex", alignItems: "baseline", gap: "8px" }}>
-              <span
-                style={{
-                  fontSize: "48px",
-                  fontWeight: "bold",
-                  color: "#c9b458",
-                }}
-              >
-                {rating.toFixed(1)}
-              </span>
-              <span
-                style={{
-                  fontSize: "20px",
-                  color: "rgba(255, 255, 255, 0.5)",
-                }}
-              >
-                / 5.0
-              </span>
-            </div>
-          )}
-          {reviewCount > 0 && (
-            <span
-              style={{
-                fontSize: "20px",
-                color: "rgba(255, 255, 255, 0.6)",
-              }}
-            >
-              {reviewCount} {reviewCount === 1 ? "avaliação" : "avaliações"}
-            </span>
-          )}
-        </div>
+        )}
+        {reviewCount > 0 && (
+          <span
+            style={{
+              fontSize: "20px",
+              color: "rgba(255, 255, 255, 0.6)",
+            }}
+          >
+            {reviewCount} {reviewCount === 1 ? "avaliação" : "avaliações"}
+          </span>
+        )}
       </div>
-    ),
+    </div>,
     { ...size },
   );
 }

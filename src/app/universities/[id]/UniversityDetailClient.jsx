@@ -1208,9 +1208,12 @@ export default function UniversityDetailClient({
     }
     setIsDeletingUni(true);
     try {
-      const response = await fetchWithAuth(`/api/v1/universities/${universityId}`, {
-        method: "DELETE",
-      });
+      const response = await fetchWithAuth(
+        `/api/v1/universities/${universityId}`,
+        {
+          method: "DELETE",
+        },
+      );
       if (!response.ok) throw new Error();
       router.push("/");
     } catch {

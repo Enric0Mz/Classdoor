@@ -77,7 +77,11 @@ function RecommendationCard({ university }) {
         </p>
 
         <Link
-          href={university.slug ? `/universidades/${university.slug}` : `/universities/${university.id}`}
+          href={
+            university.slug
+              ? `/universidades/${university.slug}`
+              : `/universities/${university.id}`
+          }
           className="block w-full rounded-lg border border-outline-variant/30 py-3 text-center text-sm font-bold text-primary transition-all hover:bg-primary hover:text-white"
         >
           Ver detalhes
@@ -87,10 +91,16 @@ function RecommendationCard({ university }) {
   );
 }
 
-export default function HomeClient({ initialData = [], initialPagination = null }) {
+export default function HomeClient({
+  initialData = [],
+  initialPagination = null,
+}) {
   return (
     <Suspense fallback={null}>
-      <HomeContent initialData={initialData} initialPagination={initialPagination} />
+      <HomeContent
+        initialData={initialData}
+        initialPagination={initialPagination}
+      />
     </Suspense>
   );
 }
