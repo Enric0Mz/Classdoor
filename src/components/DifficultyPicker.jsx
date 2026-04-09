@@ -13,10 +13,10 @@ export default function DifficultyPicker({ value, onChange }) {
             key={level}
             type="button"
             onClick={() => onChange(level)}
-            className={`flex-1 cursor-pointer rounded-xl py-2 text-xs font-medium transition-all ${
+            className={`flex-1 cursor-pointer rounded-xl border py-2 text-xs font-bold transition-all ${
               isSelected
-                ? "brand-gradient text-white shadow-sm"
-                : "border border-gray-200 bg-gray-50 text-gray-500 hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-600"
+                ? "border-secondary bg-secondary-container text-on-secondary-container shadow-sm"
+                : "border-outline-variant/20 bg-surface-container text-on-surface-variant hover:bg-surface"
             }`}
           >
             {level}

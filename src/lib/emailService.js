@@ -23,6 +23,22 @@ export async function sendEmailVerification(toEmail, token) {
   });
 }
 
+export async function sendPasswordResetEmail(toEmail, token) {
+  const resetUrl = `${APP_URL}/reset-password?token=${token}`;
+
+  await resend.emails.send({
+    from: "InfoCampus <onboarding@infocampus.com.br>",
+    to: toEmail,
+    subject: "Redefinição de senha - InfoCampus",
+    html: `
+      <p>Você solicitou a redefinição da sua senha no InfoCampus.</p>
+      <p>Clique no link abaixo para criar uma nova senha. Esse link expira em 1 hora.</p>
+      <a href="${resetUrl}">${resetUrl}</a>
+      <p>Se não foi você que solicitou, ignore esse email. Sua senha não será alterada.</p>
+    `,
+  });
+}
+
 export async function sendVerificationEmail(toEmail, token) {
   const verificationUrl = `${APP_URL}/verify-university-email?token=${token}`;
 

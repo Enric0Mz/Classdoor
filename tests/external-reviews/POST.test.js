@@ -5,6 +5,7 @@ import { POST } from "@/app/api/v1/external-reviews/import/route";
 
 jest.mock("@/repositories/universityRepository", () => ({
   findByName: jest.fn(),
+  updateRating: jest.fn(),
 }));
 
 jest.mock("@/repositories/externalReviewRepository", () => ({

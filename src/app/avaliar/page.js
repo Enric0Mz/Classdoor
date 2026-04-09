@@ -3,16 +3,8 @@
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import {
-  GraduationCap,
-  Search,
-  ChevronDown,
-  ArrowLeft,
-  Star,
-  ShieldCheck,
-  ShieldX,
-  X,
-} from "lucide-react";
+import { translateError } from "@/lib/errorMessages";
+import { Search, ChevronDown, ShieldCheck, ShieldX, X } from "lucide-react";
 import {
   fetchWithAuth,
   AuthExpiredError,
@@ -22,21 +14,27 @@ import StarPicker from "@/components/StarPicker";
 import DifficultyPicker from "@/components/DifficultyPicker";
 import { useUniversitySearch } from "@/hooks/useUniversitySearch";
 
-// ─── University selector ──────────────────────────────────────────────────────
+// ─── University selector ─────────────────────────────────────────────────────
 
-function UniversitySelector({ value, onChange }) {
+function UniversitySelector({ value, onChange, onSelectName, initialName }) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
-  const [selected, setSelected] = useState(null);
+  const [selectedName, setSelectedName] = useState(initialName || "");
 
   const { results: filtered, isLoading } = useUniversitySearch({
     search,
     debounceMs: 300,
   });
 
+  // Sync when initialName arrives from API
+  useEffect(() => {
+    if (initialName) setSelectedName(initialName);
+  }, [initialName]);
+
   function select(university) {
     onChange(university.id);
-    setSelected(university);
+    onSelectName(university.name);
+    setSelectedName(university.name);
     setSearch("");
     setOpen(false);
   }
@@ -46,37 +44,41 @@ function UniversitySelector({ value, onChange }) {
       <button
         type="button"
         onClick={() => setOpen((prev) => !prev)}
-        className="flex w-full cursor-pointer items-center justify-between gap-2 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm transition-colors hover:border-sky-300 focus:border-sky-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-100"
+        className="flex w-full cursor-pointer items-center justify-between gap-2 rounded-xl border-none bg-surface-container p-4 text-sm outline-none transition-all focus:ring-2 focus:ring-secondary/20"
       >
-        {selected ? (
-          <span className="font-medium text-gray-800">{selected.name}</span>
+        {selectedName ? (
+          <span className="font-medium text-on-surface">{selectedName}</span>
         ) : (
-          <span className="text-gray-400">Selecione uma universidade...</span>
+          <span className="text-on-surface-variant/60">
+            Selecione uma universidade...
+          </span>
         )}
         <ChevronDown
           size={15}
-          className={`shrink-0 text-gray-400 transition-transform ${open ? "rotate-180" : ""}`}
+          className={`shrink-0 text-on-surface-variant transition-transform ${open ? "rotate-180" : ""}`}
         />
       </button>
 
       {open && (
-        <div className="absolute left-0 right-0 top-full z-20 mt-1.5 overflow-hidden rounded-xl border border-gray-100 bg-white shadow-lg">
-          <div className="flex items-center gap-2 border-b border-gray-100 px-3 py-2.5">
-            <Search size={14} className="shrink-0 text-gray-400" />
+        <div className="absolute left-0 right-0 top-full z-20 mt-1.5 overflow-hidden rounded-xl border border-outline-variant/20 bg-white shadow-lg">
+          <div className="flex items-center gap-2 border-b border-outline-variant/15 px-3 py-2.5">
+            <Search size={14} className="shrink-0 text-on-surface-variant" />
             <input
               autoFocus
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Buscar universidade..."
-              className="w-full bg-transparent text-sm outline-none placeholder:text-gray-400"
+              className="w-full bg-transparent text-sm outline-none placeholder:text-on-surface-variant/50"
             />
           </div>
           <ul className="max-h-56 overflow-y-auto">
             {isLoading ? (
-              <li className="px-4 py-3 text-sm text-gray-400">Buscando...</li>
+              <li className="px-4 py-3 text-sm text-on-surface-variant">
+                Buscando...
+              </li>
             ) : filtered.length === 0 ? (
-              <li className="px-4 py-3 text-sm text-gray-400">
+              <li className="px-4 py-3 text-sm text-on-surface-variant">
                 Nenhuma universidade encontrada.
               </li>
             ) : (
@@ -85,14 +87,16 @@ function UniversitySelector({ value, onChange }) {
                   <button
                     type="button"
                     onClick={() => select(u)}
-                    className={`w-full cursor-pointer px-4 py-2.5 text-left text-sm transition-colors hover:bg-sky-50 hover:text-sky-700 ${
+                    className={`w-full cursor-pointer px-4 py-2.5 text-left text-sm transition-colors hover:bg-secondary-container/15 hover:text-secondary ${
                       u.id === value
-                        ? "bg-sky-50 font-semibold text-sky-700"
-                        : "text-gray-700"
+                        ? "bg-secondary-container/15 font-semibold text-secondary"
+                        : "text-on-surface"
                     }`}
                   >
                     <span className="block font-medium">{u.name}</span>
-                    <span className="text-xs text-gray-400">{u.location}</span>
+                    <span className="text-xs text-on-surface-variant">
+                      {u.location}
+                    </span>
                   </button>
                 </li>
               ))
@@ -104,36 +108,36 @@ function UniversitySelector({ value, onChange }) {
   );
 }
 
-// ─── Moderation loading overlay ───────────────────────────────────────────────
+// ─── Moderation loading overlay ──────────────────────────────────────────────
 
 function ModerationOverlay() {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-      <div className="mx-4 flex w-full max-w-sm flex-col items-center gap-5 rounded-2xl border border-white/10 bg-white p-8 text-center shadow-2xl">
+      <div className="mx-4 flex w-full max-w-sm flex-col items-center gap-5 rounded-2xl bg-white p-8 text-center shadow-2xl">
         <div className="relative flex h-16 w-16 items-center justify-center">
-          <div className="absolute inset-0 animate-spin rounded-full border-4 border-sky-100 border-t-sky-500" />
-          <ShieldCheck size={28} className="text-sky-500" />
+          <div className="absolute inset-0 animate-spin rounded-full border-4 border-secondary-container border-t-secondary" />
+          <ShieldCheck size={28} className="text-secondary" />
         </div>
         <div>
-          <h3 className="text-lg font-semibold text-gray-800">
+          <h3 className="font-headline text-lg font-semibold text-primary">
             Analisando sua avaliação
           </h3>
-          <p className="mt-1.5 text-sm text-gray-500">
+          <p className="mt-1.5 text-sm text-on-surface-variant">
             Nossa moderação está verificando o conteúdo da sua avaliação. Isso
             leva apenas alguns segundos.
           </p>
         </div>
         <div className="flex items-center gap-1.5">
           <span
-            className="h-2 w-2 animate-bounce rounded-full bg-sky-400"
+            className="h-2 w-2 animate-bounce rounded-full bg-secondary"
             style={{ animationDelay: "0ms" }}
           />
           <span
-            className="h-2 w-2 animate-bounce rounded-full bg-sky-400"
+            className="h-2 w-2 animate-bounce rounded-full bg-secondary"
             style={{ animationDelay: "150ms" }}
           />
           <span
-            className="h-2 w-2 animate-bounce rounded-full bg-sky-400"
+            className="h-2 w-2 animate-bounce rounded-full bg-secondary"
             style={{ animationDelay: "300ms" }}
           />
         </div>
@@ -147,10 +151,10 @@ function ModerationOverlay() {
 function RejectionModal({ reason, onClose }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-      <div className="relative mx-4 flex w-full max-w-sm flex-col items-center gap-5 rounded-2xl border border-white/10 bg-white p-8 text-center shadow-2xl">
+      <div className="relative mx-4 flex w-full max-w-sm flex-col items-center gap-5 rounded-2xl bg-white p-8 text-center shadow-2xl">
         <button
           onClick={onClose}
-          className="absolute right-4 top-4 cursor-pointer rounded-lg p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
+          className="absolute right-4 top-4 cursor-pointer rounded-lg p-1 text-on-surface-variant transition-colors hover:bg-surface-container hover:text-on-surface"
         >
           <X size={18} />
         </button>
@@ -158,17 +162,17 @@ function RejectionModal({ reason, onClose }) {
           <ShieldX size={32} className="text-red-500" />
         </div>
         <div>
-          <h3 className="text-lg font-semibold text-gray-800">
+          <h3 className="font-headline text-lg font-semibold text-primary">
             Avaliação não publicada
           </h3>
-          <p className="mt-2 text-sm text-gray-600">{reason}</p>
+          <p className="mt-2 text-sm text-on-surface-variant">{reason}</p>
         </div>
-        <p className="text-xs text-gray-400">
+        <p className="text-xs text-outline">
           Você pode editar sua avaliação e tentar novamente.
         </p>
         <button
           onClick={onClose}
-          className="blue-gradient w-full cursor-pointer rounded-xl py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+          className="w-full cursor-pointer rounded-xl bg-primary py-2.5 text-sm font-semibold text-on-primary transition-opacity hover:opacity-90"
         >
           Entendi, vou revisar
         </button>
@@ -184,22 +188,22 @@ function PendingModerationModal({ universityId }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-      <div className="mx-4 flex w-full max-w-sm flex-col items-center gap-5 rounded-2xl border border-white/10 bg-white p-8 text-center shadow-2xl">
-        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-amber-50">
-          <ShieldCheck size={32} className="text-amber-500" />
+      <div className="mx-4 flex w-full max-w-sm flex-col items-center gap-5 rounded-2xl bg-white p-8 text-center shadow-2xl">
+        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-tertiary-fixed-dim/20">
+          <ShieldCheck size={32} className="text-tertiary-fixed-dim" />
         </div>
         <div>
-          <h3 className="text-lg font-semibold text-gray-800">
+          <h3 className="font-headline text-lg font-semibold text-primary">
             Avaliação em análise
           </h3>
-          <p className="mt-2 text-sm text-gray-600">
+          <p className="mt-2 text-sm text-on-surface-variant">
             Sua avaliação foi recebida e será publicada em breve após a
             verificação dos nossos moderadores.
           </p>
         </div>
         <button
           onClick={() => router.push(`/universities/${universityId}`)}
-          className="blue-gradient w-full cursor-pointer rounded-xl py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+          className="w-full cursor-pointer rounded-xl bg-primary py-2.5 text-sm font-semibold text-on-primary transition-opacity hover:opacity-90"
         >
           Voltar para a universidade
         </button>
@@ -215,22 +219,22 @@ function ApprovalModal({ universityId }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-      <div className="mx-4 flex w-full max-w-sm flex-col items-center gap-5 rounded-2xl border border-white/10 bg-white p-8 text-center shadow-2xl">
+      <div className="mx-4 flex w-full max-w-sm flex-col items-center gap-5 rounded-2xl bg-white p-8 text-center shadow-2xl">
         <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-50">
           <ShieldCheck size={32} className="text-green-500" />
         </div>
         <div>
-          <h3 className="text-lg font-semibold text-gray-800">
+          <h3 className="font-headline text-lg font-semibold text-primary">
             Avaliação publicada!
           </h3>
-          <p className="mt-2 text-sm text-gray-600">
+          <p className="mt-2 text-sm text-on-surface-variant">
             Sua avaliação foi aprovada pela moderação e já está visível para
             outros estudantes.
           </p>
         </div>
         <button
           onClick={() => router.push(`/universities/${universityId}`)}
-          className="blue-gradient w-full cursor-pointer rounded-xl py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+          className="w-full cursor-pointer rounded-xl bg-primary py-2.5 text-sm font-semibold text-on-primary transition-opacity hover:opacity-90"
         >
           Ver minha avaliação
         </button>
@@ -239,7 +243,7 @@ function ApprovalModal({ universityId }) {
   );
 }
 
-// ─── Content ──────────────────────────────────────────────────────────────────
+// ─── Content ─────────────────────────────────────────────────────────────────
 
 function AvaliarContent() {
   const router = useRouter();
@@ -249,6 +253,7 @@ function AvaliarContent() {
   const [universityId, setUniversityId] = useState(
     preselectedUniversityId || "",
   );
+  const [universityName, setUniversityName] = useState("");
   const [rating, setRating] = useState(0);
   const [difficultyLevel, setDifficultyLevel] = useState(0);
   const [pros, setPros] = useState("");
@@ -258,7 +263,6 @@ function AvaliarContent() {
   const [rejectionReason, setRejectionReason] = useState(null);
   const [showPendingModeration, setShowPendingModeration] = useState(false);
   const [showApproval, setShowApproval] = useState(false);
-  // Auth guard
   const [isAuthed, setIsAuthed] = useState(false);
 
   useEffect(() => {
@@ -268,6 +272,17 @@ function AvaliarContent() {
     }
     setIsAuthed(true);
   }, [router]);
+
+  // Fetch university name when preselected via query param
+  useEffect(() => {
+    if (!preselectedUniversityId) return;
+    fetch(`/api/v1/universities/${preselectedUniversityId}`)
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.name) setUniversityName(data.name);
+      })
+      .catch(() => {});
+  }, [preselectedUniversityId]);
 
   function validate() {
     if (!universityId) return "Selecione uma universidade.";
@@ -310,7 +325,9 @@ function AvaliarContent() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error?.message || "Erro ao enviar avaliação.");
+        throw new Error(
+          translateError(data.error?.message, "Erro ao enviar avaliação."),
+        );
       }
 
       if (data.moderation?.status === "PENDING_MODERATION") {
@@ -350,92 +367,115 @@ function AvaliarContent() {
           onClose={() => setRejectionReason(null)}
         />
       )}
-      <main
-        className="relative min-h-[calc(100vh-4rem)] overflow-hidden px-4 py-12"
-        style={{ backgroundColor: "#0F2854" }}
-      >
-        {/* Dot grid overlay */}
-        <div className="dot-grid absolute inset-0 opacity-40" />
 
-        {/* Radial purple glow */}
-        <div className="absolute left-1/2 top-0 h-[600px] w-[800px] -translate-x-1/2 rounded-full bg-gradient-radial from-sky-700/30 to-transparent blur-3xl" />
-
-        <div className="relative z-10 mx-auto w-full max-w-lg">
-          {/* Header */}
-          <div className="mb-8 flex flex-col items-center gap-4 text-center">
-            <Link href="/" className="inline-flex items-center gap-2.5">
-              <div className="blue-gradient flex h-10 w-10 items-center justify-center rounded-xl text-white shadow-lg shadow-sky-500/30">
-                <GraduationCap size={22} />
-              </div>
-              <span className="blue-gradient-text text-[1.4rem] font-extrabold tracking-tight">
-                InfoCampus
-              </span>
+      {/* Task-focused header */}
+      <header className="fixed top-0 z-50 w-full bg-white/70 shadow-sm backdrop-blur-md">
+        <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-6 py-4">
+          <Link
+            href="/"
+            className="font-headline text-2xl font-bold tracking-tight text-primary"
+          >
+            InfoCampus
+          </Link>
+          <div className="flex items-center gap-4">
+            <span className="hidden text-sm text-on-surface-variant md:block">
+              Processo de Avaliação
+            </span>
+            <Link
+              href={universityId ? `/universities/${universityId}` : "/"}
+              className="group rounded-lg p-2 transition-colors hover:bg-surface-container"
+            >
+              <X size={20} className="text-on-surface-variant" />
             </Link>
+          </div>
+        </div>
+      </header>
 
-            <div className="stagger-1 inline-flex items-center gap-2 rounded-full border border-sky-400/30 bg-sky-500/20 px-4 py-1.5 text-xs font-semibold text-white backdrop-blur-sm">
-              <Star size={13} />
-              <span>Avaliações verificadas por estudantes</span>
-            </div>
-
-            <div>
-              <h1 className="stagger-2 text-2xl font-semibold tracking-tight text-white">
-                Avaliar universidade
-              </h1>
-              <p className="stagger-3 mt-1.5 text-sm text-gray-400">
-                Sua avaliação ajuda outros estudantes a escolherem melhor
-              </p>
-            </div>
+      <main className="bg-surface px-4 pb-20 pt-24">
+        <div className="mx-auto max-w-3xl">
+          {/* Hero heading */}
+          <div className="mb-12 md:pr-24">
+            <h1 className="mb-4 font-headline text-4xl font-bold leading-tight text-primary md:text-5xl">
+              Ajude outros estudantes: Avalie a{" "}
+              {universityName ? (
+                <span className="text-secondary">{universityName}</span>
+              ) : (
+                <span className="text-secondary">sua universidade</span>
+              )}
+            </h1>
+            <p className="text-lg leading-relaxed text-on-surface-variant">
+              Sua experiência é valiosa. Compartilhe sua visão real sobre o
+              campus, o ensino e a carreira para orientar futuros
+              universitários.
+            </p>
           </div>
 
-          {/* Card wrapper — purple glow radiates from behind the card */}
-          <div className="relative">
-            <div
-              className="absolute inset-0 -z-10"
-              style={{
-                background:
-                  "radial-gradient(ellipse at 50% 50%, rgba(28,77,141,0.45) 0%, rgba(73,136,196,0.2) 40%, transparent 70%)",
-                transform: "scale(1.6)",
-                filter: "blur(24px)",
-              }}
-            />
+          {/* Error banner */}
+          {error && (
+            <div className="mb-8 flex items-start gap-2.5 rounded-xl border border-red-100 bg-red-50 p-4">
+              <svg
+                className="mt-0.5 h-4 w-4 shrink-0 text-red-500"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm-1-5a1 1 0 1 0 2 0V9a1 1 0 1 0-2 0v4zm1-7.5a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              <p className="text-sm text-red-600">{error}</p>
+            </div>
+          )}
 
-            {/* Form card */}
-            <div className="rounded-2xl border border-white/10 bg-white p-8 shadow-xl shadow-black/30">
-              {error && (
-                <div className="mb-6 flex items-start gap-2.5 rounded-xl border border-red-100 bg-red-50 p-3.5">
-                  <svg
-                    className="mt-0.5 h-4 w-4 shrink-0 text-red-500"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm-1-5a1 1 0 1 0 2 0V9a1 1 0 1 0-2 0v4zm1-7.5a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                  <p className="text-sm text-red-600">{error}</p>
+          <form onSubmit={handleSubmit} className="space-y-8">
+            {/* Section 1: Identificação */}
+            <section className="rounded-xl border border-outline-variant/10 bg-surface-container-lowest p-8 shadow-[0px_24px_48px_-12px_rgba(0,19,55,0.04)]">
+              <div className="mb-6 flex items-center gap-3">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary-fixed text-sm font-bold text-on-secondary-fixed">
+                  1
                 </div>
-              )}
+                <h2 className="font-headline text-xl font-bold text-primary">
+                  Identificação
+                </h2>
+              </div>
 
-              <form onSubmit={handleSubmit} className="flex flex-col gap-7">
-                {/* University */}
-                <div className="flex flex-col gap-2">
-                  <label className="text-sm font-semibold text-gray-700">
-                    Universidade
-                  </label>
-                  <UniversitySelector
-                    value={universityId}
-                    onChange={setUniversityId}
-                  />
+              <div className="space-y-2">
+                <label className="block text-xs font-bold uppercase tracking-widest text-on-surface-variant">
+                  Universidade
+                </label>
+                <UniversitySelector
+                  value={universityId}
+                  onChange={setUniversityId}
+                  onSelectName={setUniversityName}
+                  initialName={universityName}
+                />
+              </div>
+            </section>
+
+            {/* Section 2: Notas Rápidas */}
+            <section className="rounded-xl border border-outline-variant/10 bg-surface-container-lowest p-8 shadow-[0px_24px_48px_-12px_rgba(0,19,55,0.04)]">
+              <div className="mb-6 flex items-center gap-3">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary-fixed text-sm font-bold text-on-secondary-fixed">
+                  2
                 </div>
+                <h2 className="font-headline text-xl font-bold text-primary">
+                  Notas Rápidas
+                </h2>
+              </div>
 
-                {/* Rating */}
+              <div className="space-y-6">
+                {/* Overall rating */}
                 <div className="flex flex-col gap-3">
-                  <label className="text-sm font-semibold text-gray-700">
-                    Nota geral
-                  </label>
-                  <div className="flex flex-col items-center gap-1 rounded-xl border border-gray-100 bg-gray-50 py-5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-semibold text-on-surface">
+                      Nota geral
+                    </span>
+                    <span className="text-xs italic text-on-surface-variant">
+                      Sua impressão geral
+                    </span>
+                  </div>
+                  <div className="flex flex-col items-center gap-1 rounded-xl bg-surface-container py-5">
                     <StarPicker value={rating} onChange={setRating} />
                   </div>
                 </div>
@@ -443,10 +483,10 @@ function AvaliarContent() {
                 {/* Difficulty */}
                 <div className="flex flex-col gap-2">
                   <div className="flex items-baseline justify-between">
-                    <label className="text-sm font-semibold text-gray-700">
+                    <span className="text-sm font-semibold text-on-surface">
                       Nível de dificuldade
-                    </label>
-                    <span className="text-xs text-gray-400">
+                    </span>
+                    <span className="text-xs italic text-on-surface-variant">
                       1 = mais fácil, 5 = mais difícil
                     </span>
                   </div>
@@ -455,109 +495,98 @@ function AvaliarContent() {
                     onChange={setDifficultyLevel}
                   />
                 </div>
+              </div>
+            </section>
 
-                {/* Comment — Prós & Contras */}
-                <div className="flex flex-col gap-4">
-                  <label className="text-sm font-semibold text-gray-700">
-                    Comentário{" "}
-                    <span className="font-normal text-gray-400">
-                      (opcional)
-                    </span>
+            {/* Section 3: Sua Experiência */}
+            <section className="rounded-xl border border-outline-variant/10 bg-surface-container-lowest p-8 shadow-[0px_24px_48px_-12px_rgba(0,19,55,0.04)]">
+              <div className="mb-6 flex items-center gap-3">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary-fixed text-sm font-bold text-on-secondary-fixed">
+                  3
+                </div>
+                <h2 className="font-headline text-xl font-bold text-primary">
+                  Sua Experiência
+                </h2>
+              </div>
+
+              <div className="space-y-6">
+                {/* Pros */}
+                <div className="space-y-2">
+                  <label className="block text-xs font-bold uppercase tracking-widest text-on-surface-variant">
+                    O que você MAIS gosta?
                   </label>
-
-                  {/* Prós */}
-                  <div className="flex flex-col gap-1.5">
-                    <div className="flex items-center gap-1.5">
-                      <span>✅</span>
-                      <span className="text-sm font-semibold text-green-700">
-                        Prós
-                      </span>
-                      <span className="ml-auto text-xs text-gray-400">
-                        {pros.length}/500
-                      </span>
-                    </div>
-                    <textarea
-                      rows={3}
-                      maxLength={500}
-                      value={pros}
-                      onChange={(e) => setPros(e.target.value)}
-                      placeholder="Pontos positivos: infraestrutura, professores, oportunidades..."
-                      className="w-full resize-none rounded-xl border border-green-200 bg-green-50/50 px-4 py-3 text-sm text-gray-800 outline-none transition-colors placeholder:text-gray-400 focus:border-green-300 focus:bg-white focus:ring-2 focus:ring-green-100"
-                    />
-                  </div>
-
-                  {/* Contras */}
-                  <div className="flex flex-col gap-1.5">
-                    <div className="flex items-center gap-1.5">
-                      <span>⚠️</span>
-                      <span className="text-sm font-semibold text-amber-700">
-                        Contras
-                      </span>
-                      <span className="ml-auto text-xs text-gray-400">
-                        {cons.length}/500
-                      </span>
-                    </div>
-                    <textarea
-                      rows={3}
-                      maxLength={500}
-                      value={cons}
-                      onChange={(e) => setCons(e.target.value)}
-                      placeholder="Pontos negativos: burocracia, infraestrutura, dificuldades..."
-                      className="w-full resize-none rounded-xl border border-amber-200 bg-amber-50/50 px-4 py-3 text-sm text-gray-800 outline-none transition-colors placeholder:text-gray-400 focus:border-amber-300 focus:bg-white focus:ring-2 focus:ring-amber-100"
-                    />
-                  </div>
+                  <textarea
+                    rows={3}
+                    maxLength={500}
+                    value={pros}
+                    onChange={(e) => setPros(e.target.value)}
+                    placeholder="Pontos positivos, destaques do campus ou do curso..."
+                    className="w-full resize-none rounded-xl border-none bg-surface-container p-4 text-sm text-on-surface outline-none transition-all placeholder:text-on-surface-variant/50 focus:ring-2 focus:ring-secondary/20"
+                  />
                 </div>
 
-                {/* Submit */}
+                {/* Cons */}
+                <div className="space-y-2">
+                  <label className="block text-xs font-bold uppercase tracking-widest text-on-surface-variant">
+                    O que você MENOS gosta?
+                  </label>
+                  <textarea
+                    rows={3}
+                    maxLength={500}
+                    value={cons}
+                    onChange={(e) => setCons(e.target.value)}
+                    placeholder="Críticas construtivas, pontos de melhoria, dificuldades..."
+                    className="w-full resize-none rounded-xl border-none bg-surface-container p-4 text-sm text-on-surface outline-none transition-all placeholder:text-on-surface-variant/50 focus:ring-2 focus:ring-secondary/20"
+                  />
+                </div>
+              </div>
+            </section>
+
+            {/* Section 4: Submit */}
+            <section className="pt-8">
+              <div className="flex flex-col items-center gap-4 md:flex-row">
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="blue-gradient flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-60"
+                  className="w-full cursor-pointer rounded-xl bg-tertiary-fixed-dim px-10 py-4 font-bold text-primary shadow-lg transition-all duration-150 hover:bg-tertiary-fixed active:scale-95 disabled:opacity-60 md:w-auto"
                 >
-                  {isLoading ? (
-                    <>
-                      <svg
-                        className="h-4 w-4 animate-spin"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                      >
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                        />
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 0 1 8-8v4a4 4 0 0 0-4 4H4z"
-                        />
-                      </svg>
-                      Enviando...
-                    </>
-                  ) : (
-                    <>🎓 Publicar avaliação</>
-                  )}
+                  {isLoading ? "Enviando..." : "Publicar Avaliação"}
                 </button>
-              </form>
-            </div>
-          </div>
-          {/* end card wrapper */}
+                <p className="text-center text-xs text-on-surface-variant md:text-left">
+                  Sua avaliação será analisada por nossa equipe de curadoria
+                  antes de ser publicada.
+                </p>
+              </div>
+            </section>
+          </form>
+        </div>
+      </main>
 
-          {/* Back link */}
-          <div className="mt-5 text-center">
+      {/* Simple footer */}
+      <footer className="border-t border-primary-container bg-primary py-8">
+        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-6 md:flex-row">
+          <div className="font-headline text-lg font-bold text-yellow-500">
+            InfoCampus
+          </div>
+          <p className="text-[10px] uppercase tracking-widest text-slate-400">
+            © 2024 InfoCampus. Excelência Acadêmica Curada.
+          </p>
+          <div className="flex gap-6">
             <Link
-              href="/universities"
-              className="inline-flex items-center gap-1.5 text-sm text-gray-500 transition-colors hover:text-gray-300"
+              href="/em-breve"
+              className="text-[10px] uppercase tracking-widest text-slate-400 transition-colors hover:text-white"
             >
-              <ArrowLeft size={14} />
-              Voltar para universidades
+              Privacidade
+            </Link>
+            <Link
+              href="/em-breve"
+              className="text-[10px] uppercase tracking-widest text-slate-400 transition-colors hover:text-white"
+            >
+              Suporte
             </Link>
           </div>
         </div>
-      </main>
+      </footer>
     </>
   );
 }
@@ -566,8 +595,8 @@ export default function AvaliarPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex h-[calc(100vh-4rem)] w-full items-center justify-center bg-gray-50">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-sky-200 border-t-sky-600" />
+        <div className="flex h-screen w-full items-center justify-center bg-surface">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-secondary-container border-t-secondary" />
         </div>
       }
     >

@@ -15,6 +15,10 @@ jest.mock("@/repositories/reviewRepository", () => ({
   remove: jest.fn(),
 }));
 
+jest.mock("@/repositories/universityRepository", () => ({
+  updateRating: jest.fn(),
+}));
+
 jest.mock("@/lib/sanitize", () => ({
   sanitizeString: jest.fn((value) => value),
 }));
@@ -292,28 +296,23 @@ describe("reviewService — isVerified computation", () => {
   });
 
   describe("updateReview", () => {
-    it("creates a new child review instead of updating in place", async () => {
+    it("updates in place when only rating is changed", async () => {
+      const updatedReview = makeReview(UNIVERSITY_ID);
       reviewRepository.findById.mockResolvedValue(makeReview(UNIVERSITY_ID));
-      reviewRepository.create.mockResolvedValue(makeReview(UNIVERSITY_ID));
+      reviewRepository.update.mockResolvedValue(updatedReview);
 
       await updateReview("review-1", { rating: 5 }, "user-1", "USER");
 
-      expect(reviewRepository.create).toHaveBeenCalledWith(
-        expect.objectContaining({
-          parentReviewId: "review-1",
-          rating: 5,
-          difficultyLevel: 3,
-          comment: "Great university",
-          universityId: UNIVERSITY_ID,
-          authorId: "user-1",
-        }),
-      );
-      expect(reviewRepository.update).not.toHaveBeenCalled();
+      expect(reviewRepository.update).toHaveBeenCalledWith("review-1", {
+        rating: 5,
+        difficultyLevel: 3,
+      });
+      expect(reviewRepository.create).not.toHaveBeenCalled();
     });
 
-    it("returns { review } with isVerified on the created child", async () => {
+    it("returns { review } with isVerified on in-place update", async () => {
       reviewRepository.findById.mockResolvedValue(makeReview(UNIVERSITY_ID));
-      reviewRepository.create.mockResolvedValue(makeReview(UNIVERSITY_ID));
+      reviewRepository.update.mockResolvedValue(makeReview(UNIVERSITY_ID));
 
       const result = await updateReview(
         "review-1",
@@ -325,6 +324,26 @@ describe("reviewService — isVerified computation", () => {
       expect(result.review.isVerified).toBe(true);
     });
 
+    it("creates a child review when comment is changed", async () => {
+      reviewRepository.findById.mockResolvedValue(makeReview(UNIVERSITY_ID));
+      reviewRepository.create.mockResolvedValue(makeReview(UNIVERSITY_ID));
+
+      await updateReview(
+        "review-1",
+        { comment: "Updated comment here" },
+        "user-1",
+        "USER",
+      );
+
+      expect(reviewRepository.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          parentReviewId: "review-1",
+          comment: "Updated comment here",
+        }),
+      );
+      expect(reviewRepository.update).not.toHaveBeenCalled();
+    });
+
     it("links edit of an edit to the original root review", async () => {
       const childReview = {
         ...makeReview(UNIVERSITY_ID),
@@ -334,25 +353,16 @@ describe("reviewService — isVerified computation", () => {
       reviewRepository.findById.mockResolvedValue(childReview);
       reviewRepository.create.mockResolvedValue(makeReview(UNIVERSITY_ID));
 
-      await updateReview("review-child-1", { rating: 5 }, "user-1", "USER");
+      await updateReview(
+        "review-child-1",
+        { comment: "New comment content" },
+        "user-1",
+        "USER",
+      );
 
       expect(reviewRepository.create).toHaveBeenCalledWith(
         expect.objectContaining({
           parentReviewId: "review-root",
-        }),
-      );
-    });
-
-    it("merges unchanged fields from the original review", async () => {
-      reviewRepository.findById.mockResolvedValue(makeReview(UNIVERSITY_ID));
-      reviewRepository.create.mockResolvedValue(makeReview(UNIVERSITY_ID));
-
-      await updateReview("review-1", { rating: 5 }, "user-1", "USER");
-
-      expect(reviewRepository.create).toHaveBeenCalledWith(
-        expect.objectContaining({
-          difficultyLevel: 3,
-          comment: "Great university",
         }),
       );
     });
@@ -402,7 +412,7 @@ describe("reviewService — isVerified computation", () => {
 
     it("does not run moderation when only rating is updated", async () => {
       reviewRepository.findById.mockResolvedValue(makeReview(UNIVERSITY_ID));
-      reviewRepository.create.mockResolvedValue(makeReview(UNIVERSITY_ID));
+      reviewRepository.update.mockResolvedValue(makeReview(UNIVERSITY_ID));
 
       await updateReview("review-1", { rating: 5 }, "user-1", "USER");
 

@@ -4,9 +4,8 @@ import * as userRepository from "@/repositories/userRepository";
 import * as emailVerificationService from "@/domain/emailVerificationService";
 import { signToken, createRefreshToken } from "@/lib/auth";
 import { generateUsername } from "@/lib/generateUsername";
+import { validatePassword } from "@/lib/passwordValidation";
 
-const MINIMUM_PASSWORD_LENGTH = 8;
-const MAXIMUM_PASSWORD_LENGTH = 40;
 const USERNAME_REGEX = /^[a-zA-Z0-9_]{3,20}$/;
 
 function stripPassword({ password, ...user }) {
@@ -18,39 +17,6 @@ const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 function validateEmail(email) {
   if (!EMAIL_REGEX.test(email)) {
     throw new AppError("Invalid email format", 400);
-  }
-}
-
-function validatePassword(password) {
-  if (password.length < MINIMUM_PASSWORD_LENGTH) {
-    throw new AppError(
-      `Password must be at least ${MINIMUM_PASSWORD_LENGTH} characters long`,
-      400,
-    );
-  }
-  if (password.length > MAXIMUM_PASSWORD_LENGTH) {
-    throw new AppError(
-      `Password must be at most ${MAXIMUM_PASSWORD_LENGTH} characters long`,
-      400,
-    );
-  }
-  if (!/[A-Z]/.test(password)) {
-    throw new AppError(
-      "Password must contain at least one uppercase letter",
-      400,
-    );
-  }
-  if (!/[a-z]/.test(password)) {
-    throw new AppError(
-      "Password must contain at least one lowercase letter",
-      400,
-    );
-  }
-  if (!/[0-9]/.test(password)) {
-    throw new AppError("Password must contain at least one number", 400);
-  }
-  if (!/[^A-Za-z0-9]/.test(password)) {
-    throw new AppError("Password must contain at least one symbol", 400);
   }
 }
 
@@ -125,18 +91,15 @@ export async function loginUser({ identifier, password }) {
 
   const isEmail = EMAIL_REGEX.test(identifier);
   const user = isEmail
-    ? await userRepository.findByEmail(identifier)
-    : await userRepository.findByUsername(identifier);
+    ? await userRepository.findByEmailForAuth(identifier)
+    : await userRepository.findByUsernameForAuth(identifier);
 
   if (!user) {
     throw new AppError("Invalid credentials", 401);
   }
 
-  if (!user.password && user.authProvider === "google") {
-    throw new AppError(
-      "This account uses Google sign-in. Please log in with Google.",
-      400,
-    );
+  if (!user.password) {
+    throw new AppError("Invalid credentials", 401);
   }
 
   const valid = await bcrypt.compare(password, user.password);

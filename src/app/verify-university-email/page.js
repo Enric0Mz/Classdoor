@@ -3,14 +3,7 @@
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import {
-  GraduationCap,
-  School,
-  CheckCircle,
-  XCircle,
-  Zap,
-  Loader2,
-} from "lucide-react";
+import { GraduationCap, CheckCircle, XCircle, Loader2 } from "lucide-react";
 
 function VerifyUniversityEmailContent() {
   const searchParams = useSearchParams();
@@ -65,7 +58,9 @@ function VerifyUniversityEmailContent() {
   }, [token]);
 
   const statusIcon = {
-    verifying: <Loader2 size={32} className="animate-spin text-indigo-400" />,
+    verifying: (
+      <Loader2 size={32} className="animate-spin text-tertiary-fixed-dim" />
+    ),
     success: <CheckCircle size={32} className="text-emerald-400" />,
     error: <XCircle size={32} className="text-red-400" />,
   };
@@ -90,47 +85,32 @@ function VerifyUniversityEmailContent() {
   };
 
   return (
-    <main
-      className="relative flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center overflow-hidden"
-      style={{ backgroundColor: "#0F2854" }}
-    >
-      {/* Dot grid overlay */}
-      <div className="dot-grid absolute inset-0 opacity-40" />
-
-      {/* Radial purple glow */}
-      <div className="absolute left-1/2 top-1/2 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-radial from-violet-900/30 to-transparent blur-3xl" />
+    <main className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-gradient-to-br from-primary to-primary-container pt-16">
+      <div className="pointer-events-none absolute inset-0 opacity-10">
+        <div className="absolute -right-[5%] -top-[10%] h-96 w-96 rounded-full bg-secondary-container blur-3xl" />
+        <div className="absolute -bottom-[10%] -left-[5%] h-96 w-96 rounded-full bg-primary-container blur-3xl" />
+      </div>
 
       <div className="relative z-10 flex flex-col items-center px-4 text-center">
-        {/* Logo */}
-        <Link href="/" className="mb-12 inline-flex items-center gap-2.5">
-          <div className="brand-gradient flex h-10 w-10 items-center justify-center rounded-xl text-white">
-            <GraduationCap size={22} />
-          </div>
-          <span className="brand-gradient-text text-[1.4rem] font-extrabold tracking-tight">
-            InfoCampus
-          </span>
-        </Link>
-
         {/* Icon */}
         <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-full border border-white/10 bg-white/5 backdrop-blur-sm">
           {status === "verifying" ? (
             statusIcon.verifying
           ) : (
-            <School size={32} className="text-gray-400" />
+            <GraduationCap size={32} className="text-slate-400" />
           )}
         </div>
 
         {/* Badge */}
-        <div className="stagger-1 mb-5 inline-flex items-center gap-2 rounded-full border border-indigo-400/30 bg-indigo-500/20 px-4 py-1.5 text-xs font-semibold text-white backdrop-blur-sm">
-          <Zap size={13} />
+        <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-tertiary-fixed-dim/30 bg-tertiary-fixed-dim/20 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-tertiary-fixed-dim">
           <span>{badgeText[status]}</span>
         </div>
 
         {/* Heading */}
-        <h1 className="stagger-2 text-4xl font-extrabold tracking-tight text-white">
+        <h1 className="font-headline text-4xl font-bold tracking-tight text-white">
           {headingText[status]}
         </h1>
-        <p className="stagger-3 mt-3 max-w-xs text-base text-gray-400">
+        <p className="mt-3 max-w-xs text-base text-slate-300">
           {descriptionText[status]}
         </p>
 
@@ -144,13 +124,13 @@ function VerifyUniversityEmailContent() {
           <div className="mt-8 flex w-full max-w-xs flex-col gap-3">
             <Link
               href="/me"
-              className="brand-gradient flex items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+              className="flex items-center justify-center gap-2 rounded-xl bg-tertiary-fixed-dim py-2.5 text-sm font-bold text-primary transition-all hover:brightness-110"
             >
               Ver meu perfil
             </Link>
             <Link
-              href="/universities"
-              className="flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 py-2.5 text-sm font-medium text-gray-300 backdrop-blur-sm transition-colors hover:border-indigo-400/30 hover:bg-indigo-500/10 hover:text-white"
+              href="/"
+              className="flex items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/10 py-2.5 text-sm font-semibold text-white backdrop-blur-sm transition-all hover:bg-white/20"
             >
               Explorar universidades
             </Link>
@@ -161,13 +141,13 @@ function VerifyUniversityEmailContent() {
           <div className="mt-8 flex w-full max-w-xs flex-col gap-3">
             <Link
               href="/me"
-              className="brand-gradient flex items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+              className="flex items-center justify-center gap-2 rounded-xl bg-tertiary-fixed-dim py-2.5 text-sm font-bold text-primary transition-all hover:brightness-110"
             >
               Voltar ao perfil
             </Link>
             <Link
               href="/"
-              className="flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 py-2.5 text-sm font-medium text-gray-300 backdrop-blur-sm transition-colors hover:border-indigo-400/30 hover:bg-indigo-500/10 hover:text-white"
+              className="flex items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/10 py-2.5 text-sm font-semibold text-white backdrop-blur-sm transition-all hover:bg-white/20"
             >
               Ir para o início
             </Link>
@@ -182,15 +162,13 @@ export default function VerifyUniversityEmailPage() {
   return (
     <Suspense
       fallback={
-        <main
-          className="relative flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center overflow-hidden"
-          style={{ backgroundColor: "#0F2854" }}
-        >
-          <div className="dot-grid absolute inset-0 opacity-40" />
-          <div className="absolute left-1/2 top-1/2 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-radial from-violet-900/30 to-transparent blur-3xl" />
+        <main className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-gradient-to-br from-primary to-primary-container pt-16">
           <div className="relative z-10 flex flex-col items-center text-center">
-            <Loader2 size={32} className="animate-spin text-indigo-400" />
-            <p className="mt-4 text-gray-400">Carregando...</p>
+            <Loader2
+              size={32}
+              className="animate-spin text-tertiary-fixed-dim"
+            />
+            <p className="mt-4 text-slate-300">Carregando...</p>
           </div>
         </main>
       }

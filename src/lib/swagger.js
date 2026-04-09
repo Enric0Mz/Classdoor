@@ -33,6 +33,45 @@ const swaggerSpec = {
         },
       },
     },
+    "/api/v1/stats": {
+      get: {
+        tags: ["Stats"],
+        summary: "Get platform statistics",
+        description:
+          "Returns aggregated platform statistics including university count, review count, and average rating.",
+        responses: {
+          200: {
+            description: "Platform statistics",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    universityCount: {
+                      type: "integer",
+                      description: "Total number of universities",
+                      example: 161,
+                    },
+                    reviewCount: {
+                      type: "integer",
+                      description:
+                        "Total number of reviews (internal + external)",
+                      example: 1822,
+                    },
+                    averageRating: {
+                      type: "number",
+                      description:
+                        "Average rating across all universities with ratings",
+                      example: 4.2,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
     "/api/v1/universities": {
       get: {
         tags: ["Universities"],
@@ -1330,6 +1369,120 @@ const swaggerSpec = {
         },
       },
     },
+    "/api/v1/users/forgot-password": {
+      post: {
+        tags: ["Sessions"],
+        summary: "Request a password reset email",
+        description:
+          "Sends a password reset link to the provided email if an account exists. Always returns 200 for security (does not reveal whether the email is registered).",
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                required: ["email"],
+                properties: {
+                  email: {
+                    type: "string",
+                    format: "email",
+                    description:
+                      "The email address associated with the account.",
+                    example: "user@example.com",
+                  },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: "Request processed (always returns 200)",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    message: {
+                      type: "string",
+                      example:
+                        "If an account with this email exists, a password reset link has been sent",
+                    },
+                  },
+                },
+              },
+            },
+          },
+          400: {
+            description: "Invalid email format",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
+        },
+      },
+    },
+    "/api/v1/users/reset-password": {
+      put: {
+        tags: ["Sessions"],
+        summary: "Reset password with token",
+        description:
+          "Resets the user's password using a valid reset token. The token is sent via email through the forgot-password endpoint. Invalidates all existing refresh tokens on success.",
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                required: ["token", "newPassword"],
+                properties: {
+                  token: {
+                    type: "string",
+                    description:
+                      "The password reset token from the email link.",
+                  },
+                  newPassword: {
+                    type: "string",
+                    description:
+                      "The new password (8-40 chars, must include uppercase, lowercase, number, and symbol).",
+                    example: "NewPass1!",
+                  },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: "Password reset successfully",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    message: {
+                      type: "string",
+                      example: "Password reset successfully",
+                    },
+                  },
+                },
+              },
+            },
+          },
+          400: {
+            description:
+              "Invalid/expired token, already used token, or password validation failure",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
+        },
+      },
+    },
     "/api/v1/users/me": {
       get: {
         tags: ["Users"],
@@ -2454,6 +2607,81 @@ const swaggerSpec = {
           },
           401: {
             description: "Unauthorized",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
+          403: {
+            description: "Forbidden — admin role required",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              },
+            },
+          },
+        },
+      },
+    },
+    "/api/v1/migrations": {
+      get: {
+        tags: ["Migrations"],
+        summary: "List migrations",
+        description:
+          "Returns database migrations filtered by status. Requires ADMIN role.",
+        security: [{ BearerAuth: [] }],
+        parameters: [
+          {
+            name: "status",
+            in: "query",
+            required: false,
+            description: "Filter by migration status. Defaults to applied.",
+            schema: {
+              type: "string",
+              enum: ["pending", "applied"],
+              default: "applied",
+            },
+          },
+        ],
+        responses: {
+          200: {
+            description: "List of migrations",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    migrations: {
+                      type: "array",
+                      items: {
+                        oneOf: [
+                          { type: "string" },
+                          {
+                            type: "object",
+                            properties: {
+                              name: { type: "string" },
+                              status: {
+                                type: "string",
+                                enum: ["applied", "pending"],
+                              },
+                            },
+                          },
+                        ],
+                      },
+                    },
+                    total: { type: "integer", example: 1 },
+                    status: {
+                      type: "string",
+                      enum: ["pending", "applied", "all"],
+                    },
+                  },
+                },
+              },
+            },
+          },
+          401: {
+            description: "Authentication required",
             content: {
               "application/json": {
                 schema: { $ref: "#/components/schemas/Error" },

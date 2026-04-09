@@ -7,6 +7,7 @@ import { POST } from "@/app/api/v1/universities/route";
 
 jest.mock("@/repositories/universityRepository", () => ({
   findByName: jest.fn(),
+  findBySlug: jest.fn(),
   create: jest.fn(),
 }));
 
@@ -57,7 +58,10 @@ describe("universityService.createUniversity", () => {
     const result = await createUniversity(input);
 
     expect(universityRepository.findByName).toHaveBeenCalledWith("MIT");
-    expect(universityRepository.create).toHaveBeenCalledWith(input);
+    expect(universityRepository.create).toHaveBeenCalledWith({
+      ...input,
+      slug: "mit",
+    });
     expect(result).toEqual(created);
   });
 
@@ -73,6 +77,7 @@ describe("universityService.createUniversity", () => {
 
     expect(universityRepository.create).toHaveBeenCalledWith({
       name: "MIT",
+      slug: "mit",
       abbreviation: undefined,
       location: "Cambridge",
       website: undefined,

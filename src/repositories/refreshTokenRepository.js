@@ -29,3 +29,7 @@ export async function deleteOldestByUserId(userId, keepCount) {
     where: { id: { in: idsToDelete } },
   });
 }
+
+export async function deleteAllByUserId(userId) {
+  return prisma.refreshToken.deleteMany({ where: { userId } });
+}

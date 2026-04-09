@@ -1,3 +1,4 @@
+import { Prisma } from "@prisma/client";
 import prisma from "@/lib/prisma";
 
 const REVIEW_AUTHOR_SELECT = {
@@ -41,38 +42,34 @@ export async function findAllOrderedByReviewCount({
   state,
 } = {}) {
   const conditions = [];
-  const params = [];
-  let paramIndex = 1;
 
   if (search && search.trim()) {
     const searchTerm = `%${search.trim()}%`;
     conditions.push(
-      `(u."name" ILIKE $${paramIndex} OR u."abbreviation" ILIKE $${paramIndex} OR u."location" ILIKE $${paramIndex} OR $${paramIndex + 1} = ANY(u."courses"))`,
+      Prisma.sql`(u."name" ILIKE ${searchTerm} OR u."abbreviation" ILIKE ${searchTerm} OR u."location" ILIKE ${searchTerm} OR ${search.trim()} = ANY(u."courses"))`,
     );
-    params.push(searchTerm, search.trim());
-    paramIndex += 2;
   }
 
   if (type) {
-    conditions.push(`u."type"::text = $${paramIndex}`);
-    params.push(type);
-    paramIndex += 1;
+    conditions.push(Prisma.sql`u."type"::text = ${type}`);
   }
 
   if (state) {
-    conditions.push(`u."location" ILIKE $${paramIndex}`);
-    params.push(`%${state}%`);
-    paramIndex += 1;
+    const stateTerm = `%${state}%`;
+    conditions.push(Prisma.sql`u."location" ILIKE ${stateTerm}`);
   }
 
   const whereClause =
-    conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
+    conditions.length > 0
+      ? Prisma.sql`WHERE ${Prisma.join(conditions, " AND ")}`
+      : Prisma.empty;
 
-  const countQuery = `SELECT COUNT(*) FROM "University" u ${whereClause}`;
-  const countResult = await prisma.$queryRawUnsafe(countQuery, ...params);
+  const countResult = await prisma.$queryRaw`
+    SELECT COUNT(*) FROM "University" u ${whereClause}
+  `;
   const total = Number(countResult[0].count);
 
-  const dataQuery = `
+  const data = await prisma.$queryRaw`
     SELECT
       u."id",
       u."name",
@@ -113,10 +110,8 @@ export async function findAllOrderedByReviewCount({
     ) er ON er."universityId" = u."id"
     ${whereClause}
     ORDER BY "totalReviewCount" DESC
-    LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
+    LIMIT ${take} OFFSET ${skip}
   `;
-
-  const data = await prisma.$queryRawUnsafe(dataQuery, ...params, take, skip);
 
   const universityIds = data.map((row) => row.id);
   const images = await prisma.universityImage.findMany({
@@ -127,6 +122,20 @@ export async function findAllOrderedByReviewCount({
     map[image.universityId].push(image);
     return map;
   }, {});
+
+  // Fetch slugs via Prisma (safe even before migration runs — returns null)
+  let slugByUniversityId = {};
+  try {
+    const records = await prisma.university.findMany({
+      where: { id: { in: universityIds } },
+      select: { id: true, slug: true },
+    });
+    slugByUniversityId = Object.fromEntries(
+      records.map((record) => [record.id, record.slug]),
+    );
+  } catch {
+    // slug column may not exist yet before migration
+  }
 
   const enrichedData = data.map((row) => {
     const totalReviewCount = Number(row.totalReviewCount);
@@ -146,6 +155,7 @@ export async function findAllOrderedByReviewCount({
     return {
       id: row.id,
       name: row.name,
+      slug: slugByUniversityId[row.id] || null,
       abbreviation: row.abbreviation,
       location: row.location,
       website: row.website,
@@ -164,6 +174,23 @@ export async function findAllOrderedByReviewCount({
 export async function findById(id) {
   return prisma.university.findUnique({
     where: { id },
+    include: {
+      images: true,
+      reviews: {
+        where: {
+          moderationStatus: "APPROVED",
+          NOT: { childReviews: { some: { moderationStatus: "APPROVED" } } },
+        },
+        include: { author: { select: REVIEW_AUTHOR_SELECT } },
+        orderBy: { createdAt: "desc" },
+      },
+    },
+  });
+}
+
+export async function findBySlug(slug) {
+  return prisma.university.findUnique({
+    where: { slug },
     include: {
       images: true,
       reviews: {
@@ -199,12 +226,47 @@ export async function create({ images, ...data }) {
   });
 }
 
-/**
- * Finds a university by matching an email domain via the UniversityDomain table.
- *
- * @param {string} domain - e.g. "usp.br"
- * @returns {object|null} The University record or null if not found
- */
+export async function updateRating(universityId) {
+  const [reviewStats, externalStats] = await Promise.all([
+    prisma.review.aggregate({
+      _avg: { rating: true },
+      _count: { rating: true },
+      where: {
+        universityId,
+        moderationStatus: "APPROVED",
+        parentReviewId: null,
+      },
+    }),
+    prisma.externalReview.aggregate({
+      _avg: { rating: true },
+      _count: { rating: true },
+      where: { universityId },
+    }),
+  ]);
+
+  const internalCount = reviewStats._count.rating;
+  const externalCount = externalStats._count.rating;
+  const totalCount = internalCount + externalCount;
+
+  if (totalCount === 0) {
+    return prisma.university.update({
+      where: { id: universityId },
+      data: { rating: null },
+    });
+  }
+
+  const internalSum = (reviewStats._avg.rating || 0) * internalCount;
+  const externalSum = (externalStats._avg.rating || 0) * externalCount;
+  const averageRating = Number(
+    ((internalSum + externalSum) / totalCount).toFixed(1),
+  );
+
+  return prisma.university.update({
+    where: { id: universityId },
+    data: { rating: averageRating },
+  });
+}
+
 export async function remove(id) {
   return prisma.university.delete({ where: { id } });
 }
